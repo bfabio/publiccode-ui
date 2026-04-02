@@ -1,17 +1,26 @@
 ---
+import { getAbsoluteLocaleUrl } from 'astro:i18n';
+
 interface Props {
   title: string;
   breadcrumbs?: { label: string; href?: string }[];
 }
 
 const { title, breadcrumbs = [] } = Astro.props;
+const locale = Astro.currentLocale ?? 'en';
+const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
+const enUrl = getAbsoluteLocaleUrl('en', routePath);
+const itUrl = getAbsoluteLocaleUrl('it', routePath);
 ---
 
-<html lang={Astro.currentLocale ?? 'en'}>
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="it" href={itUrl} />
+    <link rel="alternate" hreflang="x-default" href={enUrl} />
     <style is:global>
       body { font-family: sans-serif; margin: 0; color: #333; }
       .breadcrumb { font-size: 0.85rem; color: #666; margin: 1rem 0; }
