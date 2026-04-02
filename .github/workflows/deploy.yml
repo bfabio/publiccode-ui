@@ -1,4 +1,4 @@
-name: Deploy Astro to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -24,12 +24,12 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run astro:build
+      - run: npm run build
         env:
           BASE_PATH: /publiccode-ui
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist-astro/
+          path: dist/
 
   deploy:
     needs: build
