@@ -57,12 +57,18 @@ interface Labels {
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortName: "Name A-Z", sortRelease: "Newest release", results: "results" };
-  const [query, setQuery] = useState(() => readParam("q"));
+  const [inputValue, setInputValue] = useState(() => readParam("q"));
+  const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [audience, setAudience] = useState(() => readParam("audience"));
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => setQuery(inputValue), 150);
+    return () => clearTimeout(id);
+  }, [inputValue]);
 
   useEffect(() => {
     writeParams({ q: query, category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
@@ -105,9 +111,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         <input
           ref={inputRef}
           type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); inputRef.current?.blur(); } }}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") { setInputValue(""); setQuery(""); inputRef.current?.blur(); } }}
           placeholder="Search software..."
           autoFocus
           style={{
