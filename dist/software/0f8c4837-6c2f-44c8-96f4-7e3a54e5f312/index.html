@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>geofleet</title><style>body{font-family:sans-serif;margin:0;color:#333}.breadcrumb{font-size:.85rem;color:#666;margin:1rem 0}.breadcrumb a{color:#06c;text-decoration:none}.breadcrumb a:hover{text-decoration:underline}main{max-width:900px;margin:0 auto;padding:1rem 2rem 2rem}
+.header[data-astro-cid-74dlgyfd]{display:flex;gap:2rem;align-items:flex-start;margin-bottom:2rem}.header[data-astro-cid-74dlgyfd] img[data-astro-cid-74dlgyfd]{border-radius:8px}.header-info[data-astro-cid-74dlgyfd]{flex:1}h1[data-astro-cid-74dlgyfd]{margin-bottom:.25rem}.short-desc[data-astro-cid-74dlgyfd]{font-size:1.1rem;color:#555;margin:.5rem 0 1rem}.categories[data-astro-cid-74dlgyfd]{display:flex;gap:.5rem;flex-wrap:wrap}.cat[data-astro-cid-74dlgyfd]{font-size:.75rem;background:#f0f0f0;border-radius:4px;padding:2px 8px;text-transform:uppercase}dl[data-astro-cid-74dlgyfd]{display:grid;grid-template-columns:auto 1fr;gap:.25rem 1.5rem;margin:1.5rem 0}dt[data-astro-cid-74dlgyfd]{font-weight:600;font-size:.85rem;text-transform:uppercase;color:#888}dd[data-astro-cid-74dlgyfd]{margin:0;word-break:break-all}dd[data-astro-cid-74dlgyfd] a[data-astro-cid-74dlgyfd]{color:#06c;text-decoration:none}dd[data-astro-cid-74dlgyfd] a[data-astro-cid-74dlgyfd]:hover{text-decoration:underline}h2[data-astro-cid-74dlgyfd]{font-size:1.3rem;margin-top:2rem;border-bottom:1px solid #e0e0e0;padding-bottom:.5rem}.screenshots[data-astro-cid-74dlgyfd]{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1rem}.screenshots[data-astro-cid-74dlgyfd] img[data-astro-cid-74dlgyfd]{max-height:200px;max-width:300px;object-fit:contain;border:1px solid #e0e0e0;border-radius:4px}.long-desc[data-astro-cid-74dlgyfd]{line-height:1.7}.long-desc[data-astro-cid-74dlgyfd] img[data-astro-cid-74dlgyfd]{max-width:100%}
+</style></head> <body> <main> <div class="breadcrumb"> <a href="/">Home</a> / <a href="/software">Software</a> / <span>geofleet</span> </div>   <div class="header" data-astro-cid-74dlgyfd> <img src="https://raw.githubusercontent.com/vvfosprojects/vvfgeofleet/HEAD/docs/frontend_screenshot.png" alt="" width="100" onerror="this.style.display='none'" data-astro-cid-74dlgyfd> <div class="header-info" data-astro-cid-74dlgyfd> <h1 data-astro-cid-74dlgyfd>geofleet</h1> <p class="short-desc" data-astro-cid-74dlgyfd>VVFGeoFleet is a system allowing to track a fleet,
+where vehicles are equipped with GPS enabled
+devices periodically sending their position.</p> <div class="categories" data-astro-cid-74dlgyfd> <span class="cat" data-astro-cid-74dlgyfd>fleet-management</span><span class="cat" data-astro-cid-74dlgyfd>data-collection</span><span class="cat" data-astro-cid-74dlgyfd>data-analytics</span><span class="cat" data-astro-cid-74dlgyfd>data-visualization</span> </div> </div> </div> <dl data-astro-cid-74dlgyfd> <dt data-astro-cid-74dlgyfd>License</dt><dd data-astro-cid-74dlgyfd>AGPL-3.0-or-later</dd> <dt data-astro-cid-74dlgyfd>Release date</dt><dd data-astro-cid-74dlgyfd>2018-05-17</dd> <dt data-astro-cid-74dlgyfd>Version</dt><dd data-astro-cid-74dlgyfd>0.1</dd> <dt data-astro-cid-74dlgyfd>Status</dt><dd data-astro-cid-74dlgyfd>stable</dd> <dt data-astro-cid-74dlgyfd>Repository</dt><dd data-astro-cid-74dlgyfd><a href="https://github.com/vvfosprojects/vvfgeofleet.git" data-astro-cid-74dlgyfd>https://github.com/vvfosprojects/vvfgeofleet.git</a></dd> <dt data-astro-cid-74dlgyfd>Website</dt><dd data-astro-cid-74dlgyfd><a href="https://github.com/vvfosprojects/vvfgeofleet" data-astro-cid-74dlgyfd>https://github.com/vvfosprojects/vvfgeofleet</a></dd> </dl> <div data-astro-cid-74dlgyfd> <h2 data-astro-cid-74dlgyfd>Screenshots</h2> <div class="screenshots" data-astro-cid-74dlgyfd> <a href="https://raw.githubusercontent.com/vvfosprojects/vvfgeofleet/HEAD/docs/frontend_screenshot.png" target="_blank" rel="noopener" data-astro-cid-74dlgyfd> <img src="https://raw.githubusercontent.com/vvfosprojects/vvfgeofleet/HEAD/docs/frontend_screenshot.png" alt="" loading="lazy" data-astro-cid-74dlgyfd> </a> </div> </div><div data-astro-cid-74dlgyfd> <h2 data-astro-cid-74dlgyfd>Description</h2> <div class="long-desc" data-astro-cid-74dlgyfd><p>VVFGeoFleet is a system allowing to track a fleet, where 
+vehicles are equipped with GPS enabled devices periodically 
+sending their position. The system is composed of two main 
+modules: (i) a backend module, based on a RESTful server; (ii) a 
+frontend module, based on an Angular GUI. The backend is written 
+in C# Asp.Net WebApi, using Visual Studio 2017 Community 
+Edition, with a persistence layer based on MongoDB document 
+database. It collects position messages coming from GPS enabled 
+devices installed on board the vehicles; publishes REST actions 
+to efficiently query the collected data. Queries allow, for 
+instance, to: (i) getting the current fleet position (also by 
+vehicle class); (ii) getting a vehicle position; (iii) getting a 
+vehicle tracked path, within a given time interval; (iv) getting 
+vehicles near to a given point (also by vehicle class); (v) 
+getting vehicles within a given rectangle; (vi) getting vehicles 
+inactive since too much time. The backend is optimized to 
+collect data and hold them forever, without the need for purging 
+old data periodically. The RESTful API leverages the MongoDB 
+database and its spatial features. All database queries are 
+carefully optimized to exploit indexes; thus, the response time 
+is extremely low even in case of millions messages stored. 
+The RESTful API enables the frontend to graphically display 
+data, but it is especially conceived to be queried by other 
+applications (B2B) in order to act as a decision support system 
+(DSS). The frontend is based on Angular6 and uses Google maps 
+javascript API to show information. Currently the source code 
+and the RESTful interface is a mix of English and Italian words. 
+During the implementation, the Italian words will be translated 
+as much as possible. VVFGeoFleet can receive keep-alive messages 
+(e.g. every minute or so) from vehicles, in order to promptly 
+know whether a vehicle is out-of-field or the GPS device is 
+faulty. In presence of many vehicles (i.e. more than 10.000) 
+those messages might be heavy to be stored. To cope with this 
+issue, VVFGeoFleet holds only messages carrying position deltas, 
+while interpolating messages received by the same vehicle in the 
+same position. Interpolation information is saved together with 
+the interpolating messages, so to prevent such inforation to get 
+lost. On each position message reception, VVFGeoFleet computes 
+the vehicle velocity comparing the received message with the 
+latest stored one. In case such velocity exceeds a given 
+threshold, a warning is traced in the application log (based on 
+log4net). Too high velocities might be due to bad GPS device 
+configuration of faulty GPS device. The system publishes 
+statistics about message arrival per day, total number of stored 
+messages, messages arrival rate, etc. Statistics can be read to 
+check correct system operation, and can be processed through 
+automated systems in order to raise alarms in case of anomalous 
+indicators. Posting position messages can be subject to client 
+authorization, based on IP source address. The web.config allows 
+to enable/disable IP-based authorization through a flag and to 
+specify the list of allowed IP and/or networks (e.g. 127.0.0.1, 
+8.8.8.8, 10.0.0.0/24, 172.16.0.0/16).</p>
+</div> </div><div data-astro-cid-74dlgyfd> <h2 data-astro-cid-74dlgyfd>Contacts</h2> <ul data-astro-cid-74dlgyfd> <li data-astro-cid-74dlgyfd> <a href="mailto:marcello.esposito@vigilfuoco.it" data-astro-cid-74dlgyfd>Marcello Esposito</a>  </li> </ul> </div> </main> </body></html>
