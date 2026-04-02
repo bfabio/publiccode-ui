@@ -1,6 +1,6 @@
 ---
 import { fetchAllSoftware } from '../../lib/api.js';
-import { resolveLogo } from '../../lib/absoluteUrl.js';
+import { resolveLogo, absoluteUrl } from '../../lib/absoluteUrl.js';
 import { base } from '../../lib/url.js';
 import { marked } from 'marked';
 
@@ -18,6 +18,9 @@ const pc = software.publiccode;
 const desc = pc.description?.en ?? pc.description?.[Object.keys(pc.description ?? {})[0]] ?? {};
 const logo = resolveLogo(pc);
 const longDescriptionHtml = desc.longDescription ? marked.parse(desc.longDescription) : null;
+const screenshots = (desc.screenshots ?? [])
+  .map((s) => absoluteUrl(s, pc.url))
+  .filter(Boolean);
 ---
 
 <html lang="en">
@@ -50,6 +53,19 @@ const longDescriptionHtml = desc.longDescription ? marked.parse(desc.longDescrip
     {pc.categories?.length > 0 && (
       <div>
         <strong>Categories:</strong> {pc.categories.join(', ')}
+      </div>
+    )}
+
+    {screenshots.length > 0 && (
+      <div>
+        <h2>Screenshots</h2>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          {screenshots.map((src) => (
+            <a href={src} target="_blank" rel="noopener">
+              <img src={src} alt="" loading="lazy" style="max-height:200px;max-width:300px;object-fit:contain;border:1px solid #e0e0e0;" />
+            </a>
+          ))}
+        </div>
       </div>
     )}
 
