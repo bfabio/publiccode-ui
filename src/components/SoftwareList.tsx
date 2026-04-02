@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { formatDate } from "../lib/date.js";
 
 const readParam = (key: string) =>
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get(key) ?? "" : "";
@@ -47,7 +48,7 @@ interface Labels {
   results: string;
 }
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels }> = ({ items, base, labels }) => {
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortName: "Name A-Z", sortRelease: "Newest release", results: "results" };
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
   const [category, setCategory] = useState(() => readParam("category"));
@@ -139,7 +140,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             </div>
           </div>
           <div className="meta">
-            {item.releaseDate && <div>{item.releaseDate}</div>}
+            {item.releaseDate && (() => {
+              const d = formatDate(item.releaseDate, locale);
+              return d ? <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time> : <div>{item.releaseDate}</div>;
+            })()}
             {item.license && <div>{item.license}</div>}
           </div>
         </div>

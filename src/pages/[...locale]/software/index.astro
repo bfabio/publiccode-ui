@@ -49,7 +49,7 @@ const items = allSoftware.map((s) => {
   </style>
 
   <h1>{t(locale, 'catalog')} <span class="count">({items.length})</span></h1>
-  <SoftwareList client:load items={items} base={base} labels={{
+  <SoftwareList client:load items={items} base={base} locale={locale} labels={{
     allCategories: t(locale, 'all_categories'),
     allStatuses: t(locale, 'all_statuses'),
     allAudiences: t(locale, 'all_audiences'),
