@@ -27,6 +27,29 @@ const screenshots = (desc.screenshots ?? [])
   <head>
     <meta charset="utf-8" />
     <title>{pc.name}</title>
+    <style>
+      body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 1rem 2rem; color: #333; }
+      nav { margin-bottom: 1.5rem; font-size: 0.9rem; color: #666; }
+      nav a { color: #0066cc; text-decoration: none; }
+      nav a:hover { text-decoration: underline; }
+      h1 { margin-bottom: 0.25rem; }
+      .header { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; }
+      .header img { border-radius: 8px; }
+      .header-info { flex: 1; }
+      .short-desc { font-size: 1.1rem; color: #555; margin: 0.5rem 0 1rem; }
+      .categories { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+      .cat { font-size: 0.75rem; background: #f0f0f0; border-radius: 4px; padding: 2px 8px; text-transform: uppercase; }
+      dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1.5rem; margin: 1.5rem 0; }
+      dt { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: #888; }
+      dd { margin: 0; word-break: break-all; }
+      dd a { color: #0066cc; text-decoration: none; }
+      dd a:hover { text-decoration: underline; }
+      h2 { font-size: 1.3rem; margin-top: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem; }
+      .screenshots { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+      .screenshots img { max-height: 200px; max-width: 300px; object-fit: contain; border: 1px solid #e0e0e0; border-radius: 4px; }
+      .long-desc { line-height: 1.7; }
+      .long-desc img { max-width: 100%; }
+    </style>
   </head>
   <body>
     <nav>
@@ -35,11 +58,18 @@ const screenshots = (desc.screenshots ?? [])
       {pc.name}
     </nav>
 
-    <h1>{pc.name}</h1>
-
-    {logo && <img src={logo} alt="" width="100" onerror="this.style.display='none'" />}
-
-    <p>{desc.shortDescription}</p>
+    <div class="header">
+      {logo && <img src={logo} alt="" width="100" onerror="this.style.display='none'" />}
+      <div class="header-info">
+        <h1>{pc.name}</h1>
+        <p class="short-desc">{desc.shortDescription}</p>
+        {pc.categories?.length > 0 && (
+          <div class="categories">
+            {pc.categories.map((c) => <span class="cat">{c}</span>)}
+          </div>
+        )}
+      </div>
+    </div>
 
     <dl>
       {pc.legal?.license && <><dt>License</dt><dd>{pc.legal.license}</dd></>}
@@ -50,19 +80,13 @@ const screenshots = (desc.screenshots ?? [])
       {pc.landingURL && <><dt>Website</dt><dd><a href={pc.landingURL}>{pc.landingURL}</a></dd></>}
     </dl>
 
-    {pc.categories?.length > 0 && (
-      <div>
-        <strong>Categories:</strong> {pc.categories.join(', ')}
-      </div>
-    )}
-
     {screenshots.length > 0 && (
       <div>
         <h2>Screenshots</h2>
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <div class="screenshots">
           {screenshots.map((src) => (
             <a href={src} target="_blank" rel="noopener">
-              <img src={src} alt="" loading="lazy" style="max-height:200px;max-width:300px;object-fit:contain;border:1px solid #e0e0e0;" />
+              <img src={src} alt="" loading="lazy" />
             </a>
           ))}
         </div>
@@ -72,7 +96,7 @@ const screenshots = (desc.screenshots ?? [])
     {longDescriptionHtml && (
       <div>
         <h2>Description</h2>
-        <div set:html={longDescriptionHtml} />
+        <div class="long-desc" set:html={longDescriptionHtml} />
       </div>
     )}
 
