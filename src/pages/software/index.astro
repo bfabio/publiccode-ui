@@ -3,18 +3,15 @@ import Layout from '../../layouts/Layout.astro';
 import { fetchAllSoftware } from '../../lib/api.js';
 import { resolveLogo } from '../../lib/absoluteUrl.js';
 import { base } from '../../lib/url.js';
+import { t, localizeDescription } from '../../lib/i18n.js';
 import { SoftwareList } from '../../components/SoftwareList';
 
+const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
-
-const localize = (description) => {
-  if (!description) return {};
-  return description.en ?? description[Object.keys(description)[0]] ?? {};
-};
 
 const items = allSoftware.map((s) => {
   const pc = s.publiccode;
-  const desc = localize(pc.description);
+  const desc = localizeDescription(pc.description, locale);
   return {
     id: s.id,
     name: pc.name,
@@ -44,6 +41,13 @@ const items = allSoftware.map((s) => {
     .meta div { margin-bottom: 0.25rem; }
   </style>
 
-  <h1>Software <span class="count">({items.length})</span></h1>
-  <SoftwareList client:load items={items} base={base} />
+  <h1>{t(locale, 'catalog')} <span class="count">({items.length})</span></h1>
+  <SoftwareList client:load items={items} base={base} labels={{
+    allCategories: t(locale, 'all_categories'),
+    allStatuses: t(locale, 'all_statuses'),
+    allAudiences: t(locale, 'all_audiences'),
+    sortName: t(locale, 'sort_name'),
+    sortRelease: t(locale, 'sort_release'),
+    results: t(locale, 'results'),
+  }} />
 </Layout>

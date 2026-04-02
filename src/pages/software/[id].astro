@@ -4,6 +4,7 @@ import { fetchAllSoftware } from '../../lib/api.js';
 import { resolveLogo, absoluteUrl } from '../../lib/absoluteUrl.js';
 import { base } from '../../lib/url.js';
 import { marked } from 'marked';
+import { t, localizeDescription } from '../../lib/i18n.js';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -13,10 +14,11 @@ export async function getStaticPaths() {
   }));
 }
 
+const locale = Astro.currentLocale ?? 'en';
 const { software } = Astro.props;
 const pc = software.publiccode;
 
-const desc = pc.description?.en ?? pc.description?.[Object.keys(pc.description ?? {})[0]] ?? {};
+const desc = localizeDescription(pc.description, locale);
 const logo = resolveLogo(pc);
 const longDescriptionHtml = desc.longDescription ? marked.parse(desc.longDescription) : null;
 const screenshots = (desc.screenshots ?? [])
@@ -59,17 +61,17 @@ const screenshots = (desc.screenshots ?? [])
   </div>
 
   <dl>
-    {pc.legal?.license && <><dt>License</dt><dd>{pc.legal.license}</dd></>}
-    {pc.releaseDate && <><dt>Release date</dt><dd>{pc.releaseDate}</dd></>}
-    {pc.softwareVersion && <><dt>Version</dt><dd>{pc.softwareVersion}</dd></>}
-    {pc.developmentStatus && <><dt>Status</dt><dd>{pc.developmentStatus}</dd></>}
-    {pc.url && <><dt>Repository</dt><dd><a href={pc.url}>{pc.url}</a></dd></>}
-    {pc.landingURL && <><dt>Website</dt><dd><a href={pc.landingURL}>{pc.landingURL}</a></dd></>}
+    {pc.legal?.license && <><dt>{t(locale, 'license')}</dt><dd>{pc.legal.license}</dd></>}
+    {pc.releaseDate && <><dt>{t(locale, 'release_date')}</dt><dd>{pc.releaseDate}</dd></>}
+    {pc.softwareVersion && <><dt>{t(locale, 'version')}</dt><dd>{pc.softwareVersion}</dd></>}
+    {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+    {pc.url && <><dt>{t(locale, 'repository')}</dt><dd><a href={pc.url}>{pc.url}</a></dd></>}
+    {pc.landingURL && <><dt>{t(locale, 'website')}</dt><dd><a href={pc.landingURL}>{pc.landingURL}</a></dd></>}
   </dl>
 
   {screenshots.length > 0 && (
     <div>
-      <h2>Screenshots</h2>
+      <h2>{t(locale, 'screenshots')}</h2>
       <div class="screenshots">
         {screenshots.map((src) => (
           <a href={src} target="_blank" rel="noopener">
@@ -82,14 +84,14 @@ const screenshots = (desc.screenshots ?? [])
 
   {longDescriptionHtml && (
     <div>
-      <h2>Description</h2>
+      <h2>{t(locale, 'description')}</h2>
       <div class="long-desc" set:html={longDescriptionHtml} />
     </div>
   )}
 
   {pc.maintenance?.contacts?.length > 0 && (
     <div>
-      <h2>Contacts</h2>
+      <h2>{t(locale, 'contacts')}</h2>
       <ul>
         {pc.maintenance.contacts.map((c) => (
           <li>

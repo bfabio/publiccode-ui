@@ -38,7 +38,17 @@ const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
   return sorted;
 };
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = ({ items, base }) => {
+interface Labels {
+  allCategories: string;
+  allStatuses: string;
+  allAudiences: string;
+  sortName: string;
+  sortRelease: string;
+  results: string;
+}
+
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels }> = ({ items, base, labels }) => {
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortName: "Name A-Z", sortRelease: "Newest release", results: "results" };
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
@@ -79,7 +89,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
           onChange={(e) => setCategory(e.target.value)}
           style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
         >
-          <option value="">All categories</option>
+          <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
         <select
@@ -87,7 +97,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
           onChange={(e) => setStatus(e.target.value)}
           style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
         >
-          <option value="">All statuses</option>
+          <option value="">{l.allStatuses}</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <select
@@ -95,7 +105,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
           onChange={(e) => setAudience(e.target.value)}
           style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
         >
-          <option value="">All audiences</option>
+          <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <select
@@ -103,10 +113,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
           onChange={(e) => setSortBy(e.target.value as SortBy)}
           style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
         >
-          <option value="name">Name A-Z</option>
-          <option value="release_date">Newest release</option>
+          <option value="name">{l.sortName}</option>
+          <option value="release_date">{l.sortRelease}</option>
         </select>
-        <span style={{ color: "#666", fontSize: "0.9rem", marginLeft: "auto" }}>{sorted.length} results</span>
+        <span style={{ color: "#666", fontSize: "0.9rem", marginLeft: "auto" }}>{sorted.length} {l.results}</span>
       </div>
 
       {sorted.map((item) => (
