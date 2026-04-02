@@ -5,10 +5,9 @@ import {
   searchContextDispatch,
   searchContextState,
   setSearchValue,
-} from "../../contexts/searchContext";
+} from "../contexts/searchContext";
 import { Header } from "../Header";
 import { CatalogueFiltersContainer } from "./CatalogueFiltersContainer";
-import { Link } from "gatsby";
 
 export const CatalogueHeader = React.memo(() => {
   const { searchValue } = useContext(searchContextState);

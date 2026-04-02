@@ -2,12 +2,11 @@ import React from "react";
 import '../Page/Page.scss';
 import { createUseStyles } from "react-jss";
 import { ImageWithPlaceholder } from "../ImageWithPlaceholder";
-import { SearchType } from "../../utils/proptypes";
-import { absoluteUrl } from "../../utils/publiccodeAbsoluteUrl";
+import { SearchType } from "../utils/proptypes";
+import { absoluteUrl } from "../utils/publiccodeAbsoluteUrl";
 import { useTranslation } from "react-i18next";
 
 import { TagList } from "../TagList";
-import { Link } from "gatsby";
 const useStyles = createUseStyles({
   link: {
     display: "block",
@@ -94,8 +93,8 @@ export const CatalogueItem: React.FC<SearchType> = ({
         )}
       </div>
       <div className="col-6 mb-4">
-        <Link
-          to={id}
+        <a
+          href={id}
           title={name}
           data-testid="item-anchor"
           className={classNamees.link}

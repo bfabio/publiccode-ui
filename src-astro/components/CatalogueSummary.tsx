@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { useTranslation } from 'react-i18next';
 import { createUseStyles } from "react-jss";
 import { CatalogueSort } from "./CatalogueSort";
-import { searchContextState } from "../../contexts/searchContext";
+import { searchContextState } from "../contexts/searchContext";
 import { CatalogueFiltersContainer } from "./CatalogueFiltersContainer";
 import { CatalogueFiltersTitle } from "./CatalogueFiltersTitle";
 import { CatalogueHeader } from "./CatalogueHeader";

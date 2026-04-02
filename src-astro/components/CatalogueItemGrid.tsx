@@ -1,12 +1,12 @@
 import React from "react";
 import { createUseStyles } from "react-jss";
 import { ImageWithPlaceholder } from "../ImageWithPlaceholder";
-import { SearchType } from "../../utils/proptypes";
+import { SearchType } from "../utils/proptypes";
 import { useTranslation } from "react-i18next";
 
 import { Icon } from "../Icon/Icon";
 import { TagList } from "../TagList";
-import {absoluteUrl} from "../../utils/publiccodeAbsoluteUrl";
+import {absoluteUrl} from "../utils/publiccodeAbsoluteUrl";
 const useStyles = createUseStyles({
   link: {
     display: "block",

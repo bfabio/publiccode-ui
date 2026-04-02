@@ -9,17 +9,17 @@ import {
   setFilterDevelopmentStatuses,
   setFilterIntendedAudience,
   setType,
-} from "../../contexts/searchContext";
+} from "../contexts/searchContext";
 import {
   categories as softwareCategories,
   scopes as softwareScopes,
   developmentStatuses as softwareDevelopmentStatuses,
-} from "../../types/publiccode";
+} from "../types/publiccode";
 import {
   ALL_CATALOGUE,
   SOFTWARE_OPEN,
   SOFTWARE_REUSE,
-} from "../../utils/constants";
+} from "../utils/constants";
 import { CatalogueFilters } from "./CatalogueFilters";
 
 export const CatalogueFiltersContainer: React.FC<CatalogueFiltersContainerProps> =
