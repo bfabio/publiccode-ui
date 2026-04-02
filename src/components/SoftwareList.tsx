@@ -1,5 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { formatDate } from "../lib/date.js";
+
+function highlight(text: string, query: string) {
+  if (!query) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
+  return <>{text.slice(0, idx)}<mark>{text.slice(idx, idx + query.length)}</mark>{text.slice(idx + query.length)}</>;
+}
 
 const readParam = (key: string) =>
   typeof window !== "undefined" ? new URLSearchParams(window.location.search).get(key) ?? "" : "";
@@ -50,14 +57,16 @@ interface Labels {
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortName: "Name A-Z", sortRelease: "Newest release", results: "results" };
+  const [query, setQuery] = useState(() => readParam("q"));
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [audience, setAudience] = useState(() => readParam("audience"));
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    writeParams({ category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
-  }, [category, status, audience, sortBy]);
+    writeParams({ q: query, category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
+  }, [query, category, status, audience, sortBy]);
 
   const allCategories = useMemo(
     () => [...new Set(items.flatMap((i) => i.categories))].sort(),
@@ -74,16 +83,47 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   const filtered = useMemo(() => {
     let result = items;
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter((i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.shortDescription.toLowerCase().includes(q) ||
+        i.categories.some((c) => c.toLowerCase().includes(q))
+      );
+    }
     if (category) result = result.filter((i) => i.categories.includes(category));
     if (status) result = result.filter((i) => i.developmentStatus === status);
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
     return result;
-  }, [items, category, status, audience]);
+  }, [items, query, category, status, audience]);
 
   const sorted = useMemo(() => sortItems(filtered, sortBy), [filtered, sortBy]);
 
   return (
     <>
+      <div style={{ position: "relative", marginBottom: "1rem" }}>
+        <input
+          ref={inputRef}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") { setQuery(""); inputRef.current?.blur(); } }}
+          placeholder="Search software..."
+          autoFocus
+          style={{
+            width: "100%",
+            padding: "0.6rem 1rem",
+            fontSize: "1rem",
+            border: "2px solid #e0e0e0",
+            borderRadius: "8px",
+            outline: "none",
+            transition: "border-color 0.15s",
+          }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "#0066cc"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "#e0e0e0"; }}
+        />
+      </div>
+
       <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
         <select
           value={category}
@@ -133,8 +173,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             : <div className="logo-box">⬡</div>
           }
           <div>
-            <a className="name" href={`${base}/software/${item.id}`}>{item.name}</a>
-            <p className="desc">{item.shortDescription}</p>
+            <a className="name" href={`${base}/software/${item.id}`}>{highlight(item.name, query)}</a>
+            <p className="desc">{highlight(item.shortDescription, query)}</p>
             <div className="tags">
               {item.categories.slice(0, 3).map((cat) => <span key={cat} className="tag">{cat}</span>)}
             </div>
