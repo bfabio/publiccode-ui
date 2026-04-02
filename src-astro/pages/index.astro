@@ -1,20 +1,7 @@
 ---
-import yaml from 'js-yaml';
+import { fetchAllSoftware } from '../lib/api.js';
 
-const res = await fetch('https://api.developers.italia.it/v1/software?page%5Bsize%5D=10');
-const json = await res.json();
-
-const software = json.data.map((item) => {
-  const pc = yaml.load(item.publiccodeYml);
-  return {
-    id: item.id,
-    name: pc.name,
-    url: pc.url,
-    description: pc.description?.en?.shortDescription ?? pc.description?.[Object.keys(pc.description)[0]]?.shortDescription ?? '',
-    categories: pc.categories ?? [],
-    license: pc.legal?.license ?? '',
-  };
-});
+const software = await fetchAllSoftware();
 ---
 
 <html lang="en">
@@ -27,8 +14,11 @@ const software = json.data.map((item) => {
     <ul>
       {software.map((s) => (
         <li>
-          <strong>{s.name}</strong> — {s.license}<br />
-          <small>{s.description}</small>
+          <a href={`/software/${s.id}`}>
+            <strong>{s.publiccode.name}</strong>
+          </a>
+          — {s.publiccode.legal?.license}<br />
+          <small>{s.publiccode.description?.en?.shortDescription ?? s.publiccode.description?.[Object.keys(s.publiccode.description)[0]]?.shortDescription}</small>
         </li>
       ))}
     </ul>

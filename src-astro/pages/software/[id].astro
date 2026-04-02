@@ -1,0 +1,75 @@
+---
+import { fetchAllSoftware } from '../../lib/api.js';
+
+export async function getStaticPaths() {
+  const software = await fetchAllSoftware();
+  return software.map((s) => ({
+    params: { id: s.id },
+    props: { software: s },
+  }));
+}
+
+const { software } = Astro.props;
+const pc = software.publiccode;
+
+const lang = 'en';
+const desc = pc.description?.[lang] ?? pc.description?.[Object.keys(pc.description ?? {})[0]] ?? {};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{pc.name}</title>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a> /
+      <a href="/software">Software</a> /
+      {pc.name}
+    </nav>
+
+    <h1>{pc.name}</h1>
+
+    {pc.logo && (
+      <img src={pc.logo.startsWith('http') ? pc.logo : `${pc.url}/${pc.logo}`} alt="" width="100" />
+    )}
+
+    <p>{desc.shortDescription}</p>
+
+    <dl>
+      {pc.legal?.license && <><dt>License</dt><dd>{pc.legal.license}</dd></>}
+      {pc.releaseDate && <><dt>Release date</dt><dd>{pc.releaseDate}</dd></>}
+      {pc.softwareVersion && <><dt>Version</dt><dd>{pc.softwareVersion}</dd></>}
+      {pc.developmentStatus && <><dt>Status</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.url && <><dt>Repository</dt><dd><a href={pc.url}>{pc.url}</a></dd></>}
+      {pc.landingURL && <><dt>Website</dt><dd><a href={pc.landingURL}>{pc.landingURL}</a></dd></>}
+    </dl>
+
+    {pc.categories?.length > 0 && (
+      <div>
+        <strong>Categories:</strong> {pc.categories.join(', ')}
+      </div>
+    )}
+
+    {desc.longDescription && (
+      <div>
+        <h2>Description</h2>
+        <p>{desc.longDescription}</p>
+      </div>
+    )}
+
+    {pc.maintenance?.contacts?.length > 0 && (
+      <div>
+        <h2>Contacts</h2>
+        <ul>
+          {pc.maintenance.contacts.map((c) => (
+            <li>
+              {c.email ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
+              {c.phone && <> — {c.phone}</>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </body>
+</html>
