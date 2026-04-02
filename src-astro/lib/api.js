@@ -2,7 +2,11 @@ import yaml from 'js-yaml';
 
 const BASE_URL = 'https://api.developers.italia.it/v1';
 
+let cache = null;
+
 export async function fetchAllSoftware() {
+  if (cache) return cache;
+
   const items = [];
   let next = `${BASE_URL}/software`;
 
@@ -23,5 +27,6 @@ export async function fetchAllSoftware() {
       : null;
   }
 
-  return items;
+  cache = items;
+  return cache;
 }
