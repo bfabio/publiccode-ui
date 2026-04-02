@@ -67,7 +67,7 @@ const license = await resolveLicense(pc.legal?.license);
   </style>
 
   <div class="header">
-    {logo && <img src={logo} alt="" width="100" onerror="this.style.display='none'" />}
+    {logo && <img src={logo} alt="" width="100" fetchpriority="high" onerror="this.style.display='none'" />}
     <div class="header-info">
       <h1>{pc.name}</h1>
       <p class="short-desc">{desc.shortDescription}</p>
