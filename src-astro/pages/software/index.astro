@@ -35,7 +35,7 @@ const items = allSoftware.map((s) => {
       .count { color: #666; font-size: 0.9rem; }
       .item { display: grid; grid-template-columns: 64px 1fr auto; gap: 1rem; align-items: start; padding: 1rem 0; border-top: 1px solid #e0e0e0; }
       .logo { width: 64px; height: 64px; object-fit: contain; }
-      .logo-placeholder { width: 64px; height: 64px; }
+      .logo-box { width: 64px; height: 64px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 1.5rem; }
       .name { font-size: 1.1rem; font-weight: 600; text-decoration: none; color: inherit; }
       .name:hover { text-decoration: underline; }
       .desc { margin: 0.25rem 0 0.5rem; color: #444; font-size: 0.9rem; }
@@ -51,12 +51,10 @@ const items = allSoftware.map((s) => {
 
     {items.map((item) => (
       <div class="item">
-        <div>
-          {item.logo
-            ? <img class="logo" src={item.logo} alt="" loading="lazy" />
-            : <div class="logo-placeholder" />
-          }
-        </div>
+        {item.logo
+          ? <img class="logo" src={item.logo} alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo-box',textContent:'⬡'}))" />
+          : <div class="logo-box">⬡</div>
+        }
         <div>
           <a class="name" href={`${base}/software/${item.id}`}>{item.name}</a>
           <p class="desc">{item.shortDescription}</p>

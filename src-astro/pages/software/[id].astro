@@ -37,7 +37,7 @@ const screenshots = (desc.screenshots ?? [])
 
     <h1>{pc.name}</h1>
 
-    {logo && <img src={logo} alt="" width="100" />}
+    {logo && <img src={logo} alt="" width="100" onerror="this.style.display='none'" />}
 
     <p>{desc.shortDescription}</p>
 
