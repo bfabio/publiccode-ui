@@ -8,6 +8,7 @@ const marked = new Marked({ renderer: { html() { return ''; } } });
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
+import { safeUrl } from '../../../lib/sanitize.js';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -83,8 +84,8 @@ const license = await resolveLicense(pc.legal?.license);
     {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
     {pc.softwareVersion && <><dt>{t(locale, 'version')}</dt><dd>{pc.softwareVersion}</dd></>}
     {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
-    {pc.url && <><dt>{t(locale, 'repository')}</dt><dd><a href={pc.url}>{pc.url}</a></dd></>}
-    {pc.landingURL && <><dt>{t(locale, 'website')}</dt><dd><a href={pc.landingURL}>{pc.landingURL}</a></dd></>}
+    {safeUrl(pc.url) && <><dt>{t(locale, 'repository')}</dt><dd><a href={safeUrl(pc.url)}>{pc.url}</a></dd></>}
+    {safeUrl(pc.landingURL) && <><dt>{t(locale, 'website')}</dt><dd><a href={safeUrl(pc.landingURL)}>{pc.landingURL}</a></dd></>}
   </dl>
 
   {screenshots.length > 0 && (
@@ -121,7 +122,7 @@ const license = await resolveLicense(pc.legal?.license);
       <ul>
         {pc.maintenance.contacts.map((c) => (
           <li>
-            {c.email ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
+            {safeUrl(`mailto:${c.email}`) ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
             {c.phone && <> — {c.phone}</>}
           </li>
         ))}
