@@ -1,5 +1,6 @@
 ---
 import { fetchAllSoftware } from '../../lib/api.js';
+import { resolveLogo } from '../../lib/absoluteUrl.js';
 
 const allSoftware = await fetchAllSoftware();
 
@@ -11,7 +12,6 @@ const localize = (description) => {
 const items = allSoftware.map((s) => {
   const pc = s.publiccode;
   const desc = localize(pc.description);
-  const logo = pc.logo ?? desc.screenshots?.[0];
   return {
     id: s.id,
     name: pc.name,
@@ -19,7 +19,7 @@ const items = allSoftware.map((s) => {
     categories: pc.categories ?? [],
     releaseDate: pc.releaseDate ?? '',
     license: pc.legal?.license ?? '',
-    logo: logo ? (logo.startsWith('http') ? logo : `${pc.url}/${logo}`) : null,
+    logo: resolveLogo(pc),
   };
 });
 ---
