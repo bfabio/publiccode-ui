@@ -1,4 +1,15 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+
+const readParam = (key: string) =>
+  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get(key) ?? "" : "";
+const writeParams = (params: Record<string, string>) => {
+  const url = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v) url.set(k, v);
+  }
+  const qs = url.toString();
+  history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+};
 
 interface SoftwareItem {
   id: string;
@@ -28,10 +39,14 @@ const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
 };
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = ({ items, base }) => {
-  const [sortBy, setSortBy] = useState<SortBy>("name");
-  const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("");
-  const [audience, setAudience] = useState("");
+  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
+  const [category, setCategory] = useState(() => readParam("category"));
+  const [status, setStatus] = useState(() => readParam("status"));
+  const [audience, setAudience] = useState(() => readParam("audience"));
+
+  useEffect(() => {
+    writeParams({ category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
+  }, [category, status, audience, sortBy]);
 
   const allCategories = useMemo(
     () => [...new Set(items.flatMap((i) => i.categories))].sort(),
