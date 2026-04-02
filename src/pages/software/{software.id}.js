@@ -151,15 +151,15 @@ const Software = ({ data: { site, software } }) => {
                 software.publiccodeYml.maintenance.contractors?.length > 0 && (
                   <div className="d-flex flex-column w-25">
                     <div className="fs-6 fw-bolder">{t('software.software_maintained_by')}</div>
-                    {software.publiccodeYml.maintenance.contractors.map((c) => {
+                    {software.publiccodeYml.maintenance.contractors.map((c) =>
                       c.website ? (
-                        <div clasName="fs-6 fw-bold">
+                        <div className="fs-6 fw-bold">
                           <a href={c.website}>{c.name}</a>
                         </div>
                       ) : (
                         <p>{c.name}</p>
-                      );
-                    })}
+                      )
+                    )}
                   </div>
                 )}
 
@@ -172,13 +172,17 @@ const Software = ({ data: { site, software } }) => {
                     if (contact.email) {
                       return (
                         <div className="fs-6 fw-bold">
-                          <a href={`mailto:${contact.email}`}>{contact.name}</a> {contact.phone}{' '}
+                          <a href={`mailto:${contact.email}`}>{contact.name}</a>
+                          {contact.phone && <> {contact.phone}</>}
+                          {' '}
                         </div>
                       );
                     }
                     return (
                       <>
-                        {contact.name} {contact.phone}{' '}
+                        {contact.name}
+                        {contact.phone && <> {contact.phone}</>}
+                        {' '}
                       </>
                     );
                   })}

@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 
 import { Icon } from "../Icon/Icon";
 import { TagList } from "../TagList";
-import { getSoftwareCategory, SOFTWARE_REUSE } from "../../utils/constants";
 import {absoluteUrl} from "../../utils/publiccodeAbsoluteUrl";
 const useStyles = createUseStyles({
   link: {
@@ -61,9 +60,8 @@ export const CatalogueItemGrid: React.FC<SearchType> = ({
   id,
   publiccode: { url: repoUrl, description, name, slug, categories, logo },
 }) => {
-  const classNamees = useStyles();
+  const classes = useStyles();
   const { t, i18n } = useTranslation();
-  const category = getSoftwareCategory("");
 
   const localizedDescription =
     description[i18n.language] ||
@@ -72,9 +70,6 @@ export const CatalogueItemGrid: React.FC<SearchType> = ({
   const icon = "it-software";
   logo ||= description?.screenshots?.[0];
   const url = `/software/${slug.toLowerCase()}`;
-
-  console.log(description);
-  const isGridView = false;
 
   return (
     <article
@@ -90,26 +85,26 @@ export const CatalogueItemGrid: React.FC<SearchType> = ({
         <a
           href={url}
           title={name}
-          className={classNamees.link}
+          className={classes.link}
           data-testid="item-anchor"
         >
           {logo && (
-            <div className={classNamees.logoContainer}>
+            <div className={classes.logoContainer}>
               <ImageWithPlaceholder
                 alt="logo"
                 img={absoluteUrl(logo, repoUrl)}
               />
             </div>
           )}
-          <div className={classNamees.title}>{name}</div>
-          <div className={classNamees.description}>
+          <div className={classes.title}>{name}</div>
+          <div className={classes.description}>
             {localizedDescription.shortDescription}
           </div>
         </a>
       </div>
       <TagList tags={categories} visibleCount={3} />
 
-      <a href={url} title={name} className={classNamees.readMore}>
+      <a href={url} title={name} className={classes.readMore}>
         {t("readmore")} →
       </a>
     </article>

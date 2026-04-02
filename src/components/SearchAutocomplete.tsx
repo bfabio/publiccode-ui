@@ -41,7 +41,7 @@ export const SearchAutocomplete = React.memo(() => {
       case 'Escape':
         return dispatch(setSearchValue(""));
       case 'Enter':
-        window.location = `/software?search_value=${searchValue}`
+        navigate(`/software?search_value=${searchValue}`)
     }
   }
 

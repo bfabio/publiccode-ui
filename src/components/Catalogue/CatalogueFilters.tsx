@@ -56,7 +56,6 @@ export const CatalogueFilters: React.FC<
 
     React.useEffect(() => {
       updateCounter({ [name]: watchFields});
-      console.log(name, watchFields);
       const field = watchFields === '' ? [] : watchFields;
       const result = Array.isArray(field) 
         ? 

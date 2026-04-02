@@ -3,6 +3,18 @@ const yaml = require('js-yaml');
 
 const SOFTWARE_NODE_TYPE = `Software`;
 
+exports.createSchemaCustomization = ({ actions }) => {
+  const { createTypes } = actions;
+  createTypes(`
+    type SoftwarePubliccodeYmlMaintenanceContacts {
+      name: String
+      email: String
+      phone: String
+      affiliation: String
+    }
+  `);
+};
+
 exports.sourceNodes = async ({ actions, createContentDigest, createNodeId }) => {
   const { createNode } = actions;
 
