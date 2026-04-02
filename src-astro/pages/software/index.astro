@@ -2,6 +2,7 @@
 import { fetchAllSoftware } from '../../lib/api.js';
 import { resolveLogo } from '../../lib/absoluteUrl.js';
 import { base } from '../../lib/url.js';
+import { SoftwareList } from '../../components/SoftwareList';
 
 const allSoftware = await fetchAllSoftware();
 
@@ -28,7 +29,7 @@ const items = allSoftware.map((s) => {
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Software catalogue</title>
+    <title>Software catalog</title>
     <style>
       body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 1rem 2rem; }
       nav { margin-bottom: 2rem; }
@@ -49,24 +50,6 @@ const items = allSoftware.map((s) => {
     <nav><a href={base + "/"}>Home</a></nav>
     <h1>Software <span class="count">({items.length})</span></h1>
 
-    {items.map((item) => (
-      <div class="item">
-        {item.logo
-          ? <img class="logo" src={item.logo} alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo-box',textContent:'⬡'}))" />
-          : <div class="logo-box">⬡</div>
-        }
-        <div>
-          <a class="name" href={`${base}/software/${item.id}`}>{item.name}</a>
-          <p class="desc">{item.shortDescription}</p>
-          <div class="tags">
-            {item.categories.slice(0, 3).map((cat) => <span class="tag">{cat}</span>)}
-          </div>
-        </div>
-        <div class="meta">
-          {item.releaseDate && <div>{item.releaseDate}</div>}
-          {item.license && <div>{item.license}</div>}
-        </div>
-      </div>
-    ))}
+    <SoftwareList client:load items={items} base={base} />
   </body>
 </html>
