@@ -1,0 +1,73 @@
+---
+import { fetchAllSoftware } from '../../lib/api.js';
+
+const allSoftware = await fetchAllSoftware();
+
+const localize = (description) => {
+  if (!description) return {};
+  return description.en ?? description[Object.keys(description)[0]] ?? {};
+};
+
+const items = allSoftware.map((s) => {
+  const pc = s.publiccode;
+  const desc = localize(pc.description);
+  const logo = pc.logo ?? desc.screenshots?.[0];
+  return {
+    id: s.id,
+    name: pc.name,
+    shortDescription: desc.shortDescription ?? '',
+    categories: pc.categories ?? [],
+    releaseDate: pc.releaseDate ?? '',
+    license: pc.legal?.license ?? '',
+    logo: logo ? (logo.startsWith('http') ? logo : `${pc.url}/${logo}`) : null,
+  };
+});
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Software catalogue</title>
+    <style>
+      body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 1rem 2rem; }
+      nav { margin-bottom: 2rem; }
+      .count { color: #666; font-size: 0.9rem; }
+      .item { display: grid; grid-template-columns: 64px 1fr auto; gap: 1rem; align-items: start; padding: 1rem 0; border-top: 1px solid #e0e0e0; }
+      .logo { width: 64px; height: 64px; object-fit: contain; }
+      .logo-placeholder { width: 64px; height: 64px; }
+      .name { font-size: 1.1rem; font-weight: 600; text-decoration: none; color: inherit; }
+      .name:hover { text-decoration: underline; }
+      .desc { margin: 0.25rem 0 0.5rem; color: #444; font-size: 0.9rem; }
+      .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+      .tag { font-size: 0.75rem; background: #f0f0f0; border-radius: 4px; padding: 2px 8px; text-transform: uppercase; }
+      .meta { font-size: 0.8rem; color: #666; white-space: nowrap; text-align: right; }
+      .meta div { margin-bottom: 0.25rem; }
+    </style>
+  </head>
+  <body>
+    <nav><a href="/">Home</a></nav>
+    <h1>Software <span class="count">({items.length})</span></h1>
+
+    {items.map((item) => (
+      <div class="item">
+        <div>
+          {item.logo
+            ? <img class="logo" src={item.logo} alt="" loading="lazy" />
+            : <div class="logo-placeholder" />
+          }
+        </div>
+        <div>
+          <a class="name" href={`/software/${item.id}`}>{item.name}</a>
+          <p class="desc">{item.shortDescription}</p>
+          <div class="tags">
+            {item.categories.slice(0, 3).map((cat) => <span class="tag">{cat}</span>)}
+          </div>
+        </div>
+        <div class="meta">
+          {item.releaseDate && <div>{item.releaseDate}</div>}
+          {item.license && <div>{item.license}</div>}
+        </div>
+      </div>
+    ))}
+  </body>
+</html>
