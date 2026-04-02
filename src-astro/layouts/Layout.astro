@@ -16,11 +16,9 @@ const { title, breadcrumbs = [] } = Astro.props;
     <title>{title}</title>
     <style is:global>
       body { font-family: sans-serif; margin: 0; color: #333; }
-      header { background: #004080; color: #fff; padding: 0.75rem 0; }
-      header .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; gap: 2rem; }
-      header a { color: #fff; text-decoration: none; font-weight: 600; }
-      header nav a { font-weight: 400; font-size: 0.9rem; }
-      header nav a:hover { text-decoration: underline; }
+      nav { max-width: 900px; margin: 0 auto; padding: 0.75rem 2rem; font-size: 0.9rem; }
+      nav a { color: #0066cc; text-decoration: none; }
+      nav a:hover { text-decoration: underline; }
       .breadcrumb { font-size: 0.85rem; color: #666; margin: 1rem 0; }
       .breadcrumb a { color: #0066cc; text-decoration: none; }
       .breadcrumb a:hover { text-decoration: underline; }
@@ -28,14 +26,10 @@ const { title, breadcrumbs = [] } = Astro.props;
     </style>
   </head>
   <body>
-    <header>
-      <div class="container">
-        <a href={base + "/"}>EU Public Code</a>
-        <nav>
-          <a href={base + "/software"}>Software</a>
-        </nav>
-      </div>
-    </header>
+    <nav>
+      <a href={base + "/"}>Home</a>
+      <a href={base + "/software"}>Software</a>
+    </nav>
     <main>
       {breadcrumbs.length > 0 && (
         <div class="breadcrumb">
