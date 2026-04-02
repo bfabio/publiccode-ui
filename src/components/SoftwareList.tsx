@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatDate } from "../lib/date.js";
 
 function highlight(text: string, query: string) {
@@ -6,6 +6,14 @@ function highlight(text: string, query: string) {
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
   if (idx === -1) return text;
   return <>{text.slice(0, idx)}<mark>{text.slice(idx, idx + query.length)}</mark>{text.slice(idx + query.length)}</>;
+}
+
+function rankMatch(item: SoftwareItem, q: string): number {
+  const name = item.name.toLowerCase();
+  if (name === q) return 3;
+  if (name.startsWith(q)) return 2;
+  if (name.includes(q)) return 1;
+  return 0;
 }
 
 const readParam = (key: string) =>
@@ -63,12 +71,43 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [audience, setAudience] = useState(() => readParam("audience"));
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLUListElement>(null);
+  const MAX_SUGGESTIONS = 7;
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
     return () => clearTimeout(id);
   }, [inputValue]);
+
+  const suggestions = useMemo(() => {
+    if (!inputValue || inputValue.length < 2) return [];
+    const q = inputValue.toLowerCase();
+    return items
+      .filter((i) => i.name.toLowerCase().includes(q) || i.shortDescription.toLowerCase().includes(q))
+      .sort((a, b) => rankMatch(b, q) - rankMatch(a, q))
+      .slice(0, MAX_SUGGESTIONS);
+  }, [inputValue, items]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setInputValue(""); setQuery(""); setShowSuggestions(false); inputRef.current?.blur();
+      return;
+    }
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIdx((i) => (i + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIdx((i) => (i - 1 + suggestions.length) % suggestions.length);
+    } else if (e.key === "Enter" && selectedIdx >= 0) {
+      e.preventDefault();
+      window.location.href = `${base}/software/${suggestions[selectedIdx].id}`;
+    }
+  }, [showSuggestions, suggestions, selectedIdx, base]);
 
   useEffect(() => {
     writeParams({ q: query, category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
@@ -107,15 +146,21 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
-      <search style={{ marginBottom: "1rem" }}>
+      <search style={{ marginBottom: "1rem", position: "relative" }}>
         <input
           ref={inputRef}
           type="search"
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Escape") { setInputValue(""); setQuery(""); inputRef.current?.blur(); } }}
+          onChange={(e) => { setInputValue(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setShowSuggestions(true)}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           placeholder="Search software..."
           autoFocus
+          role="combobox"
+          aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-autocomplete="list"
+          aria-controls="search-suggestions"
           style={{
             width: "100%",
             padding: "0.6rem 1rem",
@@ -125,9 +170,41 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             outline: "none",
             transition: "border-color 0.15s",
           }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = "#0066cc"; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = "#e0e0e0"; }}
         />
+        {showSuggestions && suggestions.length > 0 && (
+          <ul
+            ref={suggestionsRef}
+            id="search-suggestions"
+            role="listbox"
+            style={{
+              position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
+              margin: "0.25rem 0 0", padding: 0, listStyle: "none",
+              background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden",
+            }}
+          >
+            {suggestions.map((s, i) => (
+              <li
+                key={s.id}
+                role="option"
+                aria-selected={i === selectedIdx}
+                onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
+                onMouseEnter={() => setSelectedIdx(i)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  cursor: "pointer",
+                  background: i === selectedIdx ? "#f0f4ff" : "transparent",
+                  borderBottom: i < suggestions.length - 1 ? "1px solid #f0f0f0" : "none",
+                }}
+              >
+                <div style={{ fontWeight: 600 }}>{highlight(s.name, inputValue)}</div>
+                <div style={{ fontSize: "0.8rem", color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {highlight(s.shortDescription, inputValue)}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </search>
 
       <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
