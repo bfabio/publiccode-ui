@@ -1,10 +1,17 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { fetchAllSoftware } from '../../lib/api.js';
-import { resolveLogo } from '../../lib/absoluteUrl.js';
-import { base } from '../../lib/url.js';
-import { t, localizeDescription } from '../../lib/i18n.js';
-import { SoftwareList } from '../../components/SoftwareList';
+import Layout from '../../../layouts/Layout.astro';
+import { fetchAllSoftware } from '../../../lib/api.js';
+import { resolveLogo } from '../../../lib/absoluteUrl.js';
+import { base } from '../../../lib/url.js';
+import { t, localizeDescription } from '../../../lib/i18n.js';
+import { SoftwareList } from '../../../components/SoftwareList';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined } },
+    { params: { locale: 'it' } },
+  ];
+}
 
 const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
