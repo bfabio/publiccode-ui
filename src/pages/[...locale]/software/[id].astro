@@ -6,6 +6,7 @@ import { base } from '../../../lib/url.js';
 import { marked } from 'marked';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { formatDate } from '../../../lib/date.js';
+import { resolveLicense } from '../../../lib/license.js';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -29,6 +30,7 @@ const screenshots = (desc.screenshots ?? [])
   .map((s) => absoluteUrl(s, pc.url))
   .filter(Boolean);
 const release = formatDate(pc.releaseDate, locale);
+const license = await resolveLicense(pc.legal?.license);
 ---
 
 <Layout title={pc.name} breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software", href: base + "/software" }, { label: pc.name }]}>
@@ -66,7 +68,7 @@ const release = formatDate(pc.releaseDate, locale);
   </div>
 
   <dl>
-    {pc.legal?.license && <><dt>{t(locale, 'license')}</dt><dd>{pc.legal.license}</dd></>}
+    {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
     {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
     {pc.softwareVersion && <><dt>{t(locale, 'version')}</dt><dd>{pc.softwareVersion}</dd></>}
     {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}

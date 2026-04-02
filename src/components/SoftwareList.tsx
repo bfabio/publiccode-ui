@@ -18,7 +18,7 @@ interface SoftwareItem {
   shortDescription: string;
   categories: string[];
   releaseDate: string;
-  license: string;
+  license: { id: string; name: string; url: string | null } | null;
   logo: string | null;
   developmentStatus: string;
   intendedAudience: string[];
@@ -144,7 +144,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               const d = formatDate(item.releaseDate, locale);
               return d ? <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time> : <div>{item.releaseDate}</div>;
             })()}
-            {item.license && <div>{item.license}</div>}
+            {item.license && <div>{item.license.url ? <a href={item.license.url} target="_blank" rel="noopener" style={{ color: "#0066cc", textDecoration: "none" }}>{item.license.name}</a> : item.license.name}</div>}
           </div>
         </div>
       ))}

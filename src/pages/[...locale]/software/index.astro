@@ -5,6 +5,7 @@ import { resolveLogo } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { SoftwareList } from '../../../components/SoftwareList';
+import { resolveLicense } from '../../../lib/license.js';
 
 export function getStaticPaths() {
   return [
@@ -16,21 +17,22 @@ export function getStaticPaths() {
 const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
 
-const items = allSoftware.map((s) => {
+const items = await Promise.all(allSoftware.map(async (s) => {
   const pc = s.publiccode;
   const desc = localizeDescription(pc.description, locale);
+  const license = await resolveLicense(pc.legal?.license);
   return {
     id: s.id,
     name: pc.name,
     shortDescription: desc.shortDescription ?? '',
     categories: pc.categories ?? [],
     releaseDate: pc.releaseDate ?? '',
-    license: pc.legal?.license ?? '',
+    license: license ? { id: license.id, name: license.name, url: license.url } : null,
     logo: resolveLogo(pc),
     developmentStatus: pc.developmentStatus ?? '',
     intendedAudience: pc.intendedAudience?.scope ?? [],
   };
-});
+}));
 ---
 
 <Layout title="Software catalog" breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software" }]}>
