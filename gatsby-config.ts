@@ -16,8 +16,7 @@ const config: GatsbyConfig = {
     },
     "gatsby-plugin-sass",
     "gatsby-plugin-react-helmet",
-    "gatsby-plugin-mdx",
-    "gatsby-plugin-sharp",
+"gatsby-plugin-sharp",
     "gatsby-transformer-sharp",
     "gatsby-transformer-yaml",
     {
