@@ -1,6 +1,8 @@
 ---
 import { fetchAllSoftware } from '../../lib/api.js';
 import { resolveLogo } from '../../lib/absoluteUrl.js';
+import { base } from '../../lib/url.js';
+import { marked } from 'marked';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -13,8 +15,9 @@ export async function getStaticPaths() {
 const { software } = Astro.props;
 const pc = software.publiccode;
 
-const lang = 'en';
-const desc = pc.description?.[lang] ?? pc.description?.[Object.keys(pc.description ?? {})[0]] ?? {};
+const desc = pc.description?.en ?? pc.description?.[Object.keys(pc.description ?? {})[0]] ?? {};
+const logo = resolveLogo(pc);
+const longDescriptionHtml = desc.longDescription ? marked.parse(desc.longDescription) : null;
 ---
 
 <html lang="en">
@@ -24,16 +27,14 @@ const desc = pc.description?.[lang] ?? pc.description?.[Object.keys(pc.descripti
   </head>
   <body>
     <nav>
-      <a href="/">Home</a> /
-      <a href="/software">Software</a> /
+      <a href={base + "/"}>Home</a> /
+      <a href={base + "/software"}>Software</a> /
       {pc.name}
     </nav>
 
     <h1>{pc.name}</h1>
 
-    {resolveLogo(pc) && (
-      <img src={resolveLogo(pc)} alt="" width="100" />
-    )}
+    {logo && <img src={logo} alt="" width="100" />}
 
     <p>{desc.shortDescription}</p>
 
@@ -52,10 +53,10 @@ const desc = pc.description?.[lang] ?? pc.description?.[Object.keys(pc.descripti
       </div>
     )}
 
-    {desc.longDescription && (
+    {longDescriptionHtml && (
       <div>
         <h2>Description</h2>
-        <p>{desc.longDescription}</p>
+        <div set:html={longDescriptionHtml} />
       </div>
     )}
 

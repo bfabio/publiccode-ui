@@ -1,6 +1,7 @@
 ---
 import { fetchAllSoftware } from '../../lib/api.js';
 import { resolveLogo } from '../../lib/absoluteUrl.js';
+import { base } from '../../lib/url.js';
 
 const allSoftware = await fetchAllSoftware();
 
@@ -45,7 +46,7 @@ const items = allSoftware.map((s) => {
     </style>
   </head>
   <body>
-    <nav><a href="/">Home</a></nav>
+    <nav><a href={base + "/"}>Home</a></nav>
     <h1>Software <span class="count">({items.length})</span></h1>
 
     {items.map((item) => (
@@ -57,7 +58,7 @@ const items = allSoftware.map((s) => {
           }
         </div>
         <div>
-          <a class="name" href={`/software/${item.id}`}>{item.name}</a>
+          <a class="name" href={`${base}/software/${item.id}`}>{item.name}</a>
           <p class="desc">{item.shortDescription}</p>
           <div class="tags">
             {item.categories.slice(0, 3).map((cat) => <span class="tag">{cat}</span>)}

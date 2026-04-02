@@ -1,5 +1,6 @@
 ---
 import { fetchAllSoftware } from '../lib/api.js';
+import { base } from '../lib/url.js';
 
 const software = await fetchAllSoftware();
 ---
@@ -14,7 +15,7 @@ const software = await fetchAllSoftware();
     <ul>
       {software.map((s) => (
         <li>
-          <a href={`/software/${s.id}`}>
+          <a href={`${base}/software/${s.id}`}>
             <strong>{s.publiccode.name}</strong>
           </a>
           — {s.publiccode.legal?.license}<br />
