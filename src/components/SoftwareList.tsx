@@ -101,7 +101,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
-      <div style={{ position: "relative", marginBottom: "1rem" }}>
+      <search style={{ marginBottom: "1rem" }}>
         <input
           ref={inputRef}
           type="search"
@@ -122,7 +122,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           onFocus={(e) => { e.currentTarget.style.borderColor = "#0066cc"; }}
           onBlur={(e) => { e.currentTarget.style.borderColor = "#e0e0e0"; }}
         />
-      </div>
+      </search>
 
       <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
         <select
