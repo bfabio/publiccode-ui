@@ -1,11 +1,36 @@
 ---
+import yaml from 'js-yaml';
+
+const res = await fetch('https://api.developers.italia.it/v1/software?page%5Bsize%5D=10');
+const json = await res.json();
+
+const software = json.data.map((item) => {
+  const pc = yaml.load(item.publiccodeYml);
+  return {
+    id: item.id,
+    name: pc.name,
+    url: pc.url,
+    description: pc.description?.en?.shortDescription ?? pc.description?.[Object.keys(pc.description)[0]]?.shortDescription ?? '',
+    categories: pc.categories ?? [],
+    license: pc.legal?.license ?? '',
+  };
+});
 ---
+
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>publiccode-ui (Astro)</title>
   </head>
   <body>
-    <h1>Hello from Astro</h1>
+    <h1>Software ({software.length})</h1>
+    <ul>
+      {software.map((s) => (
+        <li>
+          <strong>{s.name}</strong> — {s.license}<br />
+          <small>{s.description}</small>
+        </li>
+      ))}
+    </ul>
   </body>
 </html>
