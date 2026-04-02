@@ -50,7 +50,17 @@ const license = await resolveLicense(pc.legal?.license);
     dd a:hover { text-decoration: underline; }
     h2 { font-size: 1.3rem; margin-top: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem; }
     .screenshots { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-    .screenshots img { max-height: 200px; max-width: 300px; object-fit: contain; border: 1px solid #e0e0e0; border-radius: 4px; }
+    .screenshot-thumb { padding: 0; border: 1px solid #e0e0e0; border-radius: 4px; background: none; cursor: pointer; }
+    .screenshot-thumb:hover { border-color: #0066cc; }
+    .screenshot-thumb img { max-height: 200px; max-width: 300px; object-fit: contain; display: block; border-radius: 3px; }
+    dialog#lightbox { border: none; border-radius: 8px; padding: 0; background: #000; max-width: 90vw; max-height: 90vh; }
+    dialog#lightbox::backdrop { background: rgba(0,0,0,0.8); }
+    dialog#lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; display: block; }
+    dialog#lightbox nav { position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 0.5rem; pointer-events: none; }
+    dialog#lightbox nav button { pointer-events: auto; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 2.5rem; height: 2.5rem; font-size: 1.2rem; cursor: pointer; }
+    dialog#lightbox nav button:hover { background: #fff; }
+    #lightbox-close { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 2rem; height: 2rem; font-size: 1.2rem; cursor: pointer; line-height: 1; }
+    #lightbox-close:hover { background: #fff; }
     .long-desc { line-height: 1.7; }
     .long-desc img { max-width: 100%; }
   </style>
@@ -81,12 +91,20 @@ const license = await resolveLicense(pc.legal?.license);
     <div>
       <h2>{t(locale, 'screenshots')}</h2>
       <div class="screenshots">
-        {screenshots.map((src) => (
-          <a href={src} target="_blank" rel="noopener">
+        {screenshots.map((src, i) => (
+          <button type="button" class="screenshot-thumb" data-index={i}>
             <img src={src} alt="" loading="lazy" />
-          </a>
+          </button>
         ))}
       </div>
+      <dialog id="lightbox">
+        <img id="lightbox-img" src="" alt="" />
+        <nav>
+          <button type="button" id="lightbox-prev">&larr;</button>
+          <button type="button" id="lightbox-next">&rarr;</button>
+        </nav>
+        <button type="button" id="lightbox-close">&times;</button>
+      </dialog>
     </div>
   )}
 
@@ -111,3 +129,34 @@ const license = await resolveLicense(pc.legal?.license);
     </div>
   )}
 </Layout>
+
+<script>
+  const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
+  const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
+  if (dialog && img) {
+    const thumbs = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb');
+    const srcs = Array.from(thumbs).map(t => t.querySelector('img')!.src);
+    let current = 0;
+
+    const show = (i: number) => {
+      current = (i + srcs.length) % srcs.length;
+      img.src = srcs[current];
+    };
+
+    thumbs.forEach(t => t.addEventListener('click', () => {
+      show(Number(t.dataset.index));
+      dialog.showModal();
+    }));
+
+    document.getElementById('lightbox-prev')?.addEventListener('click', () => show(current - 1));
+    document.getElementById('lightbox-next')?.addEventListener('click', () => show(current + 1));
+    document.getElementById('lightbox-close')?.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+
+    document.addEventListener('keydown', (e) => {
+      if (!dialog.open) return;
+      if (e.key === 'ArrowLeft') show(current - 1);
+      if (e.key === 'ArrowRight') show(current + 1);
+    });
+  }
+</script>
