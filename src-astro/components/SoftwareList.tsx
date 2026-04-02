@@ -27,12 +27,31 @@ const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = ({ items, base }) => {
   const [sortBy, setSortBy] = useState<SortBy>("name");
-  const sorted = useMemo(() => sortItems(items, sortBy), [items, sortBy]);
+  const [category, setCategory] = useState("");
+
+  const allCategories = useMemo(
+    () => [...new Set(items.flatMap((i) => i.categories))].sort(),
+    [items],
+  );
+
+  const filtered = useMemo(() => {
+    if (!category) return items;
+    return items.filter((i) => i.categories.includes(category));
+  }, [items, category]);
+
+  const sorted = useMemo(() => sortItems(filtered, sortBy), [filtered, sortBy]);
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-        <span style={{ color: "#666", fontSize: "0.9rem" }}>{sorted.length} results</span>
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
+        >
+          <option value="">All categories</option>
+          {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
@@ -41,6 +60,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
           <option value="name">Name A-Z</option>
           <option value="release_date">Newest release</option>
         </select>
+        <span style={{ color: "#666", fontSize: "0.9rem", marginLeft: "auto" }}>{sorted.length} results</span>
       </div>
 
       {sorted.map((item) => (
