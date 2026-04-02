@@ -8,6 +8,8 @@ interface SoftwareItem {
   releaseDate: string;
   license: string;
   logo: string | null;
+  developmentStatus: string;
+  intendedAudience: string[];
 }
 
 type SortBy = "name" | "release_date";
@@ -28,16 +30,29 @@ const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = ({ items, base }) => {
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [audience, setAudience] = useState("");
 
   const allCategories = useMemo(
     () => [...new Set(items.flatMap((i) => i.categories))].sort(),
     [items],
   );
+  const allStatuses = useMemo(
+    () => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(),
+    [items],
+  );
+  const allAudiences = useMemo(
+    () => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(),
+    [items],
+  );
 
   const filtered = useMemo(() => {
-    if (!category) return items;
-    return items.filter((i) => i.categories.includes(category));
-  }, [items, category]);
+    let result = items;
+    if (category) result = result.filter((i) => i.categories.includes(category));
+    if (status) result = result.filter((i) => i.developmentStatus === status);
+    if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
+    return result;
+  }, [items, category, status, audience]);
 
   const sorted = useMemo(() => sortItems(filtered, sortBy), [filtered, sortBy]);
 
@@ -51,6 +66,22 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string }> = (
         >
           <option value="">All categories</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
+        >
+          <option value="">All statuses</option>
+          {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={audience}
+          onChange={(e) => setAudience(e.target.value)}
+          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
+        >
+          <option value="">All audiences</option>
+          {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <select
           value={sortBy}

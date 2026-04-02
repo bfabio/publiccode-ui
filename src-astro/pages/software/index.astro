@@ -22,6 +22,8 @@ const items = allSoftware.map((s) => {
     releaseDate: pc.releaseDate ?? '',
     license: pc.legal?.license ?? '',
     logo: resolveLogo(pc),
+    developmentStatus: pc.developmentStatus ?? '',
+    intendedAudience: pc.intendedAudience?.scope ?? [],
   };
 });
 ---
