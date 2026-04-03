@@ -35,22 +35,9 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 }));
 ---
 
-<Layout title="Software catalog" breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software" }]}>
-  <style is:global>
-    .count { color: #666; font-size: 0.9rem; }
-    .item { display: grid; grid-template-columns: 64px 1fr auto; gap: 1rem; align-items: start; padding: 1rem 0; border-top: 1px solid #e0e0e0; content-visibility: auto; contain-intrinsic-size: auto 80px; }
-    .logo { width: 64px; height: 64px; object-fit: contain; }
-    .logo-box { width: 64px; height: 64px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 1.5rem; }
-    .name { font-size: 1.1rem; font-weight: 600; text-decoration: none; color: inherit; }
-    .name:hover { text-decoration: underline; }
-    .desc { margin: 0.25rem 0 0.5rem; color: #444; font-size: 0.9rem; }
-    .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .tag { font-size: 0.75rem; background: #f0f0f0; border-radius: 4px; padding: 2px 8px; text-transform: uppercase; }
-    .meta { font-size: 0.8rem; color: #666; white-space: nowrap; text-align: right; }
-    .meta div { margin-bottom: 0.25rem; }
-  </style>
-
-  <h1>{t(locale, 'catalog')} <span class="count">({items.length})</span></h1>
+<Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software" }]}>
+  <h1>{t(locale, 'catalog')}</h1>
+  <p>{items.length} software</p>
   <SoftwareList client:load items={items} base={base} locale={locale} labels={{
     allCategories: t(locale, 'all_categories'),
     allStatuses: t(locale, 'all_statuses'),

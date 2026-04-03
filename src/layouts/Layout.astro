@@ -1,5 +1,6 @@
 ---
 import { getAbsoluteLocaleUrl } from 'astro:i18n';
+import '../themes/minimal.css';
 
 interface Props {
   title: string;
@@ -21,26 +22,18 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
     <link rel="alternate" hreflang="x-default" href={enUrl} />
-    <style is:global>
-      body { font-family: sans-serif; margin: 0; color: #333; }
-      .breadcrumb { font-size: 0.85rem; color: #666; margin: 1rem 0; }
-      .breadcrumb a { color: #0066cc; text-decoration: none; }
-      .breadcrumb a:hover { text-decoration: underline; }
-      main { max-width: 900px; margin: 0 auto; padding: 1rem 2rem 2rem; }
-    </style>
   </head>
   <body>
-    <main>
-      {breadcrumbs.length > 0 && (
-        <div class="breadcrumb">
-          {breadcrumbs.map((b, i) => (
-            <>
-              {i > 0 && " / "}
-              {b.href ? <a href={b.href}>{b.label}</a> : <span>{b.label}</span>}
-            </>
+    {breadcrumbs.length > 0 && (
+      <nav aria-label="Breadcrumb">
+        <ol>
+          {breadcrumbs.map((b) => (
+            <li>{b.href ? <a href={b.href}>{b.label}</a> : <span aria-current="page">{b.label}</span>}</li>
           ))}
-        </div>
-      )}
+        </ol>
+      </nav>
+    )}
+    <main>
       <slot />
     </main>
   </body>

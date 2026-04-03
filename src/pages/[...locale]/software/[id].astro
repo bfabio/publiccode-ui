@@ -40,133 +40,96 @@ const usedBy = pc.usedBy ?? [];
 ---
 
 <Layout title={pc.name} breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software", href: base + "/software" }, { label: pc.name }]}>
-  <style>
-    .header { display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 2rem; }
-    .header img { border-radius: 8px; }
-    .header-info { flex: 1; }
-    h1 { margin-bottom: 0.25rem; }
-    .short-desc { font-size: 1.1rem; color: #555; margin: 0.5rem 0 1rem; }
-    .version { font-size: 0.9rem; font-weight: 400; color: #888; }
-    .categories { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .cat { font-size: 0.75rem; background: #f0f0f0; border-radius: 4px; padding: 2px 8px; text-transform: uppercase; text-decoration: none; color: inherit; }
-    .cat:hover { background: #e0e0e0; }
-    .actions { display: flex; gap: 0.75rem; margin: 1.5rem 0; }
-    .actions a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
-    .btn-primary { background: #0066cc; color: #fff; }
-    .btn-primary:hover { background: #0052a3; }
-    .btn-secondary { background: #f0f0f0; color: #333; }
-    .btn-secondary:hover { background: #e0e0e0; }
-    .features { columns: 2; column-gap: 2rem; margin-top: 0.5rem; }
-    .features li { margin-bottom: 0.3rem; }
-    .tag-list { display: flex; gap: 0.5rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0.5rem 0; }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 1.5rem; margin: 1.5rem 0; }
-    dt { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: #888; }
-    dd { margin: 0; word-break: break-all; }
-    dd a { color: #0066cc; text-decoration: none; }
-    dd a:hover { text-decoration: underline; }
-    h2 { font-size: 1.3rem; margin-top: 2rem; border-bottom: 1px solid #e0e0e0; padding-bottom: 0.5rem; }
-    .screenshots { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
-    .screenshot-thumb { padding: 0; border: 1px solid #e0e0e0; border-radius: 4px; background: none; cursor: pointer; }
-    .screenshot-thumb:hover { border-color: #0066cc; }
-    .screenshot-thumb img { max-height: 200px; max-width: 300px; object-fit: contain; display: block; border-radius: 3px; }
-    dialog#lightbox { border: none; border-radius: 8px; padding: 0; background: #000; max-width: 90vw; max-height: 90vh; }
-    dialog#lightbox::backdrop { background: rgba(0,0,0,0.8); }
-    dialog#lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; display: block; }
-    dialog#lightbox nav { position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 0.5rem; pointer-events: none; }
-    dialog#lightbox nav button { pointer-events: auto; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 2.5rem; height: 2.5rem; font-size: 1.2rem; cursor: pointer; }
-    dialog#lightbox nav button:hover { background: #fff; }
-    #lightbox-close { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(255,255,255,0.8); border: none; border-radius: 50%; width: 2rem; height: 2rem; font-size: 1.2rem; cursor: pointer; line-height: 1; }
-    #lightbox-close:hover { background: #fff; }
-    .long-desc { line-height: 1.7; }
-    .long-desc img { max-width: 100%; }
-  </style>
-
-  <div class="header">
-    {logo && <img src={logo} alt="" width="100" fetchpriority="high" onerror="this.style.display='none'" />}
-    <div class="header-info">
-      <h1>{pc.name} {pc.softwareVersion && <span class="version">{pc.softwareVersion}</span>}</h1>
-      <p class="short-desc">{desc.shortDescription}</p>
-      {pc.categories?.length > 0 && (
-        <div class="categories">
-          {pc.categories.map((c) => <a class="cat" href={`${base}/software?category=${c}`}>{c}</a>)}
-        </div>
+  <article class="software-detail">
+    <header>
+      {logo && (
+        <figure class="software-logo">
+          <img src={logo} alt="" fetchpriority="high" onerror="this.parentElement.remove()" />
+        </figure>
       )}
-    </div>
-  </div>
+      <h1>{pc.name} {pc.softwareVersion && <small>{pc.softwareVersion}</small>}</h1>
+      <p class="short-description">{desc.shortDescription}</p>
+      {pc.categories?.length > 0 && (
+        <ul class="categories" aria-label="Categories">
+          {pc.categories.map((c) => <li><a href={`${base}/software?category=${c}`}>{c}</a></li>)}
+        </ul>
+      )}
+    </header>
 
-  <div class="actions">
-    {safeUrl(pc.url) && <a class="btn-primary" href={safeUrl(pc.url)}>{t(locale, 'source_code')}</a>}
-    {safeUrl(pc.landingURL) && <a class="btn-secondary" href={safeUrl(pc.landingURL)}>{t(locale, 'website')}</a>}
-  </div>
+    <nav class="software-links" aria-label="Software links">
+      {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
+      {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
+    </nav>
 
-  <dl>
-    {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
-    {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
-    {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
-    {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
-    {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
-    {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
-  </dl>
+    <dl class="software-meta">
+      {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
+      {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
+      {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
+      {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
+      {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
+    </dl>
 
-  {screenshots.length > 0 && (
-    <div>
-      <h2>{t(locale, 'screenshots')}</h2>
-      <div class="screenshots">
-        {screenshots.map((src, i) => (
-          <button type="button" class="screenshot-thumb" data-index={i}>
-            <img src={src} alt="" loading="lazy" />
-          </button>
-        ))}
-      </div>
-      <dialog id="lightbox">
-        <img id="lightbox-img" src="" alt="" />
-        <nav>
-          <button type="button" id="lightbox-prev">&larr;</button>
-          <button type="button" id="lightbox-next">&rarr;</button>
-        </nav>
-        <button type="button" id="lightbox-close">&times;</button>
-      </dialog>
-    </div>
-  )}
+    {features.length > 0 && (
+      <section class="software-features">
+        <h2>{t(locale, 'features')}</h2>
+        <ul>
+          {features.map((f) => <li>{f}</li>)}
+        </ul>
+      </section>
+    )}
 
-  {features.length > 0 && (
-    <div>
-      <h2>{t(locale, 'features')}</h2>
-      <ul class="features">
-        {features.map((f) => <li>{f}</li>)}
-      </ul>
-    </div>
-  )}
+    {usedBy.length > 0 && (
+      <section class="software-used-by">
+        <h2>{t(locale, 'used_by')}</h2>
+        <ul>
+          {usedBy.map((u) => <li>{u}</li>)}
+        </ul>
+      </section>
+    )}
 
-  {usedBy.length > 0 && (
-    <div>
-      <h2>{t(locale, 'used_by')}</h2>
-      <ul class="tag-list">
-        {usedBy.map((u) => <li><span class="cat">{u}</span></li>)}
-      </ul>
-    </div>
-  )}
+    {screenshots.length > 0 && (
+      <section class="software-screenshots">
+        <h2>{t(locale, 'screenshots')}</h2>
+        <div class="screenshot-grid">
+          {screenshots.map((src, i) => (
+            <button type="button" data-index={i} class="screenshot-thumb">
+              <img src={src} alt="" loading="lazy" />
+            </button>
+          ))}
+        </div>
+        <dialog id="lightbox">
+          <img id="lightbox-img" src="" alt="" />
+          <nav>
+            <button type="button" id="lightbox-prev" aria-label="Previous">&larr;</button>
+            <button type="button" id="lightbox-next" aria-label="Next">&rarr;</button>
+          </nav>
+          <button type="button" id="lightbox-close" aria-label="Close">&times;</button>
+        </dialog>
+      </section>
+    )}
 
-  {longDescriptionHtml && (
-    <div>
-      <h2>{t(locale, 'description')}</h2>
-      <div class="long-desc" set:html={longDescriptionHtml} />
-    </div>
-  )}
+    {longDescriptionHtml && (
+      <section class="software-description">
+        <h2>{t(locale, 'description')}</h2>
+        <div set:html={longDescriptionHtml} />
+      </section>
+    )}
 
-  {pc.maintenance?.contacts?.length > 0 && (
-    <div>
-      <h2>{t(locale, 'contacts')}</h2>
-      <ul>
-        {pc.maintenance.contacts.map((c) => (
-          <li>
-            {safeUrl(`mailto:${c.email}`) ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
-            {c.phone && <> — {c.phone}</>}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )}
+    {pc.maintenance?.contacts?.length > 0 && (
+      <section class="software-contacts">
+        <h2>{t(locale, 'contacts')}</h2>
+        <ul>
+          {pc.maintenance.contacts.map((c) => (
+            <li>
+              {safeUrl(`mailto:${c.email}`) ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
+              {c.phone && <> {c.phone}</>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </article>
 </Layout>
 
 <script>

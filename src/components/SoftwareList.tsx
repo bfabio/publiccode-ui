@@ -74,7 +74,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLUListElement>(null);
   const MAX_SUGGESTIONS = 7;
 
   useEffect(() => {
@@ -113,18 +112,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     writeParams({ q: query, category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
   }, [query, category, status, audience, sortBy]);
 
-  const allCategories = useMemo(
-    () => [...new Set(items.flatMap((i) => i.categories))].sort(),
-    [items],
-  );
-  const allStatuses = useMemo(
-    () => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(),
-    [items],
-  );
-  const allAudiences = useMemo(
-    () => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(),
-    [items],
-  );
+  const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
+  const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
+  const allAudiences = useMemo(() => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(), [items]);
 
   const filtered = useMemo(() => {
     let result = items;
@@ -146,7 +136,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
-      <search style={{ marginBottom: "1rem", position: "relative" }}>
+      <search className="catalog-search">
         <input
           ref={inputRef}
           type="search"
@@ -161,116 +151,77 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"
           aria-controls="search-suggestions"
-          style={{
-            width: "100%",
-            padding: "0.6rem 1rem",
-            fontSize: "1rem",
-            border: "2px solid #e0e0e0",
-            borderRadius: "8px",
-            outline: "none",
-            transition: "border-color 0.15s",
-          }}
         />
         {showSuggestions && suggestions.length > 0 && (
-          <ul
-            ref={suggestionsRef}
-            id="search-suggestions"
-            role="listbox"
-            style={{
-              position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
-              margin: "0.25rem 0 0", padding: 0, listStyle: "none",
-              background: "#fff", border: "1px solid #e0e0e0", borderRadius: "8px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)", overflow: "hidden",
-            }}
-          >
+          <ul id="search-suggestions" role="listbox" className="suggestions">
             {suggestions.map((s, i) => (
               <li
                 key={s.id}
                 role="option"
                 aria-selected={i === selectedIdx}
+                className={i === selectedIdx ? "selected" : ""}
                 onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
                 onMouseEnter={() => setSelectedIdx(i)}
-                style={{
-                  padding: "0.5rem 1rem",
-                  cursor: "pointer",
-                  background: i === selectedIdx ? "#f0f4ff" : "transparent",
-                  borderBottom: i < suggestions.length - 1 ? "1px solid #f0f0f0" : "none",
-                }}
               >
-                <div style={{ fontWeight: 600 }}>{highlight(s.name, inputValue)}</div>
-                <div style={{ fontSize: "0.8rem", color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {highlight(s.shortDescription, inputValue)}
-                </div>
+                <strong>{highlight(s.name, inputValue)}</strong>
+                <span className="suggestion-desc">{s.shortDescription}</span>
               </li>
             ))}
           </ul>
         )}
       </search>
 
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
-        >
+      <div className="catalog-filters" role="group" aria-label="Filters">
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
-        >
+        <select value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">{l.allStatuses}</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select
-          value={audience}
-          onChange={(e) => setAudience(e.target.value)}
-          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
-        >
+        <select value={audience} onChange={(e) => setAudience(e.target.value)}>
           <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortBy)}
-          style={{ padding: "0.3rem 0.5rem", fontSize: "0.9rem" }}
-        >
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
           <option value="name">{l.sortName}</option>
           <option value="release_date">{l.sortRelease}</option>
         </select>
-        <span style={{ color: "#666", fontSize: "0.9rem", marginLeft: "auto" }}>{sorted.length} {l.results}</span>
+        <output>{sorted.length} {l.results}</output>
       </div>
 
-      {sorted.map((item) => (
-        <div key={item.id} className="item">
-          {item.logo
-            ? <img className="logo" src={item.logo} alt="" loading="lazy" onError={(e) => {
-                const el = e.currentTarget;
-                const div = document.createElement('div');
-                div.className = 'logo-box';
-                div.textContent = '⬡';
-                el.replaceWith(div);
-              }} />
-            : <div className="logo-box">⬡</div>
-          }
-          <div>
-            <a className="name" href={`${base}/software/${item.id}`}>{highlight(item.name, query)}</a>
-            <p className="desc">{highlight(item.shortDescription, query)}</p>
-            <div className="tags">
-              {item.categories.slice(0, 3).map((cat) => <span key={cat} className="tag">{cat}</span>)}
-            </div>
-          </div>
-          <div className="meta">
-            {item.releaseDate && (() => {
-              const d = formatDate(item.releaseDate, locale);
-              return d ? <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time> : <div>{item.releaseDate}</div>;
-            })()}
-            {item.license && <div>{item.license.url ? <a href={item.license.url} target="_blank" rel="noopener" style={{ color: "#0066cc", textDecoration: "none" }}>{item.license.name}</a> : item.license.name}</div>}
-          </div>
-        </div>
-      ))}
+      <section className="catalog-results">
+        {sorted.map((item) => (
+          <article key={item.id}>
+            {item.logo && (
+              <figure>
+                <img src={item.logo} alt="" loading="lazy" onError={(e) => {
+                  (e.currentTarget.parentElement as HTMLElement).remove();
+                }} />
+              </figure>
+            )}
+            <header>
+              <h2><a href={`${base}/software/${item.id}`}>{highlight(item.name, query)}</a></h2>
+              <p>{highlight(item.shortDescription, query)}</p>
+            </header>
+            <footer>
+              <ul className="categories" aria-label="Categories">
+                {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
+              </ul>
+              {item.releaseDate && (() => {
+                const d = formatDate(item.releaseDate, locale);
+                return d ? <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time> : null;
+              })()}
+              {item.license && (
+                item.license.url
+                  ? <a href={item.license.url} className="license">{item.license.id}</a>
+                  : <span className="license">{item.license.id}</span>
+              )}
+            </footer>
+          </article>
+        ))}
+      </section>
     </>
   );
 };
