@@ -1,0 +1,267 @@
+/* base */
+body {
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  margin: 0;
+  padding: 8px;
+  color: #000;
+  background: #fff;
+}
+
+a { color: #00e; }
+a:visited { color: #551a8b; }
+
+main { max-width: 1000px; }
+
+nav[aria-label="Breadcrumb"] ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  gap: 0;
+  font-size: 11px;
+}
+nav[aria-label="Breadcrumb"] li + li::before {
+  content: " > ";
+  margin: 0 4px;
+  color: #828282;
+}
+
+/* catalog */
+.catalog-search {
+  position: relative;
+  margin-bottom: 4px;
+}
+.catalog-search input[type="search"] {
+  font: inherit;
+  width: 300px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+}
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 400px;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ccc;
+}
+.suggestions li {
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.suggestions li.selected {
+  background: #eef;
+}
+.suggestion-desc {
+  color: #828282;
+  font-size: 11px;
+}
+
+.catalog-filters {
+  margin-bottom: 8px;
+}
+.catalog-filters select {
+  font: inherit;
+  margin-right: 4px;
+}
+.catalog-filters output {
+  color: #828282;
+}
+
+.catalog-results article {
+  padding: 2px 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
+}
+.catalog-results article figure {
+  display: none;
+}
+.catalog-results article header {
+  display: inline;
+}
+.catalog-results article header h2 {
+  display: inline;
+  font-size: 13px;
+  font-weight: normal;
+  margin: 0;
+}
+.catalog-results article header p {
+  display: none;
+}
+.catalog-results article footer {
+  display: inline;
+  color: #828282;
+  font-size: 11px;
+}
+.catalog-results article footer::before {
+  content: " (";
+}
+.catalog-results article footer::after {
+  content: ")";
+}
+.catalog-results .categories {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.catalog-results .categories li {
+  display: inline;
+}
+.catalog-results .categories li + li::before {
+  content: ", ";
+}
+.catalog-results .license {
+  color: #828282;
+}
+.catalog-results time {
+  color: #828282;
+}
+
+/* detail */
+.software-detail header h1 {
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+.software-detail header h1 small {
+  font-weight: normal;
+  color: #828282;
+}
+.software-detail .short-description {
+  margin: 0 0 8px;
+}
+.software-detail .software-logo {
+  margin: 0 0 8px;
+  padding: 0;
+}
+.software-detail .software-logo img {
+  max-height: 64px;
+}
+.software-detail .categories {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.software-links {
+  margin-bottom: 8px;
+}
+.software-links a + a::before {
+  content: " | ";
+  color: #828282;
+  text-decoration: none;
+}
+
+.software-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 12px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.software-meta dt {
+  font-weight: bold;
+}
+.software-meta dd {
+  margin: 0;
+}
+
+.software-detail section {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #ccc;
+}
+.software-detail section h2 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+.software-detail section ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.software-used-by ul {
+  list-style: none;
+  padding: 0 !important;
+}
+.software-used-by li {
+  display: inline;
+}
+.software-used-by li + li::before {
+  content: " | ";
+  color: #828282;
+}
+
+.software-description {
+  max-width: 80ch;
+  line-height: 1.5;
+}
+.software-description img {
+  max-width: 100%;
+}
+
+/* lightbox */
+.screenshot-grid {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.screenshot-thumb {
+  padding: 0;
+  border: 1px solid #ccc;
+  background: none;
+  cursor: pointer;
+}
+.screenshot-thumb img {
+  max-height: 100px;
+  display: block;
+}
+
+dialog {
+  border: 1px solid #000;
+  padding: 0;
+  background: #000;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+dialog::backdrop {
+  background: rgba(0,0,0,0.7);
+}
+dialog img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  display: block;
+}
+dialog nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  padding: 0 4px;
+  pointer-events: none;
+}
+dialog nav button,
+#lightbox-close {
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid #000;
+  padding: 2px 6px;
+  cursor: pointer;
+  font: inherit;
+}
+#lightbox-close {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}

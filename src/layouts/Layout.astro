@@ -1,12 +1,13 @@
 ---
 import { getAbsoluteLocaleUrl } from 'astro:i18n';
-import '../themes/minimal/index.css';
+import { base } from '../lib/url.js';
 
 interface Props {
   title: string;
   breadcrumbs?: { label: string; href?: string }[];
 }
 
+const theme = import.meta.env.PUBLIC_THEME || 'default';
 const { title, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
 const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
@@ -19,6 +20,7 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <link rel="stylesheet" href={`${base}/themes/${theme}/index.css`} />
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
     <link rel="alternate" hreflang="x-default" href={enUrl} />

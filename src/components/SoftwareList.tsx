@@ -163,7 +163,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
                 onMouseEnter={() => setSelectedIdx(i)}
               >
-                <strong>{highlight(s.name, inputValue)}</strong>
+                <strong>{highlight(s.name, inputValue)}</strong>{" "}
                 <span className="suggestion-desc">{s.shortDescription}</span>
               </li>
             ))}
@@ -208,10 +208,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             <footer>
               <ul className="categories" aria-label="Categories">
                 {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
-              </ul>
+              </ul>{" "}
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
-                return d ? <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time> : null;
+                return d ? <><time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
               })()}
               {item.license && (
                 item.license.url
