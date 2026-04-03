@@ -1,9 +1,3 @@
-/**
- * Format a date string as a relative time (e.g. "3 days ago") for display,
- * with the full date as the <time> element's datetime attribute.
- *
- * Returns { datetime, relative, formatted } for use in templates.
- */
 export function formatDate(dateStr, locale = 'en') {
   if (!dateStr) return null;
 

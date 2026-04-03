@@ -1,0 +1,94 @@
+.catalog-search {
+  position: relative;
+  margin-bottom: 4px;
+}
+.catalog-search input[type="search"] {
+  font: inherit;
+  width: 300px;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+}
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 400px;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #ccc;
+}
+.suggestions li {
+  padding: 2px 4px;
+  cursor: pointer;
+}
+.suggestions li.selected {
+  background: #eef;
+}
+.suggestion-desc {
+  color: #828282;
+  font-size: 11px;
+}
+
+.catalog-filters {
+  margin-bottom: 8px;
+}
+.catalog-filters select {
+  font: inherit;
+  margin-right: 4px;
+}
+.catalog-filters output {
+  color: #828282;
+}
+
+.catalog-results article {
+  padding: 2px 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
+}
+.catalog-results article figure {
+  display: none;
+}
+.catalog-results article header {
+  display: inline;
+}
+.catalog-results article header h2 {
+  display: inline;
+  font-size: 13px;
+  font-weight: normal;
+  margin: 0;
+}
+.catalog-results article header p {
+  display: none;
+}
+.catalog-results article footer {
+  display: inline;
+  color: #828282;
+  font-size: 11px;
+}
+.catalog-results article footer::before {
+  content: " (";
+}
+.catalog-results article footer::after {
+  content: ")";
+}
+.catalog-results .categories {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.catalog-results .categories li {
+  display: inline;
+}
+.catalog-results .categories li + li::before {
+  content: ", ";
+}
+.catalog-results .license {
+  color: #828282;
+}
+.catalog-results time {
+  color: #828282;
+}
