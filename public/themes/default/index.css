@@ -310,24 +310,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   margin-bottom: 0.3rem;
 }
 
-.software-used-by ul {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  list-style: none;
-  padding: 0 !important;
-  margin: 0.5rem 0;
-}
-.software-used-by li {
-  font-size: 0.75rem;
-  background: #f0f0f0;
-  border-radius: 4px;
-  padding: 2px 8px;
-  text-transform: uppercase;
-}
-.software-used-by li + li::before {
-  content: none;
-}
 
 .software-description {
   max-width: none;

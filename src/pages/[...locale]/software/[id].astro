@@ -36,7 +36,6 @@ const license = await resolveLicense(pc.legal?.license);
 const features = desc.features ?? [];
 const languages = Object.keys(pc.description ?? {}).map(k => k.replace(/-.*/, ''));
 const platforms = pc.platforms ?? [];
-const usedBy = pc.usedBy ?? [];
 ---
 
 <Layout title={pc.name} breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software", href: base + "/software" }, { label: pc.name }]}>
@@ -59,6 +58,7 @@ const usedBy = pc.usedBy ?? [];
     <nav class="software-links" aria-label="Software links">
       {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
       {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
+      {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener">{t(locale, 'documentation')}</a>}
     </nav>
 
     <dl class="software-meta">
@@ -75,15 +75,6 @@ const usedBy = pc.usedBy ?? [];
         <h2>{t(locale, 'features')}</h2>
         <ul>
           {features.map((f) => <li>{f}</li>)}
-        </ul>
-      </section>
-    )}
-
-    {usedBy.length > 0 && (
-      <section class="software-used-by">
-        <h2>{t(locale, 'used_by')}</h2>
-        <ul>
-          {usedBy.map((u) => <li>{u}</li>)}
         </ul>
       </section>
     )}
