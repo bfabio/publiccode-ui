@@ -2,12 +2,14 @@
   "name": "publiccode-ui",
   "version": "2.0.0",
   "private": true,
+  "type": "module",
   "description": "publiccode-ui",
   "author": "Department for Digital Transformation - Presidency of the Council of Ministers of Italy",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -18,9 +20,15 @@
   },
   "devDependencies": {
     "@astrojs/react": "^5.0.2",
+    "@eslint/js": "^9.39.4",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "astro": "^6.1.3",
-    "typescript": "^4.6.3"
+    "eslint": "^9.39.4",
+    "eslint-plugin-astro": "^1.6.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "globals": "^17.4.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.0"
   }
 }
