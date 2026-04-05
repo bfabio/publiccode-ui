@@ -70,10 +70,11 @@ interface Labels {
   sortReleaseAsc: string;
   results: string;
   noResults: string;
+  clearFilters: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
@@ -199,6 +200,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="release_date_asc">{l.sortReleaseAsc}</option>
         </select>
         <output>{sorted.length} {l.results}</output>
+        {(query || category || status || audience) && (
+          <button type="button" className="clear-filters" onClick={() => {
+            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setAudience("");
+          }}>{l.clearFilters}</button>
+        )}
       </div>
 
       <section className="catalog-results">
