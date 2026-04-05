@@ -146,7 +146,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
           placeholder="Search software..."
-          autoFocus
           role="combobox"
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"

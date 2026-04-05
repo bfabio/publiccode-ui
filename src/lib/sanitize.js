@@ -3,6 +3,6 @@ export function safeUrl(url) {
   try {
     const parsed = new URL(url, 'https://placeholder.invalid');
     if (['http:', 'https:', 'mailto:'].includes(parsed.protocol)) return url;
-  } catch {}
+  } catch { /* invalid URL */ }
   return null;
 }
