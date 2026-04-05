@@ -25,7 +25,8 @@ const translations = {
     platforms: "Platforms",
     maintenance_type: "Maintenance",
     languages: "Languages",
-    used_by: "Used by",
+
+    documentation: "Documentation",
     source_code: "Source code",
     page_not_found: "Page not found",
   },
@@ -55,7 +56,8 @@ const translations = {
     platforms: "Piattaforme",
     maintenance_type: "Manutenzione",
     languages: "Lingue",
-    used_by: "Utilizzato da",
+
+    documentation: "Documentazione",
     source_code: "Codice sorgente",
     page_not_found: "Pagina non trovata",
   },

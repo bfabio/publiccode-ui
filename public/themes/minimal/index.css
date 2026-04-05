@@ -187,18 +187,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   padding-left: 20px;
 }
 
-.software-used-by ul {
-  list-style: none;
-  padding: 0 !important;
-}
-.software-used-by li {
-  display: inline;
-}
-.software-used-by li + li::before {
-  content: " | ";
-  color: #828282;
-}
-
 .software-description {
   max-width: 80ch;
   line-height: 1.5;
