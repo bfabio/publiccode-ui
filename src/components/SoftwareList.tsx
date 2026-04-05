@@ -39,16 +39,22 @@ interface SoftwareItem {
   intendedAudience: string[];
 }
 
-type SortBy = "name" | "release_date";
+type SortBy = "name_asc" | "name_desc" | "release_date_desc" | "release_date_asc";
 
 const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
   const sorted = [...items];
   switch (sortBy) {
-    case "name":
+    case "name_asc":
       sorted.sort((a, b) => a.name.localeCompare(b.name));
       break;
-    case "release_date":
+    case "name_desc":
+      sorted.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case "release_date_desc":
       sorted.sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+      break;
+    case "release_date_asc":
+      sorted.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
       break;
   }
   return sorted;
@@ -58,16 +64,18 @@ interface Labels {
   allCategories: string;
   allStatuses: string;
   allAudiences: string;
-  sortName: string;
-  sortRelease: string;
+  sortNameAsc: string;
+  sortNameDesc: string;
+  sortReleaseDesc: string;
+  sortReleaseAsc: string;
   results: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortName: "Name A-Z", sortRelease: "Newest release", results: "results" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
-  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name");
+  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [audience, setAudience] = useState(() => readParam("audience"));
@@ -109,7 +117,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [showSuggestions, suggestions, selectedIdx, base]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, audience, sort_by: sortBy === "name" ? "" : sortBy });
+    writeParams({ q: query, category, status, audience, sort_by: sortBy === "name_asc" ? "" : sortBy });
   }, [query, category, status, audience, sortBy]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
@@ -184,8 +192,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
-          <option value="name">{l.sortName}</option>
-          <option value="release_date">{l.sortRelease}</option>
+          <option value="name_asc">{l.sortNameAsc}</option>
+          <option value="name_desc">{l.sortNameDesc}</option>
+          <option value="release_date_desc">{l.sortReleaseDesc}</option>
+          <option value="release_date_asc">{l.sortReleaseAsc}</option>
         </select>
         <output>{sorted.length} {l.results}</output>
       </div>
