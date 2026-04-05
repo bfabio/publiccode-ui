@@ -69,10 +69,11 @@ interface Labels {
   sortReleaseDesc: string;
   sortReleaseAsc: string;
   results: string;
+  noResults: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
@@ -201,6 +202,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       </div>
 
       <section className="catalog-results">
+        {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {sorted.map((item) => (
           <article key={item.id}>
             {item.logo && (
