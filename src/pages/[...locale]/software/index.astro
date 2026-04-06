@@ -30,6 +30,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     license: license ? { id: license.id, name: license.name, url: license.url } : null,
     logo: resolveLogo(pc),
     developmentStatus: pc.developmentStatus ?? '',
+    softwareType: pc.softwareType ?? '',
     intendedAudience: pc.intendedAudience?.scope ?? [],
   };
 }));
@@ -49,5 +50,6 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     results: t(locale, 'results'),
     noResults: t(locale, 'no_results'),
     clearFilters: t(locale, 'clear_filters'),
+    allTypes: t(locale, 'all_types'),
   }} />
 </Layout>
