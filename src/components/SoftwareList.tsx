@@ -52,10 +52,18 @@ const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
       sorted.sort((a, b) => b.name.localeCompare(a.name));
       break;
     case "release_date_desc":
-      sorted.sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+      sorted.sort((a, b) => {
+        if (!a.releaseDate) return 1;
+        if (!b.releaseDate) return -1;
+        return b.releaseDate.localeCompare(a.releaseDate);
+      });
       break;
     case "release_date_asc":
-      sorted.sort((a, b) => a.releaseDate.localeCompare(b.releaseDate));
+      sorted.sort((a, b) => {
+        if (!a.releaseDate) return 1;
+        if (!b.releaseDate) return -1;
+        return a.releaseDate.localeCompare(b.releaseDate);
+      });
       break;
   }
   return sorted;
