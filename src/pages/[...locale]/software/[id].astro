@@ -65,6 +65,7 @@ const platforms = pc.platforms ?? [];
       {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
       {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
       {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.softwareType && <><dt>{t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
       {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
       {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
       {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}

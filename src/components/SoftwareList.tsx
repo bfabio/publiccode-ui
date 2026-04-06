@@ -36,6 +36,7 @@ interface SoftwareItem {
   license: { id: string; name: string; url: string | null } | null;
   logo: string | null;
   developmentStatus: string;
+  softwareType: string;
   intendedAudience: string[];
 }
 
@@ -71,15 +72,17 @@ interface Labels {
   results: string;
   noResults: string;
   clearFilters: string;
+  allTypes: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
+  const [softwareType, setSoftwareType] = useState(() => readParam("type"));
   const [audience, setAudience] = useState(() => readParam("audience"));
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
@@ -119,11 +122,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [showSuggestions, suggestions, selectedIdx, base]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, audience, sort_by: sortBy === "name_asc" ? "" : sortBy });
-  }, [query, category, status, audience, sortBy]);
+    writeParams({ q: query, category, status, type: softwareType, audience, sort_by: sortBy === "name_asc" ? "" : sortBy });
+  }, [query, category, status, softwareType, audience, sortBy]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
+  const allTypes = useMemo(() => [...new Set(items.map((i) => i.softwareType).filter(Boolean))].sort(), [items]);
   const allAudiences = useMemo(() => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(), [items]);
 
   const filtered = useMemo(() => {
@@ -138,9 +142,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     }
     if (category) result = result.filter((i) => i.categories.includes(category));
     if (status) result = result.filter((i) => i.developmentStatus === status);
+    if (softwareType) result = result.filter((i) => i.softwareType === softwareType);
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
     return result;
-  }, [items, query, category, status, audience]);
+  }, [items, query, category, status, softwareType, audience]);
 
   const sorted = useMemo(() => sortItems(filtered, sortBy), [filtered, sortBy]);
 
@@ -189,6 +194,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="">{l.allStatuses}</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
+        <select value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
+          <option value="">{l.allTypes}</option>
+          {allTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
         <select value={audience} onChange={(e) => setAudience(e.target.value)}>
           <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
@@ -200,9 +209,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="release_date_asc">{l.sortReleaseAsc}</option>
         </select>
         <output>{sorted.length} {l.results}</output>
-        {(query || category || status || audience) && (
+        {(query || category || status || softwareType || audience) && (
           <button type="button" className="clear-filters" onClick={() => {
-            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setAudience("");
+            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience("");
           }}>{l.clearFilters}</button>
         )}
       </div>
