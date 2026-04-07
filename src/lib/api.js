@@ -16,10 +16,14 @@ export async function fetchAllSoftware() {
     const json = await res.json();
 
     for (const item of json.data) {
-      items.push({
-        id: item.id,
-        publiccode: yaml.load(item.publiccodeYml),
-      });
+      let publiccode;
+      try {
+        publiccode = yaml.load(item.publiccodeYml);
+      } catch (e) {
+        console.warn(`Skipping ${item.id}: invalid YAML:`, e.message);
+        continue;
+      }
+      items.push({ id: item.id, publiccode });
     }
 
     next = json.links?.next
