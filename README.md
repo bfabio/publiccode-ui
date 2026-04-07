@@ -1,64 +1,70 @@
-<!-- markdownlint-disable no-inline-html -->
+<!-- markdownlint-disable no-inline-html first-line-h1 -->
 <p align="center">
-  <img width="200" src=".github/logo.png" />
+  <img width="200" src=".github/logo.png" alt="" />
 </p>
 <h1 align="center">
   publiccode-ui
 </h1>
 <p align="center">
-  A web frontend to search and view software having a <code>publiccode.yml</code> in their repo.
+  White label web frontend for browsing software catalogs by any
+  <a href="https://github.com/italia/developers-italia-api">software-catalog-api</a>
+  compatible API.
 </p>
-<p align="center">
-  As of now it gets data from <a href="https://github.com/italia/developers-italia-api">Developers Italia's software Catalog</a>.
-</p>
 
+Built with Astro. Fully static: all data is fetched at build time.
 
-## 🚀 Quick start
+## Quick start
 
-1.  **Clone the repo.**
+```shell
+git clone https://github.com/bfabio/publiccode-ui
+cd publiccode-ui
+npm install
+npm run dev
+```
 
-    Clone the repo locally with git.
+The dev server runs at <http://localhost:4321>.
 
-    ```shell
-    git clone https://github.com/italia/publiccode-ui
-    ```
+## Commands
 
-2.  **Start developing.**
+```shell
+npm run dev        # dev server
+npm run build      # production build
+npm run preview    # preview production build
+npm run typecheck  # type check without emitting
+```
 
-    Navigate into the directory and start it up.
+## Configuration
 
-    ```shell
-    cd publiccode-unnamed-ui
-    npm run develop
-    ```
+| Variable    | Default   | Description    |
+|-------------|-----------|----------------|
+| `BASE_PATH` | `/`       | URL base path  |
+| `THEME`     | `default` | UI theme       |
 
-3.  **Open the code and start customizing!**
+## Themes
 
-    The site is now running at http://localhost:8000!
+Themes live in `public/themes/{name}/index.css`. Set `THEME` at
+build time to switch:
 
-## 🔧 Customization
+```shell
+THEME=simple npm run build
+```
 
-### App name & logo
+Available themes:
 
-Configure the displayed name by editing `siteMetadata.title` in [`gatsby-config.ts`](gatsby-config.ts)
-
-You can also change the logo by replacing `logo-home.svg` and `logo-header.svg`
-in [`static/assets/inline/`](static/assets/inline/).
+- `default`
+- `simple`
+- `minimal`
 
 ## Contributing
 
-Here's the people who contributed
-
-<a href="https://github.com/italia/publiccode-unnamed-ui/graphs/contributors">
-  <img
-  src="https://contributors-img.web.app/image?repo=italia/publiccode-unnamed-ui"
-  />
-</a>
-
-Every contribution is welcome!
+Contributing is always appreciated.
+Feel free to open issues, fork or submit a Pull Request.
 
 ## License
 
-Copyright (c) 2022-present Presidenza del Consiglio dei Ministri
+Copyright (c) 2026-
 
-The source code is released under the BSD license (SPDX code: `BSD-3-Clause`)
+The source code is released under the BSD license (SPDX code: `BSD-3-Clause`).
+
+Attribution is preserved through the git history, see `git log` for a full
+list of contributors and their contributions.
