@@ -36,9 +36,9 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 }));
 ---
 
-<Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: "Home", href: base + "/" }, { label: "Software" }]}>
+<Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
   <h1>{t(locale, 'catalog')}</h1>
-  <p>{items.length} software</p>
+  <p>{items.length} {t(locale, 'software_count')}</p>
   <SoftwareList client:load items={items} base={base} locale={locale} labels={{
     allCategories: t(locale, 'all_categories'),
     allStatuses: t(locale, 'all_statuses'),
@@ -51,5 +51,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     noResults: t(locale, 'no_results'),
     clearFilters: t(locale, 'clear_filters'),
     allTypes: t(locale, 'all_types'),
+    searchPlaceholder: t(locale, 'search_placeholder'),
+    filters: t(locale, 'filters'),
   }} />
 </Layout>

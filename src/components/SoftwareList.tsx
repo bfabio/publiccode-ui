@@ -81,10 +81,12 @@ interface Labels {
   noResults: string;
   clearFilters: string;
   allTypes: string;
+  searchPlaceholder: string;
+  filters: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
@@ -168,7 +170,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           onKeyDown={handleKeyDown}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-          placeholder="Search software..."
+          placeholder={l.searchPlaceholder}
           role="combobox"
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"
@@ -193,7 +195,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         )}
       </search>
 
-      <div className="catalog-filters" role="group" aria-label="Filters">
+      <div className="catalog-filters" role="group" aria-label={l.filters}>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
