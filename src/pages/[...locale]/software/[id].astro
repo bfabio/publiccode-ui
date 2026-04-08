@@ -3,22 +3,11 @@ import Layout from '../../../layouts/Layout.astro';
 import { fetchAllSoftware } from '../../../lib/api.js';
 import { resolveLogo, absoluteUrl } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
-import { Marked } from 'marked';
+import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
-const marked = new Marked({
-  renderer: {
-    html() { return ''; },
-    link({ href, title, text }) {
-      const safe = safeUrl(href);
-      if (!safe) return text;
-      const titleAttr = title ? ` title="${title}"` : '';
-      return `<a href="${safe}"${titleAttr}>${text}</a>`;
-    },
-  },
-});
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -37,7 +26,7 @@ const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
 const logo = resolveLogo(pc);
-const longDescriptionHtml = desc.longDescription ? marked.parse(desc.longDescription) : null;
+const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription) : null;
 const screenshots = (desc.screenshots ?? [])
   .map((s) => absoluteUrl(s, pc.url))
   .filter(Boolean);
