@@ -160,13 +160,18 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {sorted.map((item) => (
           <article key={item.id}>
-            {item.logo && (
-              <figure>
-                <img src={item.logo} alt="" loading="lazy" onError={(e) => {
-                  (e.currentTarget.parentElement as HTMLElement).remove();
-                }} />
-              </figure>
-            )}
+            <figure className="software-thumb">
+              <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
+              {item.logo && (
+                <img src={item.logo} alt="" loading="lazy"
+                  onLoad={(e) => {
+                    const el = e.currentTarget.previousElementSibling as HTMLElement | null;
+                    if (el) el.style.visibility = 'hidden';
+                  }}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              )}
+            </figure>
             <header>
               <h2><a href={`${base}/software/${item.id}`}>{highlight(item.name, query)}</a></h2>
               <p>{highlight(item.shortDescription, query)}</p>
