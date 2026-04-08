@@ -32,3 +32,24 @@ const items = allSoftware.map((s) => {
     <p><a href={`${base}/software/`}>{t(locale, 'browse_all')}</a></p>
   </section>
 </Layout>
+
+<style>
+  .home-hero {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.5rem;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+  .home-hero :global(.catalog-search) {
+    width: 100%;
+  }
+  .home-hero :global(.catalog-search input) {
+    width: 100%;
+  }
+</style>
