@@ -31,6 +31,11 @@ const translations = {
     documentation: "Documentation",
     source_code: "Source code",
     page_not_found: "Page not found",
+    home: "Home",
+    software: "Software",
+    software_count: "software",
+    search_placeholder: "Search software...",
+    filters: "Filters",
   },
   it: {
     catalog: "Catalogo software",
@@ -64,6 +69,11 @@ const translations = {
     documentation: "Documentazione",
     source_code: "Codice sorgente",
     page_not_found: "Pagina non trovata",
+    home: "Home",
+    software: "Software",
+    software_count: "software",
+    search_placeholder: "Cerca software...",
+    filters: "Filtri",
   },
 };
 
