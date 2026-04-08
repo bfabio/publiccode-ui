@@ -111,17 +111,30 @@ nav[aria-label="Breadcrumb"] li + li::before {
   contain-intrinsic-size: auto 80px;
 }
 .catalog-results article figure {
+  position: relative;
   margin: 0;
   width: 64px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.catalog-results article figure .logo-placeholder {
+  font-size: 28px;
+  font-weight: 600;
+  color: #888;
 }
 .catalog-results article figure img {
+  position: absolute;
+  inset: 0;
   width: 64px;
   height: 64px;
   object-fit: contain;
+  background: #f0f0f0;
 }
 /* hide logo column when no figure is present */
 .catalog-results article:not(:has(figure)) {
@@ -192,12 +205,30 @@ nav[aria-label="Breadcrumb"] li + li::before {
   flex-wrap: wrap;
 }
 .software-detail .software-logo {
+  position: relative;
   margin: 0;
   padding: 0;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.software-detail .software-logo .logo-placeholder {
+  font-size: 48px;
+  font-weight: 600;
+  color: #888;
 }
 .software-detail .software-logo img {
-  max-height: 100px;
-  border-radius: 8px;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f0f0f0;
 }
 .software-detail header h1 {
   margin: 0 0 0.25rem;

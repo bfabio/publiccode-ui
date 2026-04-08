@@ -40,11 +40,14 @@ const platforms = pc.platforms ?? [];
 <Layout title={pc.name} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
   <article class="software-detail">
     <header>
-      {logo && (
-        <figure class="software-logo">
-          <img src={logo} alt="" fetchpriority="high" onerror="this.parentElement.remove()" />
-        </figure>
-      )}
+      <figure class="software-logo">
+        <span class="logo-placeholder" aria-hidden="true">{pc.name.charAt(0).toUpperCase()}</span>
+        {logo && (
+          <img src={logo} alt="" fetchpriority="high"
+            onload="this.previousElementSibling.style.visibility='hidden'"
+            onerror="this.style.display='none'" />
+        )}
+      </figure>
       <h1>{pc.name} {pc.softwareVersion && <small>{pc.softwareVersion}</small>}</h1>
       <p class="short-description">{desc.shortDescription}</p>
       {pc.categories?.length > 0 && (

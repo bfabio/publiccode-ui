@@ -142,6 +142,9 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .software-detail .software-logo img {
   max-height: 64px;
 }
+.software-detail .software-logo .logo-placeholder {
+  display: none;
+}
 .software-detail .categories {
   list-style: none;
   padding: 0;
