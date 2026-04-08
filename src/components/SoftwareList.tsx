@@ -1,19 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { formatDate } from "../lib/date.js";
+import { SearchBox } from "./SearchBox";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
   const idx = text.toLowerCase().indexOf(query.toLowerCase());
   if (idx === -1) return text;
   return <>{text.slice(0, idx)}<mark>{text.slice(idx, idx + query.length)}</mark>{text.slice(idx + query.length)}</>;
-}
-
-function rankMatch(item: SoftwareItem, q: string): number {
-  const name = item.name.toLowerCase();
-  if (name === q) return 3;
-  if (name.startsWith(q)) return 2;
-  if (name.includes(q)) return 1;
-  return 0;
 }
 
 const readParam = (key: string) =>
@@ -94,42 +87,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [status, setStatus] = useState(() => readParam("status"));
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
   const [audience, setAudience] = useState(() => readParam("audience"));
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIdx, setSelectedIdx] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const MAX_SUGGESTIONS = 7;
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
     return () => clearTimeout(id);
   }, [inputValue]);
-
-  const suggestions = useMemo(() => {
-    if (!inputValue || inputValue.length < 2) return [];
-    const q = inputValue.toLowerCase();
-    return items
-      .filter((i) => i.name.toLowerCase().includes(q) || i.shortDescription.toLowerCase().includes(q))
-      .sort((a, b) => rankMatch(b, q) - rankMatch(a, q))
-      .slice(0, MAX_SUGGESTIONS);
-  }, [inputValue, items]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      setInputValue(""); setQuery(""); setShowSuggestions(false); inputRef.current?.blur();
-      return;
-    }
-    if (!showSuggestions || suggestions.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIdx((i) => (i + 1) % suggestions.length);
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIdx((i) => (i - 1 + suggestions.length) % suggestions.length);
-    } else if (e.key === "Enter" && selectedIdx >= 0) {
-      e.preventDefault();
-      window.location.href = `${base}/software/${suggestions[selectedIdx].id}`;
-    }
-  }, [showSuggestions, suggestions, selectedIdx, base]);
 
   useEffect(() => {
     writeParams({ q: query, category, status, type: softwareType, audience, sort_by: sortBy === "name_asc" ? "" : sortBy });
@@ -161,39 +123,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
-      <search className="catalog-search">
-        <input
-          ref={inputRef}
-          type="search"
-          value={inputValue}
-          onChange={(e) => { setInputValue(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => setShowSuggestions(true)}
-          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-          placeholder={l.searchPlaceholder}
-          role="combobox"
-          aria-expanded={showSuggestions && suggestions.length > 0}
-          aria-autocomplete="list"
-          aria-controls="search-suggestions"
-        />
-        {showSuggestions && suggestions.length > 0 && (
-          <ul id="search-suggestions" role="listbox" className="suggestions">
-            {suggestions.map((s, i) => (
-              <li
-                key={s.id}
-                role="option"
-                aria-selected={i === selectedIdx}
-                className={i === selectedIdx ? "selected" : ""}
-                onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
-                onMouseEnter={() => setSelectedIdx(i)}
-              >
-                <strong>{highlight(s.name, inputValue)}</strong>{" "}
-                <span className="suggestion-desc">{s.shortDescription}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </search>
+      <SearchBox items={items} base={base} value={inputValue} onChange={setInputValue} placeholder={l.searchPlaceholder} />
 
       <div className="catalog-filters" role="group" aria-label={l.filters}>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
