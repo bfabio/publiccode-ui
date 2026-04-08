@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchAllSoftware } from '../../lib/api.js';
+import { localizeDescription, t } from '../../lib/i18n.js';
+import { base } from '../../lib/url.js';
+import { SearchBox } from '../../components/SearchBox';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined } },
+    { params: { locale: 'it' } },
+  ];
+}
+
+const locale = Astro.currentLocale ?? 'en';
+const allSoftware = await fetchAllSoftware();
+
+const items = allSoftware.map((s) => {
+  const desc = localizeDescription(s.publiccode.description, locale);
+  return {
+    id: s.id,
+    name: s.publiccode.name,
+    shortDescription: desc.shortDescription ?? '',
+  };
+});
+---
+
+<Layout title={t(locale, 'catalog')}>
+  <section class="home-hero">
+    <h1>{t(locale, 'catalog')}</h1>
+    <SearchBox client:load items={items} base={base} placeholder={t(locale, 'search_placeholder')} />
+    <p><a href={`${base}/software/`}>{t(locale, 'browse_all')}</a></p>
+  </section>
+</Layout>
