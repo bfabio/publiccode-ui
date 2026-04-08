@@ -7,7 +7,7 @@ interface Props {
   breadcrumbs?: { label: string; href?: string }[];
 }
 
-const theme = import.meta.env.PUBLIC_THEME || 'default';
+const theme = import.meta.env.THEME || 'default';
 const { title, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
 const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
