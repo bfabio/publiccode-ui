@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { formatDate } from "../lib/date.js";
-import { SearchBox } from "./SearchBox";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -136,7 +135,15 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
-      <SearchBox items={items} base={base} value={inputValue} onChange={setInputValue} placeholder={l.searchPlaceholder} />
+      <div className="catalog-search">
+        <input
+          type="search"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder={l.searchPlaceholder}
+          aria-label={l.searchPlaceholder}
+        />
+      </div>
 
       <div className="catalog-filters" role="group" aria-label={l.filters}>
         <select aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
