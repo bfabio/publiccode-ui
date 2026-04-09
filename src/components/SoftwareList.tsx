@@ -120,7 +120,19 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     return result;
   }, [items, query, category, status, softwareType, audience]);
 
-  const sorted = useMemo(() => sortItems(filtered, sortBy), [filtered, sortBy]);
+  const sorted = useMemo(() => {
+    if (query) {
+      const q = query.toLowerCase();
+      const rank = (i: SoftwareItem) => {
+        const n = i.name.toLowerCase();
+        if (n === q) return 0;
+        if (n.startsWith(q)) return 1;
+        return 2;
+      };
+      return [...filtered].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+    }
+    return sortItems(filtered, sortBy);
+  }, [filtered, sortBy, query]);
 
   return (
     <>
