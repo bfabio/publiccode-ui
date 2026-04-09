@@ -76,10 +76,11 @@ interface Labels {
   allTypes: string;
   searchPlaceholder: string;
   filters: string;
+  sortBy: string;
 }
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
@@ -126,23 +127,23 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       <SearchBox items={items} base={base} value={inputValue} onChange={setInputValue} placeholder={l.searchPlaceholder} />
 
       <div className="catalog-filters" role="group" aria-label={l.filters}>
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select aria-label={l.allStatuses} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">{l.allStatuses}</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
+        <select aria-label={l.allTypes} value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
           <option value="">{l.allTypes}</option>
           {allTypes.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
-        <select value={audience} onChange={(e) => setAudience(e.target.value)}>
+        <select aria-label={l.allAudiences} value={audience} onChange={(e) => setAudience(e.target.value)}>
           <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+        <select aria-label={l.sortBy} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
           <option value="name_asc">{l.sortNameAsc}</option>
           <option value="name_desc">{l.sortNameDesc}</option>
           <option value="release_date_desc">{l.sortReleaseDesc}</option>
