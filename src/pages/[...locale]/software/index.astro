@@ -39,7 +39,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 <Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
   <h1>{t(locale, 'catalog')}</h1>
   <p>{items.length} {t(locale, 'software_count')}</p>
-  <SoftwareList client:load items={items} base={base} locale={locale} labels={{
+  <SoftwareList client:visible items={items} base={base} locale={locale} labels={{
     allCategories: t(locale, 'all_categories'),
     allStatuses: t(locale, 'all_statuses'),
     allAudiences: t(locale, 'all_audiences'),

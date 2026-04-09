@@ -9,4 +9,17 @@ export default defineConfig({
     defaultLocale: "en",
     locales: ["en", "it"],
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("SearchBox") || id.includes("SoftwareList")) {
+              return "catalog";
+            }
+          },
+        },
+      },
+    },
+  },
 });
