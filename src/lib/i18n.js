@@ -36,6 +36,7 @@ const translations = {
     software_count: "software",
     search_placeholder: "Search software...",
     filters: "Filters",
+    sort_by: "Sort by",
     browse_all: "Browse all software",
   },
   it: {
@@ -75,6 +76,7 @@ const translations = {
     software_count: "software",
     search_placeholder: "Cerca software...",
     filters: "Filtri",
+    sort_by: "Ordina per",
     browse_all: "Sfoglia tutti i software",
   },
 };
