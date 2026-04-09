@@ -29,6 +29,7 @@ const translations = {
     languages: "Languages",
 
     documentation: "Documentation",
+    api_documentation: "API documentation",
     source_code: "Source code",
     page_not_found: "Page not found",
     home: "Home",
@@ -69,6 +70,7 @@ const translations = {
     languages: "Lingue",
 
     documentation: "Documentazione",
+    api_documentation: "Documentazione API",
     source_code: "Codice sorgente",
     page_not_found: "Pagina non trovata",
     home: "Home",

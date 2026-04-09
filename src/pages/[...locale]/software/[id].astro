@@ -61,6 +61,7 @@ const platforms = pc.platforms ?? [];
       {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
       {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
       {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener">{t(locale, 'documentation')}</a>}
+      {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener">{t(locale, 'api_documentation')}</a>}
     </nav>
 
     <dl class="software-meta">
