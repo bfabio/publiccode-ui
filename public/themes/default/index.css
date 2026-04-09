@@ -139,8 +139,6 @@ h2 {
 /* ── breadcrumb ── */
 
 nav[aria-label="Breadcrumb"] {
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-subtle);
   padding: 0 2rem;
 }
 nav[aria-label="Breadcrumb"] ol {
