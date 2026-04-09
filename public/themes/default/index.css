@@ -223,6 +223,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-size: 14px;
   font-weight: 510;
   color: var(--text-secondary);
+  text-align: left;
 }
 .suggestions li.selected {
   background: var(--surface-btn-hover);
