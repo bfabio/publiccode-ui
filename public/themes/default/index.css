@@ -188,6 +188,7 @@ h2 {
 
 nav[aria-label="Breadcrumb"] {
   padding: 0 2rem;
+  margin-bottom: 1.5rem;
 }
 nav[aria-label="Breadcrumb"] ol {
   list-style: none;
@@ -444,14 +445,21 @@ nav[aria-label="Breadcrumb"] li + li::before {
 /* ── detail: header ── */
 
 .software-detail header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
+.software-detail header > div { flex: 1; min-width: 0; }
 .software-detail .software-logo {
   position: relative;
-  margin: 0 0 1rem;
-  padding: 0;
-  width: 64px;
-  height: 64px;
+  margin: 0;
+  padding: 5px;
+  box-sizing: border-box;
+  height: 5rem;
+  width: 5rem;
+  max-width: 12rem;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -460,14 +468,16 @@ nav[aria-label="Breadcrumb"] li + li::before {
   overflow: hidden;
 }
 .software-detail .software-logo .logo-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 32px;
   font-weight: 510;
   color: var(--text-tertiary);
   letter-spacing: -0.5px;
 }
 .software-detail .software-logo img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -517,7 +527,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .software-links {
   display: flex;
   gap: 8px;
-  margin: 1.5rem 0;
+  margin: 1rem 0 0;
 }
 .software-links a {
   display: inline-flex;
