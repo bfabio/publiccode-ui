@@ -1,14 +1,17 @@
 import yaml from 'js-yaml';
 
-const BASE_URL = 'https://api.developers.italia.it/v1';
+const API_URL = process.env.API_URL;
+
+export const apiConfigured = !!API_URL;
 
 let cache = null;
 
 export async function fetchAllSoftware() {
+  if (!API_URL) return [];
   if (cache) return cache;
 
   const items = [];
-  let next = `${BASE_URL}/software`;
+  let next = `${API_URL}/software`;
 
   while (next) {
     const res = await fetch(next);
@@ -27,7 +30,7 @@ export async function fetchAllSoftware() {
     }
 
     next = json.links?.next
-      ? `${BASE_URL}/software${json.links.next}`
+      ? `${API_URL}/software${json.links.next}`
       : null;
   }
 

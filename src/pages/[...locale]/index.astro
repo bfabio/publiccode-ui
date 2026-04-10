@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { fetchAllSoftware } from '../../lib/api.js';
+import SetupRequired from '../../components/SetupRequired.astro';
+import { fetchAllSoftware, apiConfigured } from '../../lib/api.js';
 import { localizeDescription, t } from '../../lib/i18n.js';
 import { base } from '../../lib/url.js';
 import { SearchBox } from '../../components/SearchBox';
@@ -25,6 +26,7 @@ const items = allSoftware.map((s) => {
 });
 ---
 
+{apiConfigured ? (
 <Layout title={t(locale, 'catalog')}>
   <section class="home-hero">
     <h1>{t(locale, 'catalog')}</h1>
@@ -32,6 +34,9 @@ const items = allSoftware.map((s) => {
     <p><a href={`${base}/software/`}>{t(locale, 'browse_all')}</a></p>
   </section>
 </Layout>
+) : (
+<SetupRequired />
+)}
 
 <style>
   .home-hero {
