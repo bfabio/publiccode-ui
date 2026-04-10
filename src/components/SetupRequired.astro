@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Setup required">
+  <section class="setup-required">
+    <div class="setup-icon" aria-hidden="true">⚙</div>
+    <h1>API_URL not set</h1>
+    <p>Point the catalog at a <a href="https://github.com/italia/software-catalog-api">software catalog API</a> to get started.</p>
+    <pre><code>API_URL=https://api.example.com/v1 npm run build</code></pre>
+  </section>
+</Layout>

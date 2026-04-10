@@ -1,6 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import { fetchAllSoftware } from '../../../lib/api.js';
+import SetupRequired from '../../../components/SetupRequired.astro';
+import { fetchAllSoftware, apiConfigured } from '../../../lib/api.js';
 import { resolveLogo } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
@@ -36,6 +37,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 }));
 ---
 
+{apiConfigured ? (
 <Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
   <h1>{t(locale, 'catalog')}</h1>
   <p>{items.length} {t(locale, 'software_count')}</p>
@@ -56,3 +58,6 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     sortBy: t(locale, 'sort_by'),
   }} />
 </Layout>
+) : (
+<SetupRequired />
+)}
