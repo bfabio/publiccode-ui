@@ -339,6 +339,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 
 .catalog-results article {
+  position: relative;
   display: grid;
   grid-template-columns: 48px 1fr auto;
   gap: 1rem;
@@ -389,6 +390,15 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-results article header h2 a {
   color: var(--text-primary);
 }
+.catalog-results article header h2 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+}
+.catalog-results article:has(h2 a:hover) {
+  background: var(--surface-btn);
+}
 .catalog-results article header h2 a:hover {
   color: var(--accent-bright);
 }
@@ -399,6 +409,8 @@ nav[aria-label="Breadcrumb"] li + li::before {
   line-height: 1.5;
 }
 .catalog-results article footer {
+  position: relative;
+  z-index: 1;
   font-size: 13px;
   color: var(--text-quaternary);
   white-space: nowrap;
