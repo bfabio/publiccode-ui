@@ -44,25 +44,26 @@ const platforms = pc.platforms ?? [];
         <span class="logo-placeholder" aria-hidden="true">{pc.name.charAt(0).toUpperCase()}</span>
         {logo && (
           <img src={logo} alt="" fetchpriority="high"
-            onload="this.previousElementSibling.style.visibility='hidden'"
+            onload="this.previousElementSibling.style.display='none'"
             onerror="this.style.display='none'" />
         )}
       </figure>
-      <h1>{pc.name} {pc.softwareVersion && <small>{pc.softwareVersion}</small>}</h1>
-      <p class="short-description">{desc.shortDescription}</p>
-      {pc.categories?.length > 0 && (
-        <ul class="categories" aria-label="Categories">
-          {pc.categories.map((c) => <li><a href={`${base}/software?category=${c}`}>{c}</a></li>)}
-        </ul>
-      )}
+      <div>
+        <h1>{pc.name} {pc.softwareVersion && <small>{pc.softwareVersion}</small>}</h1>
+        <p class="short-description">{desc.shortDescription}</p>
+        {pc.categories?.length > 0 && (
+          <ul class="categories" aria-label="Categories">
+            {pc.categories.map((c) => <li><a href={`${base}/software?category=${c}`}>{c}</a></li>)}
+          </ul>
+        )}
+        <nav class="software-links" aria-label="Software links">
+          {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
+          {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
+          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener">{t(locale, 'documentation')}</a>}
+          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener">{t(locale, 'api_documentation')}</a>}
+        </nav>
+      </div>
     </header>
-
-    <nav class="software-links" aria-label="Software links">
-      {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
-      {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
-      {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener">{t(locale, 'documentation')}</a>}
-      {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener">{t(locale, 'api_documentation')}</a>}
-    </nav>
 
     <dl class="software-meta">
       {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
