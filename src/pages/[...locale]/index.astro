@@ -27,7 +27,7 @@ const items = allSoftware.map((s) => {
 ---
 
 {apiConfigured ? (
-<Layout title={t(locale, 'catalog')}>
+<Layout title={t(locale, 'catalog')} description={t(locale, 'catalog_description')}>
   <section class="home-hero">
     <h1>{t(locale, 'catalog')}</h1>
     <SearchBox client:load items={items} base={base} placeholder={t(locale, 'search_placeholder')} />

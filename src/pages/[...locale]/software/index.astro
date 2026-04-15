@@ -44,7 +44,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 ---
 
 {apiConfigured ? (
-<Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
+<Layout title={t(locale, 'catalog')} description={t(locale, 'catalog_description')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
   <h1>{t(locale, 'catalog')}</h1>
   <SoftwareList client:visible items={items} base={base} locale={locale}
     catalogs={multiCatalog ? catalogs : undefined}
