@@ -222,12 +222,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               </ul>{" "}
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
-                return d ? <><time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
+                return d ? <><i className="fa-regular fa-calendar" /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
               })()}
               {item.license && (
                 item.license.url
-                  ? <a href={item.license.url} className="license">{item.license.id}</a>
-                  : <span className="license">{item.license.id}</span>
+                  ? <a href={item.license.url} className="license"><i className="fa-solid fa-gavel" /> {item.license.id}</a>
+                  : <span className="license"><i className="fa-solid fa-gavel" /> {item.license.id}</span>
               )}
             </footer>
           </article>

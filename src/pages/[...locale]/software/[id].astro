@@ -64,28 +64,28 @@ const platforms = pc.platforms ?? [];
           </ul>
         )}
         <nav class="software-links" aria-label="Software links">
-          {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener">{t(locale, 'source_code')}</a>}
-          {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener">{t(locale, 'website')}</a>}
-          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener">{t(locale, 'documentation')}</a>}
-          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener">{t(locale, 'api_documentation')}</a>}
+          {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener"><i class="fa-solid fa-code-branch"></i> {t(locale, 'source_code')}</a>}
+          {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener"><i class="fa-solid fa-globe"></i> {t(locale, 'website')}</a>}
+          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener"><i class="fa-solid fa-book"></i> {t(locale, 'documentation')}</a>}
+          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener"><i class="fa-solid fa-file-code"></i> {t(locale, 'api_documentation')}</a>}
         </nav>
       </div>
     </header>
 
     <dl class="software-meta">
-      {multiCatalog && catalogName && <><dt>{t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
-      {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
-      {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
-      {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
-      {pc.softwareType && <><dt>{t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
-      {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
-      {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
-      {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
+      {multiCatalog && catalogName && <><dt><i class="fa-solid fa-layer-group"></i> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
+      {license && <><dt><i class="fa-solid fa-gavel"></i> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
+      {release && <><dt><i class="fa-regular fa-calendar"></i> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
+      {pc.developmentStatus && <><dt><i class="fa-solid fa-circle-info"></i> {t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.softwareType && <><dt><i class="fa-solid fa-cube"></i> {t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
+      {pc.maintenance?.type && <><dt><i class="fa-solid fa-wrench"></i> {t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
+      {platforms.length > 0 && <><dt><i class="fa-solid fa-desktop"></i> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
+      {languages.length > 0 && <><dt><i class="fa-solid fa-language"></i> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
     {features.length > 0 && (
       <section class="software-features">
-        <h2>{t(locale, 'features')}</h2>
+        <h2><i class="fa-solid fa-list-check"></i> {t(locale, 'features')}</h2>
         <ul>
           {features.map((f) => <li>{f}</li>)}
         </ul>
@@ -94,7 +94,7 @@ const platforms = pc.platforms ?? [];
 
     {screenshots.length > 0 && (
       <section class="software-screenshots">
-        <h2>{t(locale, 'screenshots')}</h2>
+        <h2><i class="fa-solid fa-images"></i> {t(locale, 'screenshots')}</h2>
         <div class="screenshot-grid">
           {screenshots.map((src, i) => (
             <button type="button" data-index={i} class="screenshot-thumb">
@@ -115,14 +115,14 @@ const platforms = pc.platforms ?? [];
 
     {longDescriptionHtml && (
       <section class="software-description">
-        <h2>{t(locale, 'description')}</h2>
+        <h2><i class="fa-solid fa-align-left"></i> {t(locale, 'description')}</h2>
         <div set:html={longDescriptionHtml} />
       </section>
     )}
 
     {pc.maintenance?.contacts?.length > 0 && (
       <section class="software-contacts">
-        <h2>{t(locale, 'contacts')}</h2>
+        <h2><i class="fa-solid fa-address-book"></i> {t(locale, 'contacts')}</h2>
         <ul>
           {pc.maintenance.contacts.map((c) => (
             <li>
