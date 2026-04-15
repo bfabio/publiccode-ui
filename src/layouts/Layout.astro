@@ -8,12 +8,13 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 
 interface Props {
   title: string;
+  description?: string;
   breadcrumbs?: { label: string; href?: string }[];
 }
 
 const themes = ['default', 'minimal', 'simple'];
 const defaultTheme = import.meta.env.THEME || 'default';
-const { title, breadcrumbs = [] } = Astro.props;
+const { title, description, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
 const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
 const enUrl = getAbsoluteLocaleUrl('en', routePath);
@@ -25,6 +26,7 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
     <script is:inline define:vars={{ base, defaultTheme }}>
       const saved = localStorage.getItem('theme') || defaultTheme;
       document.write(`<link rel="stylesheet" id="theme-css" href="${base}/themes/${saved}/index.css" />`);
