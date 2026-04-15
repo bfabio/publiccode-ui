@@ -30,6 +30,14 @@ interface SoftwareItem {
   developmentStatus: string;
   softwareType: string;
   intendedAudience: string[];
+  catalogSlug: string | null;
+  catalogName: string | null;
+}
+
+interface CatalogInfo {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 type SortBy = "name_asc" | "name_desc" | "release_date_desc" | "release_date_asc";
@@ -65,6 +73,7 @@ interface Labels {
   allCategories: string;
   allStatuses: string;
   allAudiences: string;
+  allCatalogs?: string;
   sortNameAsc: string;
   sortNameDesc: string;
   sortReleaseDesc: string;
@@ -78,7 +87,7 @@ interface Labels {
   sortBy: string;
 }
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string }> = ({ items, base, labels, locale = 'en' }) => {
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[] }> = ({ items, base, labels, locale = 'en', catalogs }) => {
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
@@ -87,6 +96,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [status, setStatus] = useState(() => readParam("status"));
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
   const [audience, setAudience] = useState(() => readParam("audience"));
+  const [catalog, setCatalog] = useState(() => readParam("catalog"));
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
@@ -94,8 +104,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, sort_by: sortBy === "name_asc" ? "" : sortBy });
-  }, [query, category, status, softwareType, audience, sortBy]);
+    writeParams({ q: query, category, status, type: softwareType, audience, catalog, sort_by: sortBy === "name_asc" ? "" : sortBy });
+  }, [query, category, status, softwareType, audience, catalog, sortBy]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
@@ -116,8 +126,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (status) result = result.filter((i) => i.developmentStatus === status);
     if (softwareType) result = result.filter((i) => i.softwareType === softwareType);
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
+    if (catalog) result = result.filter((i) => i.catalogSlug === catalog);
     return result;
-  }, [items, query, category, status, softwareType, audience]);
+  }, [items, query, category, status, softwareType, audience, catalog]);
 
   const sorted = useMemo(() => {
     if (query) {
@@ -146,6 +157,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       </div>
 
       <div className="catalog-filters" role="group" aria-label={l.filters}>
+        {catalogs && (
+          <select aria-label={l.allCatalogs ?? "All catalogs"} value={catalog} onChange={(e) => setCatalog(e.target.value)}>
+            <option value="">{l.allCatalogs ?? "All catalogs"}</option>
+            {catalogs.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+          </select>
+        )}
         <select aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -169,9 +186,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="release_date_asc">{l.sortReleaseAsc}</option>
         </select>
         <output>{sorted.length} {l.results}</output>
-        {(query || category || status || softwareType || audience) && (
+        {(query || category || status || softwareType || audience || catalog) && (
           <button type="button" className="clear-filters" onClick={() => {
-            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience("");
+            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog("");
           }}>{l.clearFilters}</button>
         )}
       </div>
@@ -197,6 +214,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
+              {catalogs && item.catalogName && (
+                <span className="catalog-badge">{item.catalogName}</span>
+              )}
               <ul className="categories" aria-label="Categories">
                 {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
               </ul>{" "}

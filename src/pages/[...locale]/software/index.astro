@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import SetupRequired from '../../../components/SetupRequired.astro';
-import { fetchAllSoftware, apiConfigured } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, apiConfigured } from '../../../lib/api.js';
 import { resolveLogo } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
@@ -17,11 +17,15 @@ export function getStaticPaths() {
 
 const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
+const catalogs = await fetchCatalogs();
+const multiCatalog = catalogs.length > 1;
+const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
 
 const items = await Promise.all(allSoftware.map(async (s) => {
   const pc = s.publiccode;
   const desc = localizeDescription(pc.description, locale);
   const license = await resolveLicense(pc.legal?.license);
+  const cat = catalogMap[s.catalogId];
   return {
     id: s.id,
     name: pc.name,
@@ -33,6 +37,8 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     developmentStatus: pc.developmentStatus ?? '',
     softwareType: pc.softwareType ?? '',
     intendedAudience: pc.intendedAudience?.scope ?? [],
+    catalogSlug: cat?.slug ?? null,
+    catalogName: cat?.name ?? null,
   };
 }));
 ---
@@ -40,23 +46,25 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 {apiConfigured ? (
 <Layout title={t(locale, 'catalog')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
   <h1>{t(locale, 'catalog')}</h1>
-  <p>{items.length} {t(locale, 'software_count')}</p>
-  <SoftwareList client:visible items={items} base={base} locale={locale} labels={{
-    allCategories: t(locale, 'all_categories'),
-    allStatuses: t(locale, 'all_statuses'),
-    allAudiences: t(locale, 'all_audiences'),
-    sortNameAsc: t(locale, 'sort_name_asc'),
-    sortNameDesc: t(locale, 'sort_name_desc'),
-    sortReleaseDesc: t(locale, 'sort_release_desc'),
-    sortReleaseAsc: t(locale, 'sort_release_asc'),
-    results: t(locale, 'results'),
-    noResults: t(locale, 'no_results'),
-    clearFilters: t(locale, 'clear_filters'),
-    allTypes: t(locale, 'all_types'),
-    searchPlaceholder: t(locale, 'search_placeholder'),
-    filters: t(locale, 'filters'),
-    sortBy: t(locale, 'sort_by'),
-  }} />
+  <SoftwareList client:visible items={items} base={base} locale={locale}
+    catalogs={multiCatalog ? catalogs : undefined}
+    labels={{
+      allCategories: t(locale, 'all_categories'),
+      allStatuses: t(locale, 'all_statuses'),
+      allAudiences: t(locale, 'all_audiences'),
+      allCatalogs: t(locale, 'all_catalogs'),
+      sortNameAsc: t(locale, 'sort_name_asc'),
+      sortNameDesc: t(locale, 'sort_name_desc'),
+      sortReleaseDesc: t(locale, 'sort_release_desc'),
+      sortReleaseAsc: t(locale, 'sort_release_asc'),
+      results: t(locale, 'results'),
+      noResults: t(locale, 'no_results'),
+      clearFilters: t(locale, 'clear_filters'),
+      allTypes: t(locale, 'all_types'),
+      searchPlaceholder: t(locale, 'search_placeholder'),
+      filters: t(locale, 'filters'),
+      sortBy: t(locale, 'sort_by'),
+    }} />
 </Layout>
 ) : (
 <SetupRequired />

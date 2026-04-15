@@ -39,6 +39,8 @@ const translations = {
     filters: "Filters",
     sort_by: "Sort by",
     browse_all: "Browse all software",
+    all_catalogs: "All catalogs",
+    catalog_label: "Catalog",
   },
   it: {
     catalog: "Catalogo software",
@@ -80,6 +82,8 @@ const translations = {
     filters: "Filtri",
     sort_by: "Ordina per",
     browse_all: "Sfoglia tutti i software",
+    all_catalogs: "Tutti i cataloghi",
+    catalog_label: "Catalogo",
   },
 };
 
