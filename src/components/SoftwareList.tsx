@@ -91,7 +91,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(inputValue);
-  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "name_asc");
+  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "release_date_desc");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
@@ -104,7 +104,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, catalog, sort_by: sortBy === "name_asc" ? "" : sortBy });
+    writeParams({ q: query, category, status, type: softwareType, audience, catalog, sort_by: sortBy === "release_date_desc" ? "" : sortBy });
   }, [query, category, status, softwareType, audience, catalog, sortBy]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
@@ -180,10 +180,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <select aria-label={l.sortBy} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
-          <option value="name_asc">{l.sortNameAsc}</option>
-          <option value="name_desc">{l.sortNameDesc}</option>
           <option value="release_date_desc">{l.sortReleaseDesc}</option>
           <option value="release_date_asc">{l.sortReleaseAsc}</option>
+          <option value="name_asc">{l.sortNameAsc}</option>
+          <option value="name_desc">{l.sortNameDesc}</option>
         </select>
         <output>{sorted.length} {l.results}</output>
         {(query || category || status || softwareType || audience || catalog) && (
