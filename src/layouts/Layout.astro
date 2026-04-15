@@ -1,11 +1,13 @@
 ---
 import { getAbsoluteLocaleUrl } from 'astro:i18n';
 import { readdirSync } from 'node:fs';
+import { config } from '@fortawesome/fontawesome-svg-core';
+import '@fortawesome/fontawesome-svg-core/styles.css';
 import { base } from '../lib/url.js';
+import { faIcon } from '../lib/icons.js';
 import '@fontsource-variable/inter';
-import '@fortawesome/fontawesome-free/css/solid.css';
-import '@fortawesome/fontawesome-free/css/regular.css';
-import '@fortawesome/fontawesome-free/css/fontawesome.css';
+
+config.autoAddCss = false;
 
 interface Props {
   title: string;
@@ -55,7 +57,7 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
       )}
       <div class="theme-switcher">
         <button type="button" id="theme-btn" aria-label="Switch theme" title="Switch theme">
-          <i class="fa-solid fa-palette"></i>
+          <Fragment set:html={faIcon('palette')} />
         </button>
         <ul id="theme-menu" hidden>
           {themes.map((t) => (
