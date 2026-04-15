@@ -11,7 +11,8 @@ interface Props {
   breadcrumbs?: { label: string; href?: string }[];
 }
 
-const theme = import.meta.env.THEME || 'default';
+const themes = ['default', 'minimal', 'simple'];
+const defaultTheme = import.meta.env.THEME || 'default';
 const { title, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
 const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
@@ -24,23 +25,125 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <link rel="stylesheet" href={`${base}/themes/${theme}/index.css`} />
+    <script is:inline define:vars={{ base, defaultTheme }}>
+      const saved = localStorage.getItem('theme') || defaultTheme;
+      document.write(`<link rel="stylesheet" id="theme-css" href="${base}/themes/${saved}/index.css" />`);
+    </script>
+    <noscript>
+      <link rel="stylesheet" href={`${base}/themes/${defaultTheme}/index.css`} />
+    </noscript>
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
     <link rel="alternate" hreflang="x-default" href={enUrl} />
   </head>
   <body>
-    {breadcrumbs.length > 0 && (
-      <nav aria-label="Breadcrumb">
-        <ol>
-          {breadcrumbs.map((b) => (
-            <li>{b.href ? <a href={b.href}>{b.label}</a> : <span aria-current="page">{b.label}</span>}</li>
+    <header class="site-header">
+      {breadcrumbs.length > 0 && (
+        <nav aria-label="Breadcrumb">
+          <ol>
+            {breadcrumbs.map((b) => (
+              <li>{b.href ? <a href={b.href}>{b.label}</a> : <span aria-current="page">{b.label}</span>}</li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      <div class="theme-switcher">
+        <button type="button" id="theme-btn" aria-label="Switch theme" title="Switch theme">
+          <i class="fa-solid fa-palette"></i>
+        </button>
+        <ul id="theme-menu" hidden>
+          {themes.map((t) => (
+            <li><button type="button" data-theme={t}>{t}</button></li>
           ))}
-        </ol>
-      </nav>
-    )}
+        </ul>
+      </div>
+    </header>
     <main>
       <slot />
     </main>
   </body>
 </html>
+
+<script is:inline define:vars={{ base }}>
+  const btn = document.getElementById('theme-btn');
+  const menu = document.getElementById('theme-menu');
+  const link = document.getElementById('theme-css');
+
+  btn.addEventListener('click', () => {
+    menu.hidden = !menu.hidden;
+  });
+
+  menu.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-theme]');
+    if (!t) return;
+    const theme = t.dataset.theme;
+    link.href = `${base}/themes/${theme}/index.css`;
+    localStorage.setItem('theme', theme);
+    menu.hidden = true;
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.theme-switcher')) menu.hidden = true;
+  });
+</script>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+  }
+  .site-header nav[aria-label="Breadcrumb"] {
+    flex: 1;
+    padding: 0;
+  }
+  .theme-switcher {
+    position: relative;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  #theme-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 8px;
+    color: inherit;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  #theme-btn:hover {
+    opacity: 1;
+  }
+  #theme-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--border-standard, #ddd);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-width: 120px;
+  }
+  #theme-menu button {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    border-radius: 4px;
+    color: inherit;
+    text-transform: capitalize;
+  }
+  #theme-menu button:hover {
+    background: var(--surface-btn-hover, rgba(0,0,0,0.05));
+  }
+</style>

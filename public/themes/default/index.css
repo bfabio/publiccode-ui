@@ -185,7 +185,10 @@ h2 {
 /* ── breadcrumb ── */
 
 nav[aria-label="Breadcrumb"] {
-  padding: 0 2rem;
+  padding: 0;
+  margin-bottom: 0;
+}
+.site-header {
   margin-bottom: 1.5rem;
 }
 nav[aria-label="Breadcrumb"] ol {
