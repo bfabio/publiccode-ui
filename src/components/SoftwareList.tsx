@@ -202,6 +202,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               {item.logo && (
                 <img src={item.logo} alt="" loading="lazy"
                   onLoad={(e) => {
+                    e.currentTarget.style.visibility = 'visible';
                     const el = e.currentTarget.previousElementSibling as HTMLElement | null;
                     if (el) el.style.visibility = 'hidden';
                   }}
