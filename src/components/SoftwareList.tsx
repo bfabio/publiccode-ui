@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGavel } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 
 function highlight(text: string, query: string) {
@@ -223,12 +226,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               </ul>{" "}
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
-                return d ? <><i className="fa-regular fa-calendar" /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
+                return d ? <><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
               })()}
               {item.license && (
                 item.license.url
-                  ? <a href={item.license.url} className="license"><i className="fa-solid fa-gavel" /> {item.license.id}</a>
-                  : <span className="license"><i className="fa-solid fa-gavel" /> {item.license.id}</span>
+                  ? <a href={item.license.url} className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
+                  : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
               )}
             </footer>
           </article>

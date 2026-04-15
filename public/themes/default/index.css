@@ -587,7 +587,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
-.software-meta dt i {
+.software-meta dt svg {
   width: 1.25em;
   text-align: center;
   margin-right: 0.5em;
@@ -612,7 +612,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   letter-spacing: -0.165px;
   color: var(--text-primary);
 }
-.software-detail section h2 i {
+.software-detail section h2 svg {
   margin-right: 0.4em;
   opacity: 0.5;
   margin-top: 2rem;

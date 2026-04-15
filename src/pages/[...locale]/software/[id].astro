@@ -1,5 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
+import { faIcon } from '../../../lib/icons.js';
 import { fetchAllSoftware, fetchCatalogs } from '../../../lib/api.js';
 import { resolveLogo, absoluteUrl } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
@@ -64,28 +65,28 @@ const platforms = pc.platforms ?? [];
           </ul>
         )}
         <nav class="software-links" aria-label="Software links">
-          {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener"><i class="fa-solid fa-code-branch"></i> {t(locale, 'source_code')}</a>}
-          {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener"><i class="fa-solid fa-globe"></i> {t(locale, 'website')}</a>}
-          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener"><i class="fa-solid fa-book"></i> {t(locale, 'documentation')}</a>}
-          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener"><i class="fa-solid fa-file-code"></i> {t(locale, 'api_documentation')}</a>}
+          {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener"><Fragment set:html={faIcon('code-branch')} /> {t(locale, 'source_code')}</a>}
+          {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener"><Fragment set:html={faIcon('globe')} /> {t(locale, 'website')}</a>}
+          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener"><Fragment set:html={faIcon('book')} /> {t(locale, 'documentation')}</a>}
+          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener"><Fragment set:html={faIcon('file-code')} /> {t(locale, 'api_documentation')}</a>}
         </nav>
       </div>
     </header>
 
     <dl class="software-meta">
-      {multiCatalog && catalogName && <><dt><i class="fa-solid fa-layer-group"></i> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
-      {license && <><dt><i class="fa-solid fa-gavel"></i> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
-      {release && <><dt><i class="fa-regular fa-calendar"></i> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
-      {pc.developmentStatus && <><dt><i class="fa-solid fa-circle-info"></i> {t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
-      {pc.softwareType && <><dt><i class="fa-solid fa-cube"></i> {t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
-      {pc.maintenance?.type && <><dt><i class="fa-solid fa-wrench"></i> {t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
-      {platforms.length > 0 && <><dt><i class="fa-solid fa-desktop"></i> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
-      {languages.length > 0 && <><dt><i class="fa-solid fa-language"></i> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
+      {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
+      {license && <><dt><Fragment set:html={faIcon('gavel')} /> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
+      {release && <><dt><Fragment set:html={faIcon('calendar', 'far')} /> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
+      {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.softwareType && <><dt><Fragment set:html={faIcon('cube')} /> {t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
+      {pc.maintenance?.type && <><dt><Fragment set:html={faIcon('wrench')} /> {t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
+      {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
+      {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
     {features.length > 0 && (
       <section class="software-features">
-        <h2><i class="fa-solid fa-list-check"></i> {t(locale, 'features')}</h2>
+        <h2><Fragment set:html={faIcon('list-check')} /> {t(locale, 'features')}</h2>
         <ul>
           {features.map((f) => <li>{f}</li>)}
         </ul>
@@ -94,7 +95,7 @@ const platforms = pc.platforms ?? [];
 
     {screenshots.length > 0 && (
       <section class="software-screenshots">
-        <h2><i class="fa-solid fa-images"></i> {t(locale, 'screenshots')}</h2>
+        <h2><Fragment set:html={faIcon('images')} /> {t(locale, 'screenshots')}</h2>
         <div class="screenshot-grid">
           {screenshots.map((src, i) => (
             <button type="button" data-index={i} class="screenshot-thumb">
@@ -115,14 +116,14 @@ const platforms = pc.platforms ?? [];
 
     {longDescriptionHtml && (
       <section class="software-description">
-        <h2><i class="fa-solid fa-align-left"></i> {t(locale, 'description')}</h2>
+        <h2><Fragment set:html={faIcon('align-left')} /> {t(locale, 'description')}</h2>
         <div set:html={longDescriptionHtml} />
       </section>
     )}
 
     {pc.maintenance?.contacts?.length > 0 && (
       <section class="software-contacts">
-        <h2><i class="fa-solid fa-address-book"></i> {t(locale, 'contacts')}</h2>
+        <h2><Fragment set:html={faIcon('address-book')} /> {t(locale, 'contacts')}</h2>
         <ul>
           {pc.maintenance.contacts.map((c) => (
             <li>
