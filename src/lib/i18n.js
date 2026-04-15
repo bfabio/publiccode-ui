@@ -41,6 +41,7 @@ const translations = {
     browse_all: "Browse all software",
     all_catalogs: "All catalogs",
     catalog_label: "Catalog",
+    catalog_description: "Browse and search open source software in the catalog",
   },
   it: {
     catalog: "Catalogo software",
@@ -84,6 +85,7 @@ const translations = {
     browse_all: "Sfoglia tutti i software",
     all_catalogs: "Tutti i cataloghi",
     catalog_label: "Catalogo",
+    catalog_description: "Cerca e sfoglia il software open source nel catalogo",
   },
 };
 
