@@ -1,5 +1,6 @@
 ---
 import { getAbsoluteLocaleUrl } from 'astro:i18n';
+import { readdirSync } from 'node:fs';
 import { base } from '../lib/url.js';
 import '@fontsource-variable/inter';
 import '@fortawesome/fontawesome-free/css/solid.css';
@@ -12,7 +13,10 @@ interface Props {
   breadcrumbs?: { label: string; href?: string }[];
 }
 
-const themes = ['default', 'minimal', 'simple'];
+const themes = readdirSync('public/themes', { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name)
+  .sort();
 const defaultTheme = import.meta.env.THEME || 'default';
 const { title, description, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
