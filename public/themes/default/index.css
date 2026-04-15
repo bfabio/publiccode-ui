@@ -133,8 +133,6 @@
   color: var(--text-primary);
 }
 
-/* ── base ── */
-
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'cv01', 'ss03';
@@ -440,7 +438,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 .catalog-results .categories li + li::before { content: none; }
 .catalog-results .license { color: var(--accent-bright); }
-.catalog-results time { display: block; margin-bottom: 4px; }
+.catalog-results time { margin-right: 4px; }
 .catalog-results .catalog-badge {
   font-size: 11px;
   font-weight: 510;
