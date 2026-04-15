@@ -4,11 +4,12 @@ const API_URL = process.env.API_URL;
 
 export const apiConfigured = !!API_URL;
 
-let cache = null;
+let softwareCache = null;
+let catalogsCache = null;
 
 export async function fetchAllSoftware() {
   if (!API_URL) return [];
-  if (cache) return cache;
+  if (softwareCache) return softwareCache;
 
   const items = [];
   let next = `${API_URL}/software`;
@@ -26,7 +27,7 @@ export async function fetchAllSoftware() {
         console.warn(`Skipping ${item.id}: invalid YAML:`, e.message);
         continue;
       }
-      items.push({ id: item.id, publiccode });
+      items.push({ id: item.id, catalogId: item.catalogId ?? null, publiccode });
     }
 
     next = json.links?.next
@@ -34,6 +35,26 @@ export async function fetchAllSoftware() {
       : null;
   }
 
-  cache = items;
-  return cache;
+  softwareCache = items;
+  return softwareCache;
+}
+
+export async function fetchCatalogs() {
+  if (!API_URL) return [];
+  if (catalogsCache) return catalogsCache;
+
+  try {
+    const res = await fetch(`${API_URL}/catalogs`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    catalogsCache = (json.data ?? []).map((c) => ({
+      id: c.id,
+      name: c.name,
+      slug: c.alternativeId ?? c.id,
+    }));
+  } catch {
+    catalogsCache = [];
+  }
+
+  return catalogsCache;
 }
