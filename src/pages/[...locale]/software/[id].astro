@@ -44,7 +44,7 @@ const languages = Object.keys(pc.description ?? {}).map(k => k.replace(/-.*/, ''
 const platforms = pc.platforms ?? [];
 ---
 
-<Layout title={pc.name} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
+<Layout title={pc.name} description={desc.shortDescription} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
   <article class="software-detail">
     <header>
       <figure class="software-logo">
