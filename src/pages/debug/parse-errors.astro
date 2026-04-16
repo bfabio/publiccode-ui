@@ -1,0 +1,215 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchLogs, fetchAllSoftware } from '../../lib/api.js';
+
+const logs = await fetchLogs();
+const software = await fetchAllSoftware();
+const softwareById = new Map(
+  software.map((s) => [s.id, s.publiccode?.url ?? null])
+);
+
+const latestByEntity = new Map();
+for (const log of logs) {
+  if (!log.entity) continue;
+  const existing = latestByEntity.get(log.entity);
+  if (!existing || log.createdAt > existing.createdAt) {
+    latestByEntity.set(log.entity, log);
+  }
+}
+
+const LINE_RE = /^publiccode\.yml:(\d+):(\d+): (error|warning): (.+)$/;
+
+function parseLogMessage(message) {
+  const repoMatch = message.match(/^\[([^\]]+)\]/);
+  const repoUrl = repoMatch?.[1]?.replace(/\.git$/, '') ?? null;
+
+  const nameMatch = message.match(/\[([^\]]+)\] BAD /);
+  const repoName = nameMatch?.[1] ?? null;
+
+  const diagnostics = [];
+  for (const line of message.split('\n')) {
+    const m = line.match(LINE_RE);
+    if (m) {
+      diagnostics.push({
+        line: parseInt(m[1], 10),
+        column: parseInt(m[2], 10),
+        level: m[3],
+        message: m[4],
+      });
+      continue;
+    }
+
+    const badMatch = line.match(
+      /\[.+\] BAD publiccode\.yml: (.+)/
+    );
+    if (badMatch) {
+      diagnostics.push({
+        line: null,
+        column: null,
+        level: 'error',
+        message: badMatch[1],
+      });
+    }
+  }
+
+  return { repoUrl, repoName, diagnostics };
+}
+
+function fileUrl(repoUrl, line) {
+  if (!repoUrl) return null;
+  try {
+    const repo = new URL(repoUrl.replace(/\.git$/, ''));
+    const host = repo.host.toLowerCase();
+    let url;
+    if (host === 'github.com') {
+      url = `${repo.origin}${repo.pathname}/blob/HEAD/publiccode.yml`;
+    } else if (host === 'bitbucket.org') {
+      url = `${repo.origin}${repo.pathname}/src/HEAD/publiccode.yml`;
+    } else {
+      url = `${repo.origin}${repo.pathname}/-/blob/HEAD/publiccode.yml`;
+    }
+    if (line) url += `#L${line}`;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+const entries = [];
+for (const [entity, log] of latestByEntity) {
+  const parsed = parseLogMessage(log.message);
+  if (parsed.diagnostics.length === 0) continue;
+
+  const softwareId = entity.replace('/software/', '');
+  entries.push({
+    ...parsed,
+    softwareId,
+    createdAt: log.createdAt,
+  });
+}
+entries.sort((a, b) => (a.repoName ?? '').localeCompare(b.repoName ?? ''));
+
+const errorCount = entries.reduce(
+  (sum, e) => sum + e.diagnostics.length, 0
+);
+---
+
+<Layout title="Validation errors">
+  <h1>Validation errors</h1>
+  <p class="summary">
+    {entries.length} repos, {errorCount} diagnostics
+  </p>
+
+  {entries.length === 0 ? (
+    <p>No validation errors.</p>
+  ) : (
+    entries.map((entry) => {
+      const repoDisplay = entry.repoUrl
+        ? entry.repoUrl.replace(/\.git$/, '').replace(/^https?:\/\//, '')
+        : entry.softwareId;
+      return (
+        <details>
+          <summary>
+            <a href={entry.repoUrl?.replace(/\.git$/, '') ?? '#'} rel="noopener">
+              {repoDisplay}
+            </a>
+            <span class="diag-count">
+              {entry.diagnostics.length}
+            </span>
+          </summary>
+          <table>
+            <tbody>
+              {entry.diagnostics.map((d) => {
+                const loc = d.line
+                  ? `${d.line}:${d.column}`
+                  : null;
+                const link = fileUrl(entry.repoUrl, d.line);
+                return (
+                  <tr>
+                    <td class="level" data-level={d.level}>
+                      {d.level}
+                    </td>
+                    <td class="loc">
+                      {loc && link ? (
+                        <a href={link} rel="noopener">{loc}</a>
+                      ) : (
+                        loc ?? ''
+                      )}
+                    </td>
+                    <td>{d.message}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </details>
+      );
+    })
+  )}
+</Layout>
+
+<style>
+  h1 {
+    margin-bottom: 0.25rem;
+  }
+  .summary {
+    color: var(--text-muted, #666);
+    margin-bottom: 1.5rem;
+  }
+  details {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-standard, #ddd);
+    border-radius: 6px;
+  }
+  summary {
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  summary a {
+    font-family: monospace;
+  }
+  .diag-count {
+    margin-left: auto;
+    background: var(--bg-badge, #eee);
+    color: var(--text-muted, #666);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  td {
+    padding: 4px 12px;
+    border-top: 1px solid var(--border-standard, #ddd);
+    vertical-align: top;
+  }
+  .level {
+    font-weight: 600;
+    white-space: nowrap;
+    width: 60px;
+  }
+  .level[data-level="error"] {
+    color: #d32f2f;
+  }
+  .level[data-level="warning"] {
+    color: #f57c00;
+  }
+  .loc {
+    white-space: nowrap;
+    font-family: monospace;
+    width: 60px;
+  }
+  .loc a {
+    text-decoration: none;
+  }
+  .loc a:hover {
+    text-decoration: underline;
+  }
+</style>
