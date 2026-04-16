@@ -40,6 +40,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
   }, [onChange]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIdx, setSelectedIdx] = useState(-1);
+  const [navigating, setNavigating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestions = useMemo(() => {
@@ -58,6 +59,17 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
       inputRef.current?.blur();
       return;
     }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (selectedIdx >= 0 && suggestions.length > 0) {
+        setNavigating(true);
+        window.location.href = `${base}/software/${suggestions[selectedIdx].id}`;
+      } else if (inputValue.trim()) {
+        setNavigating(true);
+        window.location.href = `${base}/software/?q=${encodeURIComponent(inputValue.trim())}`;
+      }
+      return;
+    }
     if (!showSuggestions || suggestions.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -65,11 +77,8 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIdx((i) => (i - 1 + suggestions.length) % suggestions.length);
-    } else if (e.key === "Enter" && selectedIdx >= 0) {
-      e.preventDefault();
-      window.location.href = `${base}/software/${suggestions[selectedIdx].id}`;
     }
-  }, [showSuggestions, suggestions, selectedIdx, base, update]);
+  }, [showSuggestions, suggestions, selectedIdx, base, inputValue, update]);
 
   return (
     <search className="catalog-search">
@@ -77,6 +86,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         ref={inputRef}
         type="search"
         value={inputValue}
+        disabled={navigating}
         onChange={(e) => { update(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
         onKeyDown={handleKeyDown}
         onFocus={() => setShowSuggestions(true)}
@@ -86,7 +96,28 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         aria-expanded={showSuggestions && suggestions.length > 0}
         aria-autocomplete="list"
         aria-controls="search-suggestions"
+        style={navigating ? { opacity: 0.6, cursor: "wait" } : undefined}
       />
+      {navigating && (
+        <>
+          <style>{"@keyframes search-spin { to { transform: rotate(360deg) } }"}</style>
+          <span
+            aria-label="Loading"
+            style={{
+              position: "absolute",
+              right: 12,
+              top: "50%",
+              marginTop: -8,
+              width: 16,
+              height: 16,
+              border: "2px solid currentColor",
+              borderRightColor: "transparent",
+              borderRadius: "50%",
+              animation: "search-spin 0.6s linear infinite",
+            }}
+          />
+        </>
+      )}
       {showSuggestions && suggestions.length > 0 && (
         <ul id="search-suggestions" role="listbox" className="suggestions">
           {suggestions.map((s, i) => (
