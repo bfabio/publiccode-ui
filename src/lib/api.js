@@ -6,6 +6,7 @@ export const apiConfigured = !!API_URL;
 
 let softwareCache = null;
 let catalogsCache = null;
+let logsCache = null;
 
 export async function fetchAllSoftware() {
   if (!API_URL) return [];
@@ -37,6 +38,30 @@ export async function fetchAllSoftware() {
 
   softwareCache = items;
   return softwareCache;
+}
+
+export async function fetchLogs({ days = 3 } = {}) {
+  if (!API_URL) return [];
+  if (logsCache) return logsCache;
+
+  const from = new Date(Date.now() - days * 86400000).toISOString();
+  const logs = [];
+  let next = `${API_URL}/logs?from=${from}&page[size]=100`;
+
+  while (next) {
+    const res = await fetch(next);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const json = await res.json();
+
+    logs.push(...json.data);
+
+    next = json.links?.next
+      ? `${API_URL}/logs${json.links.next}`
+      : null;
+  }
+
+  logsCache = logs;
+  return logsCache;
 }
 
 export async function fetchCatalogs() {
