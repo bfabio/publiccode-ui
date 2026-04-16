@@ -89,14 +89,27 @@ interface Labels {
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[] }> = ({ items, base, labels, locale = 'en', catalogs }) => {
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by" };
-  const [inputValue, setInputValue] = useState(() => readParam("q"));
-  const [query, setQuery] = useState(inputValue);
-  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "release_date_desc");
-  const [category, setCategory] = useState(() => readParam("category"));
-  const [status, setStatus] = useState(() => readParam("status"));
-  const [softwareType, setSoftwareType] = useState(() => readParam("type"));
-  const [audience, setAudience] = useState(() => readParam("audience"));
-  const [catalog, setCatalog] = useState(() => readParam("catalog"));
+  const [inputValue, setInputValue] = useState("");
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortBy>("release_date_desc");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [softwareType, setSoftwareType] = useState("");
+  const [audience, setAudience] = useState("");
+  const [catalog, setCatalog] = useState("");
+
+  useEffect(() => {
+    const q = readParam("q");
+    const s = (readParam("sort_by") as SortBy) || "release_date_desc";
+    setInputValue(q);
+    setQuery(q);
+    setSortBy(s);
+    setCategory(readParam("category"));
+    setStatus(readParam("status"));
+    setSoftwareType(readParam("type"));
+    setAudience(readParam("audience"));
+    setCatalog(readParam("catalog"));
+  }, []);
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
