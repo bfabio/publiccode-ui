@@ -77,7 +77,16 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
   const menu = document.getElementById('theme-menu');
   const link = document.getElementById('theme-css');
 
+  function markActive(theme) {
+    menu.querySelectorAll('[data-theme]').forEach((b) => {
+      b.setAttribute('aria-current', b.dataset.theme === theme ? 'true' : 'false');
+    });
+  }
+
   btn.addEventListener('click', () => {
+    if (menu.hidden) {
+      markActive(localStorage.getItem('theme') || defaultTheme);
+    }
     menu.hidden = !menu.hidden;
   });
 
@@ -87,6 +96,7 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     const theme = t.dataset.theme;
     link.href = `${base}/themes/${theme}/index.css`;
     localStorage.setItem('theme', theme);
+    markActive(theme);
     menu.hidden = true;
   });
 
@@ -153,5 +163,11 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
   }
   #theme-menu button:hover {
     background: var(--surface-btn-hover, rgba(0,0,0,0.05));
+  }
+  #theme-menu button[aria-current="true"] {
+    font-weight: 600;
+  }
+  #theme-menu button[aria-current="true"]::after {
+    content: ' *';
   }
 </style>
