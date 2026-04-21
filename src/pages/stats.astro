@@ -1,0 +1,272 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { fetchAllSoftware, fetchLogs, apiConfigured } from '../lib/api.js';
+import SetupRequired from '../components/SetupRequired.astro';
+
+function countBy(items, keyFn) {
+  const map = new Map();
+  for (const item of items) {
+    const key = keyFn(item) ?? '(none)';
+    map.set(key, (map.get(key) ?? 0) + 1);
+  }
+  return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function pct(n, total) {
+  return total === 0 ? 0 : Math.round((n / total) * 100);
+}
+
+const LINE_RE = /^publiccode\.yml:(\d+):(\d+): (error|warning): (.+)$/;
+
+function parseDiagnostics(message) {
+  const diagnostics = [];
+  for (const line of message.split('\n')) {
+    const m = line.match(LINE_RE);
+    if (m) {
+      diagnostics.push({ level: m[3], message: m[4] });
+      continue;
+    }
+    const badMatch = line.match(/\[.+\] BAD publiccode\.yml: (.+)/);
+    if (badMatch) {
+      diagnostics.push({ level: 'error', message: badMatch[1] });
+    }
+  }
+  return diagnostics;
+}
+
+const allSoftware = await fetchAllSoftware();
+const total = allSoftware.length;
+
+const byStatus = countBy(allSoftware, (s) => s.publiccode?.developmentStatus);
+const byType = countBy(allSoftware, (s) => s.publiccode?.softwareType);
+const byLicense = countBy(allSoftware, (s) => s.publiccode?.legal?.license);
+
+const categoryFreq = new Map();
+for (const s of allSoftware) {
+  for (const cat of s.publiccode?.categories ?? []) {
+    categoryFreq.set(cat, (categoryFreq.get(cat) ?? 0) + 1);
+  }
+}
+const byCategory = [...categoryFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 15);
+
+const logs = await fetchLogs();
+
+const latestByEntity = new Map();
+for (const log of logs) {
+  if (!log.entity) continue;
+  const existing = latestByEntity.get(log.entity);
+  if (!existing || log.createdAt > existing.createdAt) {
+    latestByEntity.set(log.entity, log);
+  }
+}
+
+const errorMsgFreq = new Map();
+const repoErrorCounts = [];
+let reposWithErrors = 0;
+
+for (const [entity, log] of latestByEntity) {
+  const diagnostics = parseDiagnostics(log.message);
+  if (diagnostics.length === 0) continue;
+
+  reposWithErrors++;
+  repoErrorCounts.push({ entity, count: diagnostics.length });
+
+  for (const d of diagnostics) {
+    errorMsgFreq.set(d.message, (errorMsgFreq.get(d.message) ?? 0) + 1);
+  }
+}
+
+const topErrors = [...errorMsgFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
+const topProblematic = repoErrorCounts.sort((a, b) => b.count - a.count).slice(0, 10);
+const reposCrawled = latestByEntity.size;
+---
+
+{!apiConfigured ? <SetupRequired /> : (
+<Layout title="Stats">
+  <h1>Stats</h1>
+
+  <section>
+    <h2>Catalog</h2>
+    <p class="total">{total} software items</p>
+
+    <h3>Development status</h3>
+    <div class="bars">
+      {byStatus.map(([key, n]) => (
+        <div class="bar-row">
+          <span class="bar-label">{key}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style={`width:${pct(n, total)}%`} />
+          </div>
+          <span class="bar-count">{n}</span>
+        </div>
+      ))}
+    </div>
+
+    <h3>Software type</h3>
+    <div class="bars">
+      {byType.map(([key, n]) => (
+        <div class="bar-row">
+          <span class="bar-label">{key}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style={`width:${pct(n, total)}%`} />
+          </div>
+          <span class="bar-count">{n}</span>
+        </div>
+      ))}
+    </div>
+
+    <h3>Top categories</h3>
+    <div class="bars">
+      {byCategory.map(([key, n]) => (
+        <div class="bar-row">
+          <span class="bar-label">{key}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style={`width:${pct(n, total)}%`} />
+          </div>
+          <span class="bar-count">{n}</span>
+        </div>
+      ))}
+    </div>
+
+    <h3>Top licenses</h3>
+    <div class="bars">
+      {byLicense.slice(0, 12).map(([key, n]) => (
+        <div class="bar-row">
+          <span class="bar-label">{key}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style={`width:${pct(n, total)}%`} />
+          </div>
+          <span class="bar-count">{n}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section>
+    <h2>Validation health</h2>
+    <p class="total">
+      {reposWithErrors} of {reposCrawled} crawled repos have errors
+      ({pct(reposWithErrors, reposCrawled)}%)
+    </p>
+
+    {topErrors.length > 0 && (
+      <>
+        <h3>Most common errors</h3>
+        <div class="bars">
+          {topErrors.map(([msg, n]) => (
+            <div class="bar-row">
+              <span class="bar-label bar-label--mono">{msg}</span>
+              <div class="bar-track">
+                <div class="bar-fill bar-fill--warn" style={`width:${pct(n, reposWithErrors)}%`} />
+              </div>
+              <span class="bar-count">{n}</span>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    {topProblematic.length > 0 && (
+      <>
+        <h3>Most errors per repo</h3>
+        <div class="bars">
+          {topProblematic.map(({ entity, count }) => {
+            const id = entity.replace('/software/', '');
+            return (
+              <div class="bar-row">
+                <span class="bar-label bar-label--mono">
+                  <a href={`/debug/parse-errors#${id}`}>{id.slice(0, 40)}</a>
+                </span>
+                <div class="bar-track">
+                  <div class="bar-fill bar-fill--warn" style={`width:${pct(count, topProblematic[0].count)}%`} />
+                </div>
+                <span class="bar-count">{count}</span>
+              </div>
+            );
+          })}
+        </div>
+      </>
+    )}
+  </section>
+</Layout>
+)}
+
+<style>
+  h1 {
+    margin-bottom: 2rem;
+  }
+
+  section {
+    margin-bottom: 3rem;
+  }
+
+  h2 {
+    border-bottom: 1px solid var(--border-standard, #ddd);
+    padding-bottom: 0.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted, #888);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .total {
+    font-size: 1.1rem;
+    color: var(--text-muted, #666);
+    margin-bottom: 1rem;
+  }
+
+  .bars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 48px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .bar-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-label--mono {
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  .bar-track {
+    background: var(--bg-badge, #eee);
+    border-radius: 3px;
+    height: 14px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--color-primary, #3b82f6);
+    border-radius: 3px;
+    min-width: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .bar-fill--warn {
+    background: var(--color-warn, #f59e0b);
+  }
+
+  .bar-count {
+    text-align: right;
+    color: var(--text-muted, #666);
+    font-size: 12px;
+  }
+</style>
