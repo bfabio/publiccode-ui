@@ -7,12 +7,19 @@ on:
     # Every 3 hours during European daytime (UTC, shifts 1h with DST)
     - cron: '0 5-20/3 * * *'
   workflow_dispatch:
+  repository_dispatch:
+    # The sender must POST this event_type verbatim, anything else
+    # is accepted with 204 and ignored.
+    types: [new-software]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Let a running deploy finish instead of cancelling it. GitHub
+# queues at most one more run and a newer event replaces the queued
+# one, so a burst of webhooks becomes a single follow up build.
 concurrency:
   group: pages
   cancel-in-progress: false
