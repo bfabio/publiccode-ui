@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { faIcon } from '../../../lib/icons.js';
-import { fetchAllSoftware, fetchCatalogs } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAnalysis } from '../../../lib/api.js';
 import { resolveLogo, absoluteUrl } from '../../../lib/absoluteUrl.js';
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
@@ -15,6 +15,9 @@ export async function getStaticPaths() {
   const catalogs = await fetchCatalogs();
   const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
   const multiCatalog = catalogs.length > 1;
+  const analyses = Object.fromEntries(
+    await Promise.all(software.map(async (s) => [s.id, await fetchAnalysis(s.id)]))
+  );
   const locales = [undefined, 'it'];
   return locales.flatMap((locale) =>
     software.map((s) => ({
@@ -23,13 +26,14 @@ export async function getStaticPaths() {
         software: s,
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         multiCatalog,
+        badges: analyses[s.id],
       },
     }))
   );
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, multiCatalog } = Astro.props;
+const { software, catalogName, multiCatalog, badges } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -43,6 +47,18 @@ const license = await resolveLicense(pc.legal?.license);
 const features = desc.features ?? [];
 const languages = Object.keys(pc.description ?? {}).map(k => k.replace(/-.*/, ''));
 const platforms = pc.platforms ?? [];
+
+const badgeDefs = [
+  { key: 'maintained', icon: 'heart-pulse', label: t(locale, 'badge_maintained') },
+  { key: 'reused', icon: 'arrows-rotate', label: t(locale, 'badge_reused') },
+  { key: 'security', icon: 'shield-halved', label: t(locale, 'badge_security') },
+  { key: 'open-source', icon: 'unlock', label: t(locale, 'badge_open_source') },
+  { key: 'supply-chain', icon: 'link', label: t(locale, 'badge_supply_chain') },
+];
+const earnedBadges = badges
+  ? badgeDefs.filter((b) => badges[b.key] && badges[b.key] !== 'no')
+      .map((b) => ({ ...b, level: badges[b.key] }))
+  : [];
 ---
 
 <Layout title={pc.name} description={desc.shortDescription} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
@@ -72,6 +88,18 @@ const platforms = pc.platforms ?? [];
         </nav>
       </div>
     </header>
+
+    {earnedBadges.length > 0 && (
+      <section class="software-badges" aria-label={t(locale, 'badges')}>
+        {earnedBadges.map((b) => (
+          <span class={`badge badge-${b.level}`} title={`${b.label}: ${t(locale, 'badge_' + b.level)}`}>
+            <Fragment set:html={faIcon(b.icon)} />
+            {b.label}
+            <small>{t(locale, 'badge_' + b.level)}</small>
+          </span>
+        ))}
+      </section>
+    )}
 
     <dl class="software-meta">
       {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
