@@ -7,6 +7,7 @@ export const apiConfigured = !!API_URL;
 let softwareCache = null;
 let catalogsCache = null;
 let logsCache = null;
+const analysisCache = new Map();
 
 export async function fetchAllSoftware() {
   if (!API_URL) return [];
@@ -62,6 +63,26 @@ export async function fetchLogs({ days = 3 } = {}) {
 
   logsCache = logs;
   return logsCache;
+}
+
+export async function fetchAnalysis(id) {
+  if (!API_URL) return null;
+  if (analysisCache.has(id)) return analysisCache.get(id);
+
+  try {
+    const res = await fetch(`${API_URL}/software/${id}/analysis`);
+    if (!res.ok) {
+      analysisCache.set(id, null);
+      return null;
+    }
+    const json = await res.json();
+    const result = json['opencode-badges']?.results ?? null;
+    analysisCache.set(id, result);
+    return result;
+  } catch {
+    analysisCache.set(id, null);
+    return null;
+  }
 }
 
 export async function fetchCatalogs() {

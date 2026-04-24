@@ -42,6 +42,16 @@ const translations = {
     all_catalogs: "All catalogs",
     catalog_label: "Catalog",
     catalog_description: "Browse and search open source software in the catalog",
+
+    badges: "Badges",
+    badge_maintained: "Maintained",
+    badge_reused: "Reused",
+    badge_security: "Security",
+    badge_open_source: "Open source",
+    badge_supply_chain: "Supply chain",
+    badge_gold: "Gold",
+    badge_silver: "Silver",
+    badge_bronze: "Bronze",
   },
   it: {
     catalog: "Catalogo software",
@@ -86,6 +96,16 @@ const translations = {
     all_catalogs: "Tutti i cataloghi",
     catalog_label: "Catalogo",
     catalog_description: "Cerca e sfoglia il software open source nel catalogo",
+
+    badges: "Badge",
+    badge_maintained: "Manutenzione",
+    badge_reused: "Riuso",
+    badge_security: "Sicurezza",
+    badge_open_source: "Open source",
+    badge_supply_chain: "Supply chain",
+    badge_gold: "Oro",
+    badge_silver: "Argento",
+    badge_bronze: "Bronzo",
   },
 };
 
