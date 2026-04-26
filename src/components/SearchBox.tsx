@@ -4,6 +4,8 @@ interface SearchItem {
   id: string;
   name: string;
   shortDescription: string;
+  searchText: string;
+  nameLower: string;
 }
 
 function highlight(text: string, query: string) {
@@ -14,10 +16,9 @@ function highlight(text: string, query: string) {
 }
 
 function rankMatch(item: SearchItem, q: string): number {
-  const name = item.name.toLowerCase();
-  if (name === q) return 3;
-  if (name.startsWith(q)) return 2;
-  if (name.includes(q)) return 1;
+  if (item.nameLower === q) return 3;
+  if (item.nameLower.startsWith(q)) return 2;
+  if (item.nameLower.includes(q)) return 1;
   return 0;
 }
 
@@ -46,10 +47,23 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
   const suggestions = useMemo(() => {
     if (!inputValue || inputValue.length < 2) return [];
     const q = inputValue.toLowerCase();
-    return items
-      .filter((i) => i.name.toLowerCase().includes(q) || i.shortDescription.toLowerCase().includes(q))
-      .sort((a, b) => rankMatch(b, q) - rankMatch(a, q))
-      .slice(0, MAX_SUGGESTIONS);
+    const top: Array<{ item: SearchItem; rank: number }> = [];
+
+    for (const item of items) {
+      if (!item.searchText.includes(q)) continue;
+
+      const match = { item, rank: rankMatch(item, q) };
+      const index = top.findIndex((entry) =>
+        match.rank > entry.rank ||
+        (match.rank === entry.rank && item.name.localeCompare(entry.item.name) < 0)
+      );
+
+      if (index === -1) top.push(match);
+      else top.splice(index, 0, match);
+      if (top.length > MAX_SUGGESTIONS) top.length = MAX_SUGGESTIONS;
+    }
+
+    return top.map((entry) => entry.item);
   }, [inputValue, items]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

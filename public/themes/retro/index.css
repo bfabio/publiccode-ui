@@ -72,6 +72,14 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-filters output {
   color: #828282;
 }
+.catalog-more {
+  margin: 12px 0 0;
+  text-align: center;
+}
+.catalog-more button {
+  font: inherit;
+  padding: 2px 8px;
+}
 
 .catalog-results article {
   padding: 2px 0;

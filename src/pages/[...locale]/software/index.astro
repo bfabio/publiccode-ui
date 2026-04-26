@@ -27,11 +27,13 @@ const items = await Promise.all(allSoftware.map(async (s) => {
   const license = await resolveLicense(pc.legal?.license);
   const cat = catalogMap[s.catalogId];
   const logo = resolveLogoAsset(pc);
+  const categories = pc.categories ?? [];
+  const shortDescription = desc.shortDescription ?? '';
   return {
     id: s.id,
     name: pc.name,
-    shortDescription: desc.shortDescription ?? '',
-    categories: pc.categories ?? [],
+    shortDescription,
+    categories,
     releaseDate: pc.releaseDate instanceof Date ? pc.releaseDate.toISOString().slice(0, 10) : (pc.releaseDate ?? ''),
     license: license ? { id: license.id, name: license.name, url: license.url } : null,
     logo: logo?.src ?? null,
@@ -41,6 +43,8 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     intendedAudience: pc.intendedAudience?.scope ?? [],
     catalogSlug: cat?.slug ?? null,
     catalogName: cat?.name ?? null,
+    nameLower: pc.name.toLowerCase(),
+    searchText: [pc.name, shortDescription, ...categories].join(' ').toLowerCase(),
   };
 }));
 ---
@@ -66,6 +70,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       searchPlaceholder: t(locale, 'search_placeholder'),
       filters: t(locale, 'filters'),
       sortBy: t(locale, 'sort_by'),
+      showMore: t(locale, 'show_more'),
     }} />
 </Layout>
 ) : (

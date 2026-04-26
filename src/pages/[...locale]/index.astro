@@ -18,10 +18,13 @@ const allSoftware = await fetchAllSoftware();
 
 const items = allSoftware.map((s) => {
   const desc = localizeDescription(s.publiccode.description, locale);
+  const shortDescription = desc.shortDescription ?? '';
   return {
     id: s.id,
     name: s.publiccode.name,
-    shortDescription: desc.shortDescription ?? '',
+    shortDescription,
+    nameLower: s.publiccode.name.toLowerCase(),
+    searchText: [s.publiccode.name, shortDescription].join(' ').toLowerCase(),
   };
 });
 ---
