@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
@@ -37,6 +37,8 @@ interface SoftwareItem {
   intendedAudience: string[];
   catalogSlug: string | null;
   catalogName: string | null;
+  searchText: string;
+  nameLower: string;
 }
 
 interface CatalogInfo {
@@ -90,10 +92,13 @@ interface Labels {
   searchPlaceholder: string;
   filters: string;
   sortBy: string;
+  showMore: string;
 }
 
+const INITIAL_VISIBLE_ITEMS = 80;
+
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[] }> = ({ items, base, labels, locale = 'en', catalogs }) => {
-  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by" };
+  const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const [inputValue, setInputValue] = useState("");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("release_date_desc");
@@ -102,6 +107,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [softwareType, setSoftwareType] = useState("");
   const [audience, setAudience] = useState("");
   const [catalog, setCatalog] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
+  const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
     const q = readParam("q");
@@ -125,6 +132,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     writeParams({ q: query, category, status, type: softwareType, audience, catalog, sort_by: sortBy === "release_date_desc" ? "" : sortBy });
   }, [query, category, status, softwareType, audience, catalog, sortBy]);
 
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_ITEMS);
+  }, [deferredQuery, category, status, softwareType, audience, catalog, sortBy]);
+
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
   const allTypes = useMemo(() => [...new Set(items.map((i) => i.softwareType).filter(Boolean))].sort(), [items]);
@@ -132,13 +143,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   const filtered = useMemo(() => {
     let result = items;
-    if (query) {
-      const q = query.toLowerCase();
-      result = result.filter((i) =>
-        i.name.toLowerCase().includes(q) ||
-        i.shortDescription.toLowerCase().includes(q) ||
-        i.categories.some((c) => c.toLowerCase().includes(q))
-      );
+    if (deferredQuery) {
+      const q = deferredQuery.toLowerCase();
+      result = result.filter((i) => i.searchText.includes(q));
     }
     if (category) result = result.filter((i) => i.categories.includes(category));
     if (status) result = result.filter((i) => i.developmentStatus === status);
@@ -146,13 +153,13 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
     if (catalog) result = result.filter((i) => i.catalogSlug === catalog);
     return result;
-  }, [items, query, category, status, softwareType, audience, catalog]);
+  }, [items, deferredQuery, category, status, softwareType, audience, catalog]);
 
   const sorted = useMemo(() => {
-    if (query) {
-      const q = query.toLowerCase();
+    if (deferredQuery) {
+      const q = deferredQuery.toLowerCase();
       const rank = (i: SoftwareItem) => {
-        const n = i.name.toLowerCase();
+        const n = i.nameLower;
         if (n === q) return 0;
         if (n.startsWith(q)) return 1;
         return 2;
@@ -160,7 +167,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       return [...filtered].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
     }
     return sortItems(filtered, sortBy);
-  }, [filtered, sortBy, query]);
+  }, [filtered, sortBy, deferredQuery]);
+
+  const visibleItems = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
 
   return (
     <>
@@ -213,7 +222,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
       <section className="catalog-results">
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
-        {sorted.map((item) => (
+        {visibleItems.map((item) => (
           <article key={item.id}>
             <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`}>
               <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
@@ -248,6 +257,13 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           </article>
         ))}
       </section>
+      {visibleCount < sorted.length && (
+        <div className="catalog-more">
+          <button type="button" onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_ITEMS)}>
+            {l.showMore}
+          </button>
+        </div>
+      )}
     </>
   );
 };

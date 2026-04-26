@@ -98,6 +98,14 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-size: 0.9rem;
   margin-left: auto;
 }
+.catalog-more {
+  margin: 1rem 0 0;
+  text-align: center;
+}
+.catalog-more button {
+  font: inherit;
+  padding: 0.35rem 0.75rem;
+}
 
 /* catalog: results */
 .catalog-results article {

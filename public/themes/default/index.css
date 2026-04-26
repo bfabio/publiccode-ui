@@ -332,6 +332,26 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: var(--text-primary);
   border-color: var(--text-quaternary);
 }
+.catalog-more {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0 0;
+}
+.catalog-more button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  cursor: pointer;
+}
+.catalog-more button:hover {
+  color: var(--text-primary);
+  border-color: var(--text-quaternary);
+}
 
 /* ── catalog: results ── */
 
