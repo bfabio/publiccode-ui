@@ -700,3 +700,27 @@ dialog nav button:hover {
   font-weight: 300;
   letter-spacing: -1px;
 }
+
+.image-shell,
+.screenshot-thumb {
+  position: relative;
+}
+
+.image-loading::after,
+.image-skeleton {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent), #edf2f7;
+  background-size: 220% 100%, 100% 100%;
+  animation: image-placeholder 1.2s steps(8) infinite;
+}
+
+.image-skeleton {
+  z-index: 1;
+}
+
+@keyframes image-placeholder {
+  from { background-position: 120% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}

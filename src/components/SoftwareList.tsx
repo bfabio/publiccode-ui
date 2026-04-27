@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
+import { failImageFallback, loadImageFallback } from "../lib/imageFallback.js";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -30,6 +31,7 @@ interface SoftwareItem {
   releaseDate: string;
   license: { id: string; name: string; url: string | null } | null;
   logo: string | null;
+  logoFallback: string | null;
   developmentStatus: string;
   softwareType: string;
   intendedAudience: string[];
@@ -213,16 +215,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {sorted.map((item) => (
           <article key={item.id}>
-            <figure className="software-thumb">
+            <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`}>
               <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
               {item.logo && (
-                <img src={item.logo} alt="" loading="lazy"
-                  onLoad={(e) => {
-                    e.currentTarget.style.visibility = 'visible';
-                    const el = e.currentTarget.previousElementSibling as HTMLElement | null;
-                    if (el) el.style.visibility = 'hidden';
-                  }}
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                <img src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy"
+                  onLoad={(e) => loadImageFallback(e.currentTarget)}
+                  onError={(e) => failImageFallback(e.currentTarget)}
                 />
               )}
             </figure>
