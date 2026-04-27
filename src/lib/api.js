@@ -13,7 +13,7 @@ export async function fetchAllSoftware() {
   if (softwareCache) return softwareCache;
 
   const items = [];
-  let next = `${API_URL}/software`;
+  let next = `${API_URL}/software?page[size]=100`;
 
   while (next) {
     const res = await fetch(next);
