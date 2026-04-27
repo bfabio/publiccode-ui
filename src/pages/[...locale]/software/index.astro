@@ -29,12 +29,19 @@ const items = await Promise.all(allSoftware.map(async (s) => {
   const logo = resolveLogoAsset(pc);
   const categories = pc.categories ?? [];
   const shortDescription = desc.shortDescription ?? '';
+  const releaseDate = (() => {
+    const raw = pc.releaseDate instanceof Date
+      ? pc.releaseDate.toISOString().slice(0, 10)
+      : (pc.releaseDate ?? '');
+    const parsed = new Date(raw);
+    return raw && !Number.isNaN(parsed.getTime()) ? parsed.toISOString().slice(0, 10) : '';
+  })();
   return {
     id: s.id,
     name: pc.name,
     shortDescription,
     categories,
-    releaseDate: pc.releaseDate instanceof Date ? pc.releaseDate.toISOString().slice(0, 10) : (pc.releaseDate ?? ''),
+    releaseDate,
     license: license ? { id: license.id, name: license.name, url: license.url } : null,
     logo: logo?.src ?? null,
     logoFallback: logo?.fallback ?? null,
