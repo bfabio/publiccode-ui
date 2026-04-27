@@ -433,3 +433,27 @@ dialog nav button:hover {
 #lightbox-close:hover {
   background: #fff;
 }
+
+.image-shell,
+.screenshot-thumb {
+  position: relative;
+}
+
+.image-loading::after,
+.image-skeleton {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent), #eef2f7;
+  background-size: 220% 100%, 100% 100%;
+  animation: image-placeholder 1.2s ease-in-out infinite;
+}
+
+.image-skeleton {
+  z-index: 1;
+}
+
+@keyframes image-placeholder {
+  from { background-position: 120% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}

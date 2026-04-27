@@ -774,3 +774,28 @@ dialog nav button:hover {
   margin: 2px 0 0;
   font-size: 13px;
 }
+
+.image-shell,
+.screenshot-thumb {
+  position: relative;
+}
+
+.image-loading::after,
+.image-skeleton {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent);
+  background-size: 220% 100%;
+  animation: image-placeholder 1.2s ease-in-out infinite;
+}
+
+.screenshot-thumb .image-skeleton {
+  display: block;
+  background-color: var(--surface-btn);
+}
+
+@keyframes image-placeholder {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}

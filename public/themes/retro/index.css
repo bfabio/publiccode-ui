@@ -256,3 +256,26 @@ dialog nav button,
   top: 4px;
   right: 4px;
 }
+
+.image-shell,
+.screenshot-thumb {
+  position: relative;
+}
+
+.image-loading::after,
+.image-skeleton {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, #ddd 0, #ddd 10px, #f4f4f4 10px, #f4f4f4 20px);
+  animation: image-placeholder 0.8s linear infinite;
+}
+
+.image-skeleton {
+  z-index: 1;
+}
+
+@keyframes image-placeholder {
+  from { background-position: 0 0; }
+  to { background-position: 20px 0; }
+}
