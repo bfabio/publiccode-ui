@@ -56,7 +56,7 @@ export async function fetchLogs({ days = 3 } = {}) {
     logs.push(...json.data);
 
     next = json.links?.next
-      ? `${API_URL}/logs${json.links.next}`
+      ? `${API_URL}/logs${json.links.next}&page[size]=100&from=${from}`
       : null;
   }
 
