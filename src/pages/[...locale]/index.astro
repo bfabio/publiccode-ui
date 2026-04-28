@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import SetupRequired from '../../components/SetupRequired.astro';
 import { fetchAllSoftware, apiConfigured } from '../../lib/api.js';
+import { resolveLogoAsset } from '../../lib/assets.js';
 import { localizeDescription, t } from '../../lib/i18n.js';
 import { base } from '../../lib/url.js';
 import { SearchBox } from '../../components/SearchBox';
@@ -19,12 +20,15 @@ const allSoftware = await fetchAllSoftware();
 const items = allSoftware.map((s) => {
   const desc = localizeDescription(s.publiccode.description, locale);
   const shortDescription = desc.shortDescription ?? '';
+  const logo = resolveLogoAsset(s.publiccode);
   return {
     id: s.id,
     name: s.publiccode.name,
     shortDescription,
     nameLower: s.publiccode.name.toLowerCase(),
     searchText: [s.publiccode.name, shortDescription].join(' ').toLowerCase(),
+    logo: logo?.src ?? null,
+    logoFallback: logo?.fallback ?? null,
   };
 });
 ---

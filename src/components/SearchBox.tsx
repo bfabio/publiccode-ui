@@ -6,6 +6,8 @@ interface SearchItem {
   shortDescription: string;
   searchText: string;
   nameLower: string;
+  logo: string | null;
+  logoFallback: string | null;
 }
 
 function highlight(text: string, query: string) {
@@ -143,8 +145,14 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
               onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
               onMouseEnter={() => setSelectedIdx(i)}
             >
-              <strong>{highlight(s.name, inputValue)}</strong>{" "}
-              <span className="suggestion-desc">{s.shortDescription}</span>
+              <span className={`suggestion-thumb image-shell ${s.logo ? 'image-loading' : ''}`}>
+                <span className="logo-placeholder" aria-hidden="true">{s.name.charAt(0).toUpperCase()}</span>
+                {s.logo && <img className="image-fallback" src={s.logo} data-fallback={s.logoFallback ?? undefined} alt="" />}
+              </span>
+              <span className="suggestion-text">
+                <strong>{highlight(s.name, inputValue)}</strong>{" "}
+                <span className="suggestion-desc">{s.shortDescription}</span>
+              </span>
             </li>
           ))}
         </ul>
