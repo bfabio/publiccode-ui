@@ -49,7 +49,7 @@ const platforms = pc.platforms ?? [];
       <figure class={`software-logo image-shell ${logo ? 'image-loading' : ''}`}>
         <span class="logo-placeholder" aria-hidden="true">{pc.name.charAt(0).toUpperCase()}</span>
         {logo && (
-          <img src={logo.src} data-fallback={logo.fallback} data-image-fallback alt="" fetchpriority="high" />
+          <img src={logo.src} data-fallback={logo.fallback} class="image-fallback" alt="" fetchpriority="high" />
         )}
       </figure>
       <div>
@@ -96,7 +96,7 @@ const platforms = pc.platforms ?? [];
           {screenshots.map((asset, i) => (
             <button type="button" data-index={i} class="screenshot-thumb">
               <span class="image-skeleton" aria-hidden="true"></span>
-              <img src={asset.src} data-fallback={asset.fallback} data-image-fallback alt="" loading="lazy" />
+              <img src={asset.src} data-fallback={asset.fallback} class="image-fallback" alt="" loading="lazy" />
             </button>
           ))}
         </div>
@@ -135,13 +135,6 @@ const platforms = pc.platforms ?? [];
 </Layout>
 
 <script>
-  import { failImageFallback, loadImageFallback } from '../../../lib/imageFallback.js';
-
-  document.querySelectorAll<HTMLImageElement>('[data-image-fallback]').forEach((el) => {
-    el.addEventListener('load', () => loadImageFallback(el));
-    el.addEventListener('error', () => failImageFallback(el));
-  });
-
   const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
   const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
   if (dialog && img) {

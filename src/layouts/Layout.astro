@@ -33,6 +33,29 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    <script is:inline>
+      document.addEventListener('load', function(e) {
+        var i = e.target;
+        if (!i.classList || !i.classList.contains('image-fallback')) return;
+        i.style.visibility = 'visible';
+        var p = i.previousElementSibling;
+        if (p) { p.style.display = 'none'; p.style.visibility = 'hidden'; }
+        var s = i.closest('.image-shell');
+        s.classList.remove('image-loading');
+        s.classList.add('image-loaded');
+        i.classList.add('image-loaded');
+      }, true);
+      document.addEventListener('error', function(e) {
+        var i = e.target;
+        if (!i.classList || !i.classList.contains('image-fallback')) return;
+        var f = i.dataset.fallback;
+        if (f && i.src !== f) { i.src = f; i.dataset.fallback = ''; return; }
+        i.style.display = 'none';
+        var p = i.previousElementSibling;
+        if (p) p.style.display = 'none';
+        i.closest('.image-shell').classList.remove('image-loading');
+      }, true);
+    </script>
     <script is:inline define:vars={{ base, defaultTheme }}>
       const saved = localStorage.getItem('theme') || defaultTheme;
       document.write(`<link rel="stylesheet" id="theme-css" href="${base}/themes/${saved}/index.css" />`);

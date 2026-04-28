@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
-import { failImageFallback, loadImageFallback } from "../lib/imageFallback.js";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -227,10 +226,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`}>
               <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
               {item.logo && (
-                <img src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy"
-                  onLoad={(e) => loadImageFallback(e.currentTarget)}
-                  onError={(e) => failImageFallback(e.currentTarget)}
-                />
+                <img className="image-fallback" src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy" />
               )}
             </figure>
             <header>
