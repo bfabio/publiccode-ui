@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { fetchLogs, fetchAllSoftware } from '../../lib/api.js';
 
-const logs = await fetchLogs();
+const logs = await fetchLogs({ days: 7 });
 const software = await fetchAllSoftware();
 const softwareById = new Map(
   software.map((s) => [s.id, s.publiccode?.url ?? null])
