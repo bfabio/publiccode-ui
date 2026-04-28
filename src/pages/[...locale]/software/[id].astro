@@ -139,12 +139,13 @@ const platforms = pc.platforms ?? [];
   const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
   if (dialog && img) {
     const thumbs = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb');
-    const srcs = Array.from(thumbs).map(t => t.querySelector('img')!.src);
     let current = 0;
 
+    const src = (i: number) => thumbs[i]?.querySelector('img')?.src ?? '';
+
     const show = (i: number) => {
-      current = (i + srcs.length) % srcs.length;
-      img.src = srcs[current];
+      current = (i + thumbs.length) % thumbs.length;
+      img.src = src(current);
     };
 
     thumbs.forEach(t => t.addEventListener('click', () => {
