@@ -622,9 +622,11 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 .screenshot-thumb {
   padding: 0;
+  width: 260px;
+  height: 160px;
   border: 1px solid var(--border-standard);
   border-radius: var(--radius-md);
-  background: none;
+  background: var(--surface-btn);
   cursor: pointer;
   overflow: hidden;
   transition: border-color 0.15s;
@@ -633,8 +635,8 @@ nav[aria-label="Breadcrumb"] li + li::before {
   border-color: var(--accent);
 }
 .screenshot-thumb img {
-  max-height: 160px;
-  max-width: 260px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
@@ -751,6 +753,10 @@ dialog nav button:hover {
 .image-shell,
 .screenshot-thumb {
   position: relative;
+}
+
+.image-loading .logo-placeholder {
+  visibility: hidden;
 }
 
 .image-loading::after,
