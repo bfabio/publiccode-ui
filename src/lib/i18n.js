@@ -28,6 +28,12 @@ const translations = {
     maintenance_type: "Maintenance",
     languages: "Languages",
 
+    status_concept: "Concept",
+    status_development: "In development",
+    status_beta: "Beta",
+    status_stable: "Stable",
+    status_obsolete: "Obsolete",
+
     documentation: "Documentation",
     api_documentation: "API documentation",
     source_code: "Source code",
@@ -72,6 +78,12 @@ const translations = {
     platforms: "Piattaforme",
     maintenance_type: "Manutenzione",
     languages: "Lingue",
+
+    status_concept: "Concept",
+    status_development: "In sviluppo",
+    status_beta: "Beta",
+    status_stable: "Stabile",
+    status_obsolete: "Obsoleto",
 
     documentation: "Documentazione",
     api_documentation: "Documentazione API",
