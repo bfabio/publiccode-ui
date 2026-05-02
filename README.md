@@ -46,14 +46,14 @@ Themes live in `public/themes/{name}/index.css`. Set `THEME` at
 build time to switch:
 
 ```shell
-THEME=simple npm run build
+THEME=retro npm run build
 ```
 
 Available themes:
 
 - `default`
-- `simple`
-- `minimal`
+- `mono`
+- `retro`
 
 ## Contributing
 
