@@ -36,6 +36,20 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
     <title>{title}</title>
+    <script is:inline define:vars={{ base }}>
+      {
+        const supported = ['en', 'it'];
+        const current = document.documentElement.lang || 'en';
+        const nav = navigator.language || '';
+        const lang = new URLSearchParams(location.search).get('lang')
+          || supported.find((s) => nav === s || nav.startsWith(`${s}-`));
+        if (lang && lang !== current && supported.includes(lang)) {
+          const rel = location.pathname.slice(base.length).replace(/^\/it(?=\/|$)/, '') || '/';
+          const target = `${base}${lang === 'it' ? '/it' : ''}${rel}`;
+          if (target !== location.pathname) location.replace(target);
+        }
+      }
+    </script>
     {description && <meta name="description" content={description} />}
     <script is:inline>
       try {
