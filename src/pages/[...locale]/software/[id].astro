@@ -73,7 +73,7 @@ const platforms = pc.platforms ?? [];
       {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
       {license && <><dt><Fragment set:html={faIcon('gavel')} /> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url}>{license.name}</a> : license.name}</dd></>}
       {release && <><dt><Fragment set:html={faIcon('calendar', 'far')} /> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
-      {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{pc.developmentStatus}</dd></>}
+      {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
       {pc.softwareType && <><dt><Fragment set:html={faIcon('cube')} /> {t(locale, 'software_type')}</dt><dd>{pc.softwareType}</dd></>}
       {pc.maintenance?.type && <><dt><Fragment set:html={faIcon('wrench')} /> {t(locale, 'maintenance_type')}</dt><dd>{pc.maintenance.type}</dd></>}
       {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
