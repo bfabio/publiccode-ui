@@ -4,20 +4,28 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  repository_dispatch:
+    types: [new-software]
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# With cancel-in-progress, the sleep in the build job acts as a
+# debounce window: rapid repository_dispatch events cancel previous
+# runs, and only the last one survives past the sleep.
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Debounce repository_dispatch
+        if: github.event_name == 'repository_dispatch'
+        run: sleep 60
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
