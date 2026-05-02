@@ -39,7 +39,8 @@ const screenshots = resolveScreenshotAssets(pc, desc);
 const release = formatDate(pc.releaseDate, locale);
 const license = await resolveLicense(pc.legal?.license);
 const features = desc.features ?? [];
-const languages = Object.keys(pc.description ?? {}).map(k => k.replace(/-.*/, ''));
+const langNames = new Intl.DisplayNames([locale], { type: 'language' });
+const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
 const platforms = pc.platforms ?? [];
 ---
 
