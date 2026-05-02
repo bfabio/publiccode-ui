@@ -103,6 +103,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         type="search"
         value={inputValue}
         disabled={navigating}
+        autoFocus
         onChange={(e) => { update(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
         onKeyDown={handleKeyDown}
         onFocus={() => setShowSuggestions(true)}

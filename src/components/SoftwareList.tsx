@@ -163,6 +163,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         <input
           type="search"
           value={inputValue}
+          autoFocus
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={l.searchPlaceholder}
           aria-label={l.searchPlaceholder}
