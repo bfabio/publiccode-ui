@@ -1,0 +1,86 @@
+publiccodeYmlVersion: "0"
+
+name: publiccode-ui
+url: "https://github.com/bfabio/publiccode-ui"
+developmentStatus: development
+softwareType: standalone/web
+platforms:
+  - web
+
+categories:
+  - it-development
+  - data-visualization
+
+description:
+  en:
+    shortDescription: >-
+      White-label web frontend for browsing a software catalog
+      exposed by any publiccode-compatible API.
+    longDescription: >-
+      publiccode-ui is a static web frontend for browsing and searching
+      a software catalog exposed by any API implementing the
+      developers-italia-api interface. Built with Astro, React and
+      TypeScript, it fetches all data at build time and produces a
+      fully static site.
+
+
+      Features include fuzzy search with Fuse.js, multi-language
+      support (English and Italian), theme switching (default, mono,
+      retro), responsive card layout, filtering by category, status,
+      type, audience and catalog, and individual software detail pages
+      with screenshots, license info and contact details.
+
+
+      Designed as a zero-effort reusable proof of concept: point it at
+      any compatible API endpoint and it works out of the box.
+    features:
+      - Fuzzy search across name, description, categories and repo name
+      - Filtering by category, status, type, audience and catalog
+      - Theme switching with light/dark mode support
+      - Multi-language interface (English and Italian)
+      - Software detail pages with screenshots and contact info
+      - Fully static output, no server required
+
+  it:
+    shortDescription: >-
+      Frontend web white-label per esplorare un catalogo software
+      esposto da qualsiasi API compatibile con publiccode.
+    longDescription: >-
+      publiccode-ui e' un frontend web statico per esplorare e cercare
+      un catalogo software esposto da qualsiasi API che implementa
+      l'interfaccia developers-italia-api. Costruito con Astro, React e
+      TypeScript, recupera tutti i dati al momento della build e
+      produce un sito completamente statico.
+
+
+      Le funzionalita' includono ricerca fuzzy con Fuse.js, supporto
+      multilingua (inglese e italiano), cambio tema (default, mono,
+      retro), layout responsive a card, filtri per categoria, stato,
+      tipo, destinatari e catalogo, e pagine di dettaglio per ogni
+      software con screenshot, informazioni sulla licenza e contatti.
+
+
+      Progettato come proof of concept riutilizzabile senza sforzo:
+      basta puntarlo a un endpoint API compatibile e funziona.
+    features:
+      - Ricerca fuzzy su nome, descrizione, categorie e nome del repo
+      - Filtri per categoria, stato, tipo, destinatari e catalogo
+      - Cambio tema con supporto modalita' chiara/scura
+      - Interfaccia multilingua (inglese e italiano)
+      - Pagine di dettaglio con screenshot e contatti
+      - Output completamente statico, nessun server necessario
+
+legal:
+  license: BSD-3-Clause
+
+maintenance:
+  type: internal
+  contacts:
+    - name: Fabio Bonelli
+      email: fb@fabiobonelli.it
+
+localisation:
+  localisationReady: true
+  availableLanguages:
+    - en
+    - it
