@@ -339,6 +339,19 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-filters select:focus {
   border-color: var(--accent);
 }
+.catalog-filters .filter-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.catalog-filters .filter-check input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
 .catalog-filters output {
   color: var(--text-quaternary);
   font-size: 13px;
@@ -854,4 +867,331 @@ dialog nav button:hover {
 @keyframes image-placeholder {
   from { background-position: 120% 0; }
   to { background-position: -120% 0; }
+}
+
+/* ── detail: activity & vitality ── */
+
+.software-metrics .metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.metrics-group {
+  background: var(--surface-btn);
+  border: 1px solid var(--border-standard);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+}
+.metrics-group h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-quaternary);
+  font-weight: 510;
+  margin: 0 0 0.75rem;
+}
+.metrics-group dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 1rem;
+  margin: 0;
+}
+.metrics-group dt {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.metrics-group dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.metrics-group dd.is-na {
+  color: var(--text-quaternary);
+  font-weight: 400;
+}
+.metrics-info {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin: 0.75rem 0 0;
+}
+.metrics-info strong {
+  color: var(--text-secondary);
+  font-weight: 510;
+}
+
+.vitality-badge {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface-btn);
+  border: 1px solid var(--border-standard);
+  border-radius: var(--radius-lg);
+}
+.vitality-score {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.vitality-value {
+  font-size: 2.5rem;
+  font-weight: 590;
+  letter-spacing: -0.704px;
+  color: var(--accent-bright);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.vitality-max {
+  font-size: 0.9rem;
+  color: var(--text-quaternary);
+}
+.vitality-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.vitality-title {
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.vitality-title abbr {
+  color: var(--text-quaternary);
+  text-decoration: none;
+  cursor: help;
+}
+.vitality-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.vitality-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 510;
+  color: var(--text-secondary);
+  background: var(--surface-btn);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  cursor: pointer;
+}
+.vitality-actions button:hover {
+  color: var(--text-primary);
+  border-color: var(--text-quaternary);
+}
+.vitality-actions svg {
+  transition: transform 0.15s;
+}
+.vitality-actions svg.rot {
+  transform: rotate(180deg);
+}
+
+.vitality-debug {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 13px;
+}
+.vitality-debug th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-quaternary);
+  font-weight: 510;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-standard);
+}
+.vitality-debug td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  vertical-align: middle;
+}
+.vitality-debug td:first-child {
+  color: var(--text-primary);
+  font-weight: 510;
+  font-variant-numeric: normal;
+}
+.vitality-debug .bar-track {
+  display: inline-block;
+  vertical-align: middle;
+  width: 60px;
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin-right: 8px;
+}
+.vitality-debug .bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+}
+.vitality-debug tr.is-excluded td,
+.vitality-debug .is-na {
+  color: var(--text-quaternary);
+}
+.vitality-debug abbr {
+  cursor: help;
+  color: var(--text-quaternary);
+  text-decoration: none;
+}
+.vitality-debug tfoot td {
+  font-weight: 590;
+  color: var(--text-primary);
+  border-bottom: none;
+}
+.vitality-debug .weight-input {
+  width: 64px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-btn);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-md);
+  padding: 4px 6px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.vitality-debug .weight-input:focus {
+  border-color: var(--accent);
+}
+.vitality-split-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-weight: 510;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.vitality-split-toggle svg {
+  font-size: 10px;
+  color: var(--text-quaternary);
+  transition: transform 0.15s;
+}
+.vitality-split-toggle svg.rot {
+  transform: rotate(180deg);
+}
+.vitality-split-row td {
+  padding: 0;
+}
+.vitality-split {
+  display: flex;
+  gap: 16px;
+  padding: 10px 8px 12px 28px;
+  background: var(--bg-elevated);
+}
+.vitality-split label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.vitality-split input {
+  width: 64px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-btn);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-md);
+  padding: 4px 6px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.vitality-split input:focus {
+  border-color: var(--accent);
+}
+
+.vitality-config {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-standard);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.vitality-config fieldset {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem 1rem;
+  margin: 0;
+}
+.vitality-config legend {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-quaternary);
+  font-weight: 510;
+  padding: 0 6px;
+}
+.vitality-config .weight-sum {
+  text-transform: none;
+  color: var(--text-tertiary);
+  margin-left: 8px;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+.config-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.config-grid input,
+.config-grid select {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface-btn);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-md);
+  padding: 6px 8px;
+  outline: none;
+}
+.config-grid input:focus,
+.config-grid select:focus {
+  border-color: var(--accent);
+}
+.vitality-reset {
+  align-self: flex-start;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 510;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+  cursor: pointer;
+}
+.vitality-reset:hover {
+  color: var(--text-primary);
+  border-color: var(--text-quaternary);
 }

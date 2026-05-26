@@ -1,7 +1,8 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { faIcon } from '../../../lib/icons.js';
-import { fetchAllSoftware, fetchCatalogs } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis } from '../../../lib/api.js';
+import { SoftwareMetrics } from '../../../components/SoftwareMetrics';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
@@ -15,6 +16,8 @@ export async function getStaticPaths() {
   const catalogs = await fetchCatalogs();
   const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
   const multiCatalog = catalogs.length > 1;
+  const softwareAnalysis = await fetchAllSoftwareAnalysis();
+  const catalogAnalysis = await fetchAllCatalogAnalysis();
   const locales = [undefined, 'it'];
   return locales.flatMap((locale) =>
     software.map((s) => ({
@@ -23,13 +26,15 @@ export async function getStaticPaths() {
         software: s,
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         multiCatalog,
+        activity: softwareAnalysis.get(s.id) ?? null,
+        stats: catalogAnalysis.get(s.catalogId) ?? null,
       },
     }))
   );
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, multiCatalog } = Astro.props;
+const { software, catalogName, multiCatalog, activity, stats } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -79,6 +84,8 @@ const platforms = pc.platforms ?? [];
       {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
       {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
+
+    {activity && <SoftwareMetrics client:visible activity={activity} stats={stats} locale={locale} />}
 
     {features.length > 0 && (
       <section class="software-features">

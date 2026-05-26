@@ -36,6 +36,7 @@ interface SoftwareItem {
   intendedAudience: string[];
   catalogSlug: string | null;
   catalogName: string | null;
+  hasActivity: boolean;
   searchText: string;
   nameLower: string;
 }
@@ -92,6 +93,7 @@ interface Labels {
   filters: string;
   sortBy: string;
   showMore: string;
+  hasActivityData?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
@@ -106,6 +108,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
   const [audience, setAudience] = useState(() => readParam("audience"));
   const [catalog, setCatalog] = useState(() => readParam("catalog"));
+  const [onlyActivity, setOnlyActivity] = useState(() => readParam("activity") === "1");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
   const deferredQuery = useDeferredValue(query);
 
@@ -115,12 +118,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, catalog, sort_by: sortBy === "release_date_desc" ? "" : sortBy });
-  }, [query, category, status, softwareType, audience, catalog, sortBy]);
+    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy === "release_date_desc" ? "" : sortBy });
+  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
-  }, [deferredQuery, category, status, softwareType, audience, catalog, sortBy]);
+  }, [deferredQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
@@ -138,8 +141,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (softwareType) result = result.filter((i) => i.softwareType === softwareType);
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
     if (catalog) result = result.filter((i) => i.catalogSlug === catalog);
+    if (onlyActivity) result = result.filter((i) => i.hasActivity);
     return result;
-  }, [items, deferredQuery, category, status, softwareType, audience, catalog]);
+  }, [items, deferredQuery, category, status, softwareType, audience, catalog, onlyActivity]);
+
+  const anyActivity = useMemo(() => items.some((i) => i.hasActivity), [items]);
 
   const sorted = useMemo(() => {
     if (deferredQuery) {
@@ -198,10 +204,16 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="name_asc">{l.sortNameAsc}</option>
           <option value="name_desc">{l.sortNameDesc}</option>
         </select>
+        {anyActivity && (
+          <label className="filter-check">
+            <input type="checkbox" checked={onlyActivity} onChange={(e) => setOnlyActivity(e.target.checked)} />
+            {l.hasActivityData ?? "With vitality data"}
+          </label>
+        )}
         <output>{sorted.length} {l.results}</output>
-        {(query || category || status || softwareType || audience || catalog) && (
+        {(query || category || status || softwareType || audience || catalog || onlyActivity) && (
           <button type="button" className="clear-filters" onClick={() => {
-            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog("");
+            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog(""); setOnlyActivity(false);
           }}>{l.clearFilters}</button>
         )}
       </div>
