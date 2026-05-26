@@ -70,6 +70,7 @@ const translations = {
     all_catalogs: "All catalogs",
     catalog_label: "Catalog",
     catalog_description: "Browse and search open source software in the catalog",
+    has_activity: "With vitality data",
   },
   it: {
     catalog: "Catalogo software",
@@ -142,6 +143,7 @@ const translations = {
     all_catalogs: "Tutti i cataloghi",
     catalog_label: "Catalogo",
     catalog_description: "Cerca e sfoglia il software open source nel catalogo",
+    has_activity: "Con dati di vitalità",
   },
 };
 

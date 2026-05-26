@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import SetupRequired from '../../../components/SetupRequired.astro';
-import { fetchAllSoftware, fetchCatalogs, apiConfigured } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, apiConfigured } from '../../../lib/api.js';
 import { resolveLogoAsset } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
@@ -18,6 +18,7 @@ export function getStaticPaths() {
 const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
 const catalogs = await fetchCatalogs();
+const softwareAnalysis = await fetchAllSoftwareAnalysis();
 const multiCatalog = catalogs.length > 1;
 const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
 
@@ -50,6 +51,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     intendedAudience: pc.intendedAudience?.scope ?? [],
     catalogSlug: cat?.slug ?? null,
     catalogName: cat?.name ?? null,
+    hasActivity: !!softwareAnalysis.get(s.id),
     nameLower: pc.name.toLowerCase(),
     searchText: [pc.name, shortDescription, ...categories].join(' ').toLowerCase(),
   };
@@ -78,6 +80,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       filters: t(locale, 'filters'),
       sortBy: t(locale, 'sort_by'),
       showMore: t(locale, 'show_more'),
+      hasActivityData: t(locale, 'has_activity'),
     }} />
 </Layout>
 ) : (

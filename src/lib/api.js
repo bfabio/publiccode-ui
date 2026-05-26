@@ -7,6 +7,19 @@ export const apiConfigured = !!API_URL;
 let softwareCache = null;
 let catalogsCache = null;
 let logsCache = null;
+let softwareAnalysisCache = null;
+let catalogAnalysisCache = null;
+
+async function mapLimit(items, limit, fn) {
+  let cursor = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const i = cursor++;
+      await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+}
 
 export async function fetchAllSoftware() {
   if (!API_URL) return [];
@@ -82,4 +95,44 @@ export async function fetchCatalogs() {
   }
 
   return catalogsCache;
+}
+
+async function fetchActivity(path, extract) {
+  try {
+    const res = await fetch(`${API_URL}${path}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const payload = json?.data ?? json;
+    return extract(payload) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchAllSoftwareAnalysis() {
+  if (!API_URL) return new Map();
+  if (softwareAnalysisCache) return softwareAnalysisCache;
+
+  const software = await fetchAllSoftware();
+  const map = new Map();
+  await mapLimit(software, 8, async (s) => {
+    map.set(s.id, await fetchActivity(`/software/${s.id}/analysis`, (p) => p?.activity));
+  });
+
+  softwareAnalysisCache = map;
+  return map;
+}
+
+export async function fetchAllCatalogAnalysis() {
+  if (!API_URL) return new Map();
+  if (catalogAnalysisCache) return catalogAnalysisCache;
+
+  const catalogs = await fetchCatalogs();
+  const map = new Map();
+  await mapLimit(catalogs, 4, async (c) => {
+    map.set(c.id, await fetchActivity(`/catalogs/${c.id}/analysis`, (p) => p?.activity?.stats));
+  });
+
+  catalogAnalysisCache = map;
+  return map;
 }
