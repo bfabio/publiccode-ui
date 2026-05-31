@@ -5,10 +5,10 @@ export interface SoftwareActivity {
   pullRequestsAllTime: number;
   commitsRecent: number;
   pullRequestsRecent: number;
-  stars?: number;
-  forks?: number;
-  issuesOpen?: number;
-  issuesClosed?: number;
+  stars?: number | null;
+  forks?: number | null;
+  issuesOpen?: number | null;
+  issuesClosed?: number | null;
   oldestCommit?: string;
   releases: number;
   recentDays: number;
@@ -35,4 +35,14 @@ export type StatMetric =
   | 'issuesClosed'
   | 'releases';
 
+export type ForgeMetric = 'stars' | 'forks' | 'issuesOpen' | 'issuesClosed';
+
 export type CatalogStats = Partial<Record<StatMetric, MetricStats>>;
+
+export interface CatalogActivity {
+  v: number;
+  updatedAt: string;
+  softwareCount: number;
+  recentDays: number;
+  stats: CatalogStats;
+}
