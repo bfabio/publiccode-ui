@@ -10,7 +10,7 @@ export interface SoftwareActivity {
   issuesOpen?: number | null;
   issuesClosed?: number | null;
   oldestCommit?: string;
-  releases: number;
+  tags: number;
   recentDays: number;
 }
 
@@ -33,7 +33,7 @@ export type StatMetric =
   | 'forks'
   | 'issuesOpen'
   | 'issuesClosed'
-  | 'releases';
+  | 'tags';
 
 export type ForgeMetric = 'stars' | 'forks' | 'issuesOpen' | 'issuesClosed';
 
