@@ -76,6 +76,7 @@ export const LABELS = {
     rowDisabled: "disabled",
     rowUnknown: "not collected yet",
     capDisabled: "Capped at 89: a forge feature is disabled",
+    dataAsOf: "Data as of",
   },
   it: {
     section: "Attività",
@@ -152,5 +153,6 @@ export const LABELS = {
     rowDisabled: "disattivato",
     rowUnknown: "non ancora raccolto",
     capDisabled: "Limitato a 89: una funzione della forge è disattivata",
+    dataAsOf: "Dati aggiornati al",
   },
 };
