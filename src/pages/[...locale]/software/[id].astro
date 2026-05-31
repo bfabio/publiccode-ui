@@ -27,7 +27,7 @@ export async function getStaticPaths() {
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         multiCatalog,
         activity: softwareAnalysis.get(s.id) ?? null,
-        stats: catalogAnalysis.get(s.catalogId) ?? null,
+        stats: catalogAnalysis.get(s.catalogId)?.stats ?? null,
       },
     }))
   );

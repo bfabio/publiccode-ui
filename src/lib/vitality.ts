@@ -113,7 +113,7 @@ export interface VitalityResult {
   weightSum: number;
 }
 
-const isPresent = (v: number | undefined): v is number => typeof v === 'number';
+const isPresent = (v: number | null | undefined): v is number => typeof v === 'number';
 
 /**
  * Single-software scoring. Composite (history/activity) and ratio-issue xmax

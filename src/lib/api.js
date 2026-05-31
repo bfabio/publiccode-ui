@@ -1,4 +1,5 @@
 import yaml from 'js-yaml';
+import { parseSoftwareActivity, parseCatalogActivity } from './activity.ts';
 
 const API_URL = process.env.API_URL;
 
@@ -116,7 +117,7 @@ export async function fetchAllSoftwareAnalysis() {
   const software = await fetchAllSoftware();
   const map = new Map();
   await mapLimit(software, 8, async (s) => {
-    map.set(s.id, await fetchActivity(`/software/${s.id}/analysis`, (p) => p?.activity));
+    map.set(s.id, await fetchActivity(`/software/${s.id}/analysis`, parseSoftwareActivity));
   });
 
   softwareAnalysisCache = map;
@@ -130,7 +131,7 @@ export async function fetchAllCatalogAnalysis() {
   const catalogs = await fetchCatalogs();
   const map = new Map();
   await mapLimit(catalogs, 4, async (c) => {
-    map.set(c.id, await fetchActivity(`/catalogs/${c.id}/analysis`, (p) => p?.activity?.stats));
+    map.set(c.id, await fetchActivity(`/catalogs/${c.id}/analysis`, parseCatalogActivity));
   });
 
   catalogAnalysisCache = map;
