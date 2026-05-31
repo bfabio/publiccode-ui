@@ -13,6 +13,7 @@ export interface SoftwareActivity {
   tags: number;
   recentDays: number;
   disabled?: string[];
+  updatedAt?: string;
 }
 
 export interface MetricStats {

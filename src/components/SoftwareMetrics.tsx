@@ -52,6 +52,8 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
 
   const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
 
+  const collectedDate = activity.updatedAt ? formatDate(activity.updatedAt, locale) : null;
+
   const win = activity.recentDays ?? 180;
   const code: CodeRow[] = [
     { label: L.contributors, kind: "git", value: activity.contributors },
@@ -170,6 +172,11 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
             <p className="activity-scope activity-cap-warning">
               {L.capDisabled}
             </p>
+          )}
+          {collectedDate && (
+            <small className="activity-collected-at">
+              {L.dataAsOf} <time dateTime={collectedDate.datetime} title={hydrated ? collectedDate.formatted : undefined}>{hydrated ? relativeDate(activity.updatedAt, locale) : collectedDate.formatted}</time>
+            </small>
           )}
         </div>
         {debugEnabled && (

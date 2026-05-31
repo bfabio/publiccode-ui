@@ -1540,6 +1540,10 @@ dialog nav button:hover {
 .activity-weights-panel .activity-debug {
   margin-top: 0;
 }
+.activity-collected-at {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
 
 .activity-debug {
   width: 100%;
