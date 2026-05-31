@@ -8,7 +8,8 @@ import {
   type VitalityConfig,
   type DimensionKey,
 } from "../lib/vitality";
-import type { SoftwareActivity, CatalogStats } from "../types/analysis";
+import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
+import { fieldState } from "../lib/activity.ts";
 
 const STORAGE_KEY = "publiccode-ui:vitality";
 const URL_PARAM = "vitality";
@@ -58,6 +59,7 @@ const LABELS = {
     weightSum: "Sum",
     reset: "Reset to defaults",
     na: "n/d",
+    unavailable: "unavailable",
     excluded: "excluded (no data)",
   },
   it: {
@@ -104,6 +106,7 @@ const LABELS = {
     weightSum: "Somma",
     reset: "Ripristina default",
     na: "n/d",
+    unavailable: "non disponibile",
     excluded: "esclusa (dati assenti)",
   },
 };
@@ -182,11 +185,11 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
     [L.commitsWindow(win), activity.commitsRecent],
     [L.mergesWindow(win), activity.pullRequestsRecent],
   ];
-  const community: [string, number | null][] = [
-    [L.stars, activity.stars ?? null],
-    [L.forks, activity.forks ?? null],
-    [L.issuesOpen, activity.issuesOpen ?? null],
-    [L.issuesClosed, activity.issuesClosed ?? null],
+  const community: [string, ForgeMetric][] = [
+    [L.stars, "stars"],
+    [L.forks, "forks"],
+    [L.issuesOpen, "issuesOpen"],
+    [L.issuesClosed, "issuesClosed"],
   ];
 
   const setWeight = (key: DimensionKey, value: number) =>
@@ -219,12 +222,18 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
         <div className="metrics-group">
           <h3>{L.groupCommunity}</h3>
           <dl>
-            {community.map(([label, value]) => (
-              <React.Fragment key={label}>
-                <dt>{label}</dt>
-                <dd className={value === null ? "is-na" : undefined}>{fmt(value, locale) ?? L.na}</dd>
-              </React.Fragment>
-            ))}
+            {community.map(([label, key]) => {
+              const fs = fieldState(activity, key);
+              if (fs.state === "absent") return null;
+              return (
+                <React.Fragment key={label}>
+                  <dt>{label}</dt>
+                  <dd className={fs.state === "unavailable" ? "is-na" : undefined}>
+                    {fs.state === "value" ? fmt(fs.value, locale) : L.unavailable}
+                  </dd>
+                </React.Fragment>
+              );
+            })}
           </dl>
         </div>
       </div>
