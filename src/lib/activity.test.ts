@@ -52,7 +52,7 @@ describe('parseCatalogActivity', () => {
 describe('fieldState', () => {
   const base = {
     v: 1, contributors: 1, commitsAllTime: 1, pullRequestsAllTime: 1,
-    commitsRecent: 1, pullRequestsRecent: 1, releases: 1, recentDays: 90,
+    commitsRecent: 1, pullRequestsRecent: 1, tags: 1, recentDays: 90,
   };
 
   it('reports absent when the key is missing', () => {

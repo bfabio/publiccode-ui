@@ -31,7 +31,7 @@ const LABELS = {
     forks: "Forks",
     issuesOpen: "Open issues",
     issuesClosed: "Closed issues",
-    releases: "Releases",
+    tags: "Tags",
     oldestCommit: "First commit",
     dim: {
       contributors: "Contributors",
@@ -78,7 +78,7 @@ const LABELS = {
     forks: "Fork",
     issuesOpen: "Issue aperte",
     issuesClosed: "Issue chiuse",
-    releases: "Release",
+    tags: "Tag",
     oldestCommit: "Primo commit",
     dim: {
       contributors: "Contributori",
@@ -239,7 +239,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
       </div>
 
       <p className="metrics-info">
-        {L.releases}: <strong>{fmt(activity.releases, locale) ?? L.na}</strong>
+        {L.tags}: <strong>{fmt(activity.tags, locale) ?? L.na}</strong>
         {activity.oldestCommit && <> &middot; {L.oldestCommit}: <strong>{activity.oldestCommit}</strong></>}
       </p>
 
