@@ -923,6 +923,17 @@ dialog nav button:hover {
   font-weight: 510;
 }
 
+.activity-catalog {
+  margin-bottom: 2rem;
+}
+.activity-meta {
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.activity-distribution {
+  width: 100%;
+}
+
 .vitality-badge {
   display: flex;
   align-items: center;

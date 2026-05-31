@@ -1,0 +1,97 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { fetchCatalogs, fetchAllCatalogAnalysis } from '../../../lib/api.js';
+import { base } from '../../../lib/url.js';
+import { t } from '../../../lib/i18n.js';
+import { formatDate } from '../../../lib/date.js';
+import type { StatMetric } from '../../../types/analysis';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined } },
+    { params: { locale: 'it' } },
+  ];
+}
+
+const locale = Astro.currentLocale ?? 'en';
+const catalogs = await fetchCatalogs();
+const catalogAnalysis = await fetchAllCatalogAnalysis();
+const multiCatalog = catalogs.length > 1;
+
+const blocks = catalogs
+  .map((c) => ({ catalog: c, activity: catalogAnalysis.get(c.id) }))
+  .filter((b) => b.activity);
+
+const METRIC_ORDER: StatMetric[] = [
+  'contributors', 'commitsAllTime', 'commitsRecent',
+  'pullRequestsAllTime', 'pullRequestsRecent', 'tags',
+  'stars', 'forks', 'issuesOpen', 'issuesClosed',
+];
+
+const fmtNum = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 1 });
+---
+
+<Layout
+  title={t(locale, 'activity_overview')}
+  description={t(locale, 'activity_overview')}
+  breadcrumbs={[
+    { label: t(locale, 'home'), href: base + '/' },
+    { label: t(locale, 'software'), href: base + '/software/' },
+    { label: t(locale, 'activity_overview') },
+  ]}
+>
+  <h1>{t(locale, 'activity_overview')}</h1>
+
+  {blocks.length === 0 && <p>{t(locale, 'no_activity_data')}</p>}
+
+  {blocks.map(({ catalog, activity }) => {
+    const updated = formatDate(activity.updatedAt, locale);
+    const metrics = METRIC_ORDER.filter((m) => activity.stats[m]);
+    return (
+      <section class="activity-catalog">
+        {multiCatalog && <h2>{catalog.name}</h2>}
+        <p class="activity-meta">
+          {updated && (
+            <Fragment>
+              {t(locale, 'last_updated')}:{' '}
+              <time datetime={updated.datetime} title={updated.formatted}>{updated.relative}</time>
+              {' · '}
+            </Fragment>
+          )}
+          {t(locale, 'software_count_label')}: <strong>{activity.softwareCount.toLocaleString(locale)}</strong>
+          {' · '}
+          {t(locale, 'recent_window')}: <strong>{activity.recentDays} {t(locale, 'days')}</strong>
+        </p>
+        <table class="vitality-debug activity-distribution">
+          <thead>
+            <tr>
+              <th>{t(locale, 'col_metric')}</th>
+              <th>{t(locale, 'col_min')}</th>
+              <th>{t(locale, 'col_median')}</th>
+              <th>{t(locale, 'col_mean')}</th>
+              <th>{t(locale, 'col_p95')}</th>
+              <th>{t(locale, 'col_max')}</th>
+              <th>{t(locale, 'col_count')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {metrics.map((m) => {
+              const s = activity.stats[m]!;
+              return (
+                <tr>
+                  <td>{t(locale, 'metric_' + m)}</td>
+                  <td>{fmtNum(s.min)}</td>
+                  <td>{fmtNum(s.median)}</td>
+                  <td>{fmtNum(s.mean)}</td>
+                  <td>{fmtNum(s.p95)}</td>
+                  <td>{fmtNum(s.max)}</td>
+                  <td>{s.count.toLocaleString(locale)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </section>
+    );
+  })}
+</Layout>
