@@ -1,0 +1,41 @@
+name: Collect activity metrics
+
+on:
+  schedule:
+    # Once a day, before the first daytime deploy picks up the fresh data
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: bfabio/activity-metrics-collector
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ hashFiles('Cargo.lock') }}
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/activity-metrics-collector
+          key: amc-data-${{ github.run_id }}
+          restore-keys: |
+            amc-data-
+      - run: cargo run --release -- --recent-days 180 --concurrency 4
+        env:
+          SOFTWARE_CATALOG_API_BASE_URL: ${{ vars.API_URL }}
+          SOFTWARE_CATALOG_API_BEARER_TOKEN: ${{ secrets.CATALOG_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}

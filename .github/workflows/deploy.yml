@@ -4,8 +4,6 @@ on:
   push:
     branches: [main]
   schedule:
-    # Collect activity metrics once a day, before the first daytime build
-    - cron: '0 4 * * *'
     # Every 3 hours during European daytime (UTC, shifts 1h with DST)
     - cron: '0 5-20/3 * * *'
   workflow_dispatch:
@@ -20,39 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  collect:
-    # Only on the daily cron and manual runs, not on push or the 3h schedule
-    if: ${{ github.event.schedule == '0 4 * * *' || github.event_name == 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          repository: bfabio/activity-metrics-collector
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: cargo-${{ hashFiles('Cargo.lock') }}
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/activity-metrics-collector
-          key: amc-data-${{ github.run_id }}
-          restore-keys: |
-            amc-data-
-      - run: cargo run --release -- --recent-days 180 --concurrency 4
-        env:
-          SOFTWARE_CATALOG_API_BASE_URL: ${{ vars.API_URL }}
-          SOFTWARE_CATALOG_API_BEARER_TOKEN: ${{ secrets.CATALOG_API_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-
   build:
-    needs: collect
-    # Run even when collect is skipped (push, 3h schedule) or fails, so a
-    # activity-metrics-collector hiccup never blocks the deploy.
-    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
