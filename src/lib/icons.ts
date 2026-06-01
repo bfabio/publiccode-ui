@@ -16,13 +16,14 @@ import {
   faAddressBook,
   faLayerGroup,
   faPalette,
+  faGear,
 } from '@fortawesome/free-solid-svg-icons';
 import { faCalendar } from '@fortawesome/free-regular-svg-icons';
 
 library.add(
   faCodeBranch, faGlobe, faBook, faFileCode, faGavel, faCircleInfo,
   faCube, faWrench, faDesktop, faLanguage, faListCheck, faImages,
-  faAlignLeft, faAddressBook, faLayerGroup, faPalette, faCalendar,
+  faAlignLeft, faAddressBook, faLayerGroup, faPalette, faGear, faCalendar,
 );
 
 export function faIcon(name: string, prefix: 'fas' | 'far' = 'fas'): string {

@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import SetupRequired from '../../../components/SetupRequired.astro';
-import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, apiConfigured } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, apiConfigured } from '../../../lib/api.js';
 import { resolveLogoAsset } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
@@ -19,6 +19,8 @@ const locale = Astro.currentLocale ?? 'en';
 const allSoftware = await fetchAllSoftware();
 const catalogs = await fetchCatalogs();
 const softwareAnalysis = await fetchAllSoftwareAnalysis();
+const catalogAnalysis = await fetchAllCatalogAnalysis();
+const statsByCatalog = Object.fromEntries(Array.from(catalogAnalysis, ([id, a]) => [id, a.stats]));
 const multiCatalog = catalogs.length > 1;
 const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
 
@@ -51,7 +53,8 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     intendedAudience: pc.intendedAudience?.scope ?? [],
     catalogSlug: cat?.slug ?? null,
     catalogName: cat?.name ?? null,
-    hasActivity: !!softwareAnalysis.get(s.id),
+    catalogId: s.catalogId,
+    activity: softwareAnalysis.get(s.id) ?? null,
     nameLower: pc.name.toLowerCase(),
     searchText: [pc.name, shortDescription, ...categories].join(' ').toLowerCase(),
   };
@@ -63,6 +66,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
   <h1>{t(locale, 'catalog')}</h1>
   <SoftwareList client:visible items={items} base={base} locale={locale}
     catalogs={multiCatalog ? catalogs : undefined}
+    statsByCatalog={statsByCatalog}
     labels={{
       allCategories: t(locale, 'all_categories'),
       allStatuses: t(locale, 'all_statuses'),
@@ -81,6 +85,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       sortBy: t(locale, 'sort_by'),
       showMore: t(locale, 'show_more'),
       hasActivityData: t(locale, 'has_activity'),
+      activityScore: t(locale, 'activity_score'),
     }} />
 </Layout>
 ) : (
