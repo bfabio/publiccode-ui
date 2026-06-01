@@ -1,115 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn, faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import {
-  computeVitality,
-  rebalanceWeights,
-  DEFAULT_CONFIG,
-  type VitalityConfig,
-  type DimensionKey,
-} from "../lib/vitality";
+import { computeVitality, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
-
-const STORAGE_KEY = "publiccode-ui:vitality";
-const URL_PARAM = "vitality";
-
-const LABELS = {
-  en: {
-    section: "Activity",
-    debugShow: "Show debug",
-    debugHide: "Hide debug",
-    groupCode: "Code",
-    groupCommunity: "Community",
-    info: "Info",
-    contributors: "Contributors",
-    commitsAll: "Commits, all time",
-    mergesAll: "Pull requests, all time",
-    commitsWindow: (d: number) => `Commits, last ${d} days`,
-    mergesWindow: (d: number) => `Pull requests, last ${d} days`,
-    stars: "Stars",
-    forks: "Forks",
-    issuesOpen: "Open issues",
-    issuesClosed: "Closed issues",
-    tags: "Tags",
-    oldestCommit: "First commit",
-    dim: {
-      contributors: "Contributors",
-      history: "Project history",
-      activity: "Current activity",
-      stars: "Stars",
-      issues: "Issues",
-      forks: "Forks",
-    } as Record<DimensionKey, string>,
-    colDimension: "Dimension",
-    colRaw: "Raw",
-    colNorm: "Level",
-    colWeight: "Weight",
-    colContribution: "Points",
-    config: "Configure index",
-    weights: "Weights",
-    commits: "commits",
-    merges: "pull requests",
-    issueMode: "Issues mode",
-    modeRatio: "Open/closed ratio",
-    modeOpen: "Open issues only",
-    xmaxMode: "Reference max",
-    xmaxMax: "Maximum",
-    xmaxP95: "95th percentile",
-    weightSum: "Sum",
-    reset: "Reset to defaults",
-    na: "n/d",
-    unavailable: "unavailable",
-    excluded: "excluded (no data)",
-  },
-  it: {
-    section: "Attività",
-    debugShow: "Mostra debug",
-    debugHide: "Nascondi debug",
-    groupCode: "Codice",
-    groupCommunity: "Community",
-    info: "Info",
-    contributors: "Contributori",
-    commitsAll: "Commit, totali",
-    mergesAll: "Pull request, totali",
-    commitsWindow: (d: number) => `Commit, ultimi ${d} giorni`,
-    mergesWindow: (d: number) => `Pull request, ultimi ${d} giorni`,
-    stars: "Stelle",
-    forks: "Fork",
-    issuesOpen: "Issue aperte",
-    issuesClosed: "Issue chiuse",
-    tags: "Tag",
-    oldestCommit: "Primo commit",
-    dim: {
-      contributors: "Contributori",
-      history: "Storia del progetto",
-      activity: "Attività recente",
-      stars: "Stelle",
-      issues: "Issue",
-      forks: "Fork",
-    } as Record<DimensionKey, string>,
-    colDimension: "Dimensione",
-    colRaw: "Grezzo",
-    colNorm: "Livello",
-    colWeight: "Peso",
-    colContribution: "Punti",
-    config: "Configura indice",
-    weights: "Pesi",
-    commits: "commit",
-    merges: "pull request",
-    issueMode: "Modalità issue",
-    modeRatio: "Rapporto aperte/chiuse",
-    modeOpen: "Solo issue aperte",
-    xmaxMode: "Massimo di riferimento",
-    xmaxMax: "Massimo",
-    xmaxP95: "95° percentile",
-    weightSum: "Somma",
-    reset: "Ripristina default",
-    na: "n/d",
-    unavailable: "non disponibile",
-    excluded: "esclusa (dati assenti)",
-  },
-};
+import { usePageActivityConfig } from "../lib/useVitalityConfig";
+import { LABELS } from "../lib/vitalityLabels";
 
 type SubKey = keyof VitalityConfig["subWeights"];
 
@@ -118,46 +14,12 @@ const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
   activity: { c: "caC", m: "caM" },
 };
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
-
-function mergeConfig(c: Partial<VitalityConfig> | null): VitalityConfig {
-  return {
-    weights: { ...DEFAULT_CONFIG.weights, ...(c?.weights ?? {}) },
-    subWeights: { ...DEFAULT_CONFIG.subWeights, ...(c?.subWeights ?? {}) },
-    issueMode: c?.issueMode === "open" ? "open" : "ratio",
-    xmaxMode: c?.xmaxMode === "p95" ? "p95" : "max",
-  };
-}
-
-function readConfig(): VitalityConfig {
-  if (typeof window === "undefined") return DEFAULT_CONFIG;
-  const fromUrl = new URLSearchParams(window.location.search).get(URL_PARAM);
-  const raw = fromUrl ?? window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return DEFAULT_CONFIG;
-  try {
-    return mergeConfig(JSON.parse(raw));
-  } catch {
-    return DEFAULT_CONFIG;
-  }
-}
-
-function persist(config: VitalityConfig) {
-  const isDefault = JSON.stringify(config) === JSON.stringify(DEFAULT_CONFIG);
-  const params = new URLSearchParams(window.location.search);
-  if (isDefault) {
-    window.localStorage.removeItem(STORAGE_KEY);
-    params.delete(URL_PARAM);
-  } else {
-    const serialized = JSON.stringify(config);
-    window.localStorage.setItem(STORAGE_KEY, serialized);
-    params.set(URL_PARAM, serialized);
-  }
-  const qs = params.toString();
-  history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
-}
-
 const fmt = (n: number | null | undefined, locale: string) =>
   typeof n === "number" ? n.toLocaleString(locale) : null;
+
+type CodeRow =
+  | { label: string; kind: "git"; value: number }
+  | { label: string; kind: "forge"; key: ForgeMetric };
 
 interface Props {
   activity: SoftwareActivity;
@@ -167,23 +29,19 @@ interface Props {
 
 export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
-  const [config, setConfig] = useState<VitalityConfig>(() => readConfig());
+  const { config, overridden, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig();
   const [showDebug, setShowDebug] = useState(false);
   const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    persist(config);
-  }, [config]);
 
   const result = useMemo(() => computeVitality(activity, stats, config), [activity, stats, config]);
 
   const win = activity.recentDays ?? 180;
-  const code: [string, number | null][] = [
-    [L.contributors, activity.contributors],
-    [L.commitsAll, activity.commitsAllTime],
-    [L.mergesAll, activity.pullRequestsAllTime],
-    [L.commitsWindow(win), activity.commitsRecent],
-    [L.mergesWindow(win), activity.pullRequestsRecent],
+  const code: CodeRow[] = [
+    { label: L.contributors, kind: "git", value: activity.contributors },
+    { label: L.commitsAll, kind: "git", value: activity.commitsAllTime },
+    { label: L.mergesAll, kind: "forge", key: "pullRequestsAllTime" },
+    { label: L.commitsWindow(win), kind: "git", value: activity.commitsRecent },
+    { label: L.mergesWindow(win), kind: "forge", key: "pullRequestsRecent" },
   ];
   const community: [string, ForgeMetric][] = [
     [L.stars, "stars"],
@@ -192,12 +50,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
     [L.issuesClosed, "issuesClosed"],
   ];
 
-  const setWeight = (key: DimensionKey, value: number) =>
-    setConfig((c) => ({ ...c, weights: rebalanceWeights(c.weights, key, value) }));
-  const setSplit = (edited: SubKey, other: SubKey, value: number) => {
-    const v = round2(Math.max(0, Math.min(1, value)));
-    setConfig((c) => ({ ...c, subWeights: { ...c.subWeights, [edited]: v, [other]: round2(1 - v) } }));
-  };
   const toggleSplit = (key: DimensionKey) =>
     setOpenSplits((s) => ({ ...s, [key]: !s[key] }));
 
@@ -211,12 +63,26 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
         <div className="metrics-group">
           <h3>{L.groupCode}</h3>
           <dl>
-            {code.map(([label, value]) => (
-              <React.Fragment key={label}>
-                <dt>{label}</dt>
-                <dd className={value === null ? "is-na" : undefined}>{fmt(value, locale) ?? L.na}</dd>
-              </React.Fragment>
-            ))}
+            {code.map((row) => {
+              if (row.kind === "forge") {
+                const fs = fieldState(activity, row.key);
+                if (fs.state === "absent") return null;
+                return (
+                  <React.Fragment key={row.label}>
+                    <dt>{row.label}</dt>
+                    <dd className={fs.state === "unavailable" ? "is-na" : undefined}>
+                      {fs.state === "value" ? fmt(fs.value, locale) : L.unavailable}
+                    </dd>
+                  </React.Fragment>
+                );
+              }
+              return (
+                <React.Fragment key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>{fmt(row.value, locale)}</dd>
+                </React.Fragment>
+              );
+            })}
           </dl>
         </div>
         <div className="metrics-group">
@@ -344,21 +210,23 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
           <div className="config-grid">
             <label>
               <span>{L.issueMode}</span>
-              <select value={config.issueMode} onChange={(e) => setConfig((c) => ({ ...c, issueMode: e.target.value as VitalityConfig["issueMode"] }))}>
+              <select value={config.issueMode} onChange={(e) => setIssueMode(e.target.value as VitalityConfig["issueMode"])}>
                 <option value="ratio">{L.modeRatio}</option>
                 <option value="open">{L.modeOpen}</option>
               </select>
             </label>
             <label>
               <span>{L.xmaxMode}</span>
-              <select value={config.xmaxMode} onChange={(e) => setConfig((c) => ({ ...c, xmaxMode: e.target.value as VitalityConfig["xmaxMode"] }))}>
+              <select value={config.xmaxMode} onChange={(e) => setXmaxMode(e.target.value as VitalityConfig["xmaxMode"])}>
                 <option value="max">{L.xmaxMax}</option>
                 <option value="p95">{L.xmaxP95}</option>
               </select>
             </label>
           </div>
 
-          <button type="button" className="vitality-reset" onClick={() => setConfig(DEFAULT_CONFIG)}>{L.reset}</button>
+          {overridden && (
+            <button type="button" className="vitality-reset" onClick={resetToGlobal}>{L.resetGlobal}</button>
+          )}
         </div>
         </>
       )}

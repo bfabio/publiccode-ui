@@ -115,6 +115,33 @@ export interface VitalityResult {
 
 const isPresent = (v: number | null | undefined): v is number => typeof v === 'number';
 
+interface CompositePart {
+  value: number | null | undefined;
+  sub: number;
+  metric: StatMetric;
+}
+
+/**
+ * A composite dimension averages its sub-metrics by their split weights.
+ * Absent sub-metrics are dropped and the present ones renormalized, so a repo
+ * with commits but no pull requests still scores on commits alone. With both
+ * present the renormalization is a no-op (the split already sums to 1).
+ */
+function composite(
+  parts: CompositePart[],
+  stats: CatalogStats | null,
+  xmaxMode: XmaxMode,
+): { present: boolean; raw: number | null; normalized: number | null } {
+  const present = parts.filter((p) => isPresent(p.value));
+  if (present.length === 0) return { present: false, raw: null, normalized: null };
+
+  const wSum = present.reduce((acc, p) => acc + p.sub, 0) || 1;
+  const raw = present.reduce((acc, p) => acc + (p.sub / wSum) * (p.value as number), 0);
+  const xmax = present.reduce((acc, p) => acc + (p.sub / wSum) * refMax(stats, p.metric, xmaxMode), 0);
+
+  return { present: true, raw, normalized: normalize(raw, xmax) };
+}
+
 /**
  * Single-software scoring. Composite (history/activity) and ratio-issue xmax
  * are approximated from per-metric catalog stats, since the true maxima of a
@@ -152,15 +179,19 @@ export function computeVitality(
   );
 
   {
-    const ph = phC * activity.commitsAllTime + phM * activity.pullRequestsAllTime;
-    const xmax = phC * refMax(stats, 'commitsAllTime', xmaxMode) + phM * refMax(stats, 'pullRequestsAllTime', xmaxMode);
-    push('history', true, ph, normalize(ph, xmax), true);
+    const h = composite([
+      { value: activity.commitsAllTime, sub: phC, metric: 'commitsAllTime' },
+      { value: activity.pullRequestsAllTime, sub: phM, metric: 'pullRequestsAllTime' },
+    ], stats, xmaxMode);
+    push('history', h.present, h.raw, h.normalized, true);
   }
 
   {
-    const ca = caC * activity.commitsRecent + caM * activity.pullRequestsRecent;
-    const xmax = caC * refMax(stats, 'commitsRecent', xmaxMode) + caM * refMax(stats, 'pullRequestsRecent', xmaxMode);
-    push('activity', true, ca, normalize(ca, xmax), true);
+    const a = composite([
+      { value: activity.commitsRecent, sub: caC, metric: 'commitsRecent' },
+      { value: activity.pullRequestsRecent, sub: caM, metric: 'pullRequestsRecent' },
+    ], stats, xmaxMode);
+    push('activity', a.present, a.raw, a.normalized, true);
   }
 
   push(

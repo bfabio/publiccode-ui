@@ -2,9 +2,9 @@ export interface SoftwareActivity {
   v: number;
   contributors: number;
   commitsAllTime: number;
-  pullRequestsAllTime: number;
   commitsRecent: number;
-  pullRequestsRecent: number;
+  pullRequestsAllTime?: number | null;
+  pullRequestsRecent?: number | null;
   stars?: number | null;
   forks?: number | null;
   issuesOpen?: number | null;
@@ -35,7 +35,13 @@ export type StatMetric =
   | 'issuesClosed'
   | 'tags';
 
-export type ForgeMetric = 'stars' | 'forks' | 'issuesOpen' | 'issuesClosed';
+export type ForgeMetric =
+  | 'stars'
+  | 'forks'
+  | 'issuesOpen'
+  | 'issuesClosed'
+  | 'pullRequestsAllTime'
+  | 'pullRequestsRecent';
 
 export type CatalogStats = Partial<Record<StatMetric, MetricStats>>;
 
