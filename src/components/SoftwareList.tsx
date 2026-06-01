@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
+import { computeVitality } from "../lib/vitality";
+import { useGlobalActivityConfigValue } from "../lib/useVitalityConfig";
+import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -36,7 +39,8 @@ interface SoftwareItem {
   intendedAudience: string[];
   catalogSlug: string | null;
   catalogName: string | null;
-  hasActivity: boolean;
+  catalogId: string;
+  activity: SoftwareActivity | null;
   searchText: string;
   nameLower: string;
 }
@@ -94,11 +98,13 @@ interface Labels {
   sortBy: string;
   showMore: string;
   hasActivityData?: string;
+  activityScore?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[] }> = ({ items, base, labels, locale = 'en', catalogs }) => {
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats> }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {} }) => {
+  const activityConfig = useGlobalActivityConfigValue();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(() => readParam("q"));
@@ -141,11 +147,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (softwareType) result = result.filter((i) => i.softwareType === softwareType);
     if (audience) result = result.filter((i) => i.intendedAudience.includes(audience));
     if (catalog) result = result.filter((i) => i.catalogSlug === catalog);
-    if (onlyActivity) result = result.filter((i) => i.hasActivity);
+    if (onlyActivity) result = result.filter((i) => i.activity != null);
     return result;
   }, [items, deferredQuery, category, status, softwareType, audience, catalog, onlyActivity]);
 
-  const anyActivity = useMemo(() => items.some((i) => i.hasActivity), [items]);
+  const anyActivity = useMemo(() => items.some((i) => i.activity != null), [items]);
 
   const sorted = useMemo(() => {
     if (deferredQuery) {
@@ -234,6 +240,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
+              {item.activity && (
+                <span className="activity-badge" title={l.activityScore ?? "Activity score"}>
+                  {Math.round(computeVitality(item.activity, statsByCatalog[item.catalogId] ?? null, activityConfig).score100)}
+                </span>
+              )}
               {catalogs && item.catalogName && (
                 <span className="catalog-badge">{item.catalogName}</span>
               )}

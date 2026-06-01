@@ -5,6 +5,7 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 import { base } from '../lib/url.js';
 import { faIcon } from '../lib/icons.js';
+import { t } from '../lib/i18n.js';
 import '@fontsource-variable/inter';
 
 config.autoAddCss = false;
@@ -25,6 +26,7 @@ const locale = Astro.currentLocale ?? 'en';
 const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
 const enUrl = getAbsoluteLocaleUrl('en', routePath);
 const itUrl = getAbsoluteLocaleUrl('it', routePath);
+const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings`;
 ---
 
 <html lang={locale}>
@@ -79,6 +81,9 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
           </ol>
         </nav>
       )}
+      <a class="settings-link" href={settingsHref} aria-label={t(locale, 'settings')} title={t(locale, 'settings')}>
+        <Fragment set:html={faIcon('gear')} />
+      </a>
       <div class="theme-switcher">
         <button type="button" id="theme-btn" aria-label="Switch theme" title="Switch theme">
           <Fragment set:html={faIcon('palette')} />
@@ -139,9 +144,20 @@ const itUrl = getAbsoluteLocaleUrl('it', routePath);
     flex: 1;
     padding: 0;
   }
+  .settings-link {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px;
+    color: inherit;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .settings-link:hover {
+    opacity: 1;
+  }
   .theme-switcher {
     position: relative;
-    margin-left: auto;
     flex-shrink: 0;
   }
   #theme-btn {

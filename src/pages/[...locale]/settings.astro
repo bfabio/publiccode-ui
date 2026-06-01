@@ -1,0 +1,27 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { ActivitySettings } from '../../components/ActivitySettings';
+import { base } from '../../lib/url.js';
+import { t } from '../../lib/i18n.js';
+
+export function getStaticPaths() {
+  return [
+    { params: { locale: undefined } },
+    { params: { locale: 'it' } },
+  ];
+}
+
+const locale = Astro.currentLocale ?? 'en';
+---
+
+<Layout
+  title={t(locale, 'settings')}
+  description={t(locale, 'settings')}
+  breadcrumbs={[
+    { label: t(locale, 'home'), href: base + '/' },
+    { label: t(locale, 'settings') },
+  ]}
+>
+  <h1>{t(locale, 'settings')}</h1>
+  <ActivitySettings client:load locale={locale} />
+</Layout>

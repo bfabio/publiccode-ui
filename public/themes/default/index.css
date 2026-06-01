@@ -482,6 +482,22 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 .catalog-results article footer::before,
 .catalog-results article footer::after { content: none; }
+.activity-badge {
+  display: block;
+  width: fit-content;
+  margin: 0 0 6px auto;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-btn);
+  color: var(--accent-bright);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.activity-settings .settings-intro {
+  margin: 0 0 1rem;
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
 .catalog-results .categories {
   display: flex;
   gap: 4px;
