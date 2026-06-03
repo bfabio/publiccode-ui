@@ -10,6 +10,7 @@ let catalogsCache = null;
 let logsCache = null;
 let softwareAnalysisCache = null;
 let catalogAnalysisCache = null;
+let rootCatalogAnalysisCache = undefined;
 
 async function mapLimit(items, limit, fn) {
   let cursor = 0;
@@ -122,6 +123,13 @@ export async function fetchAllSoftwareAnalysis() {
 
   softwareAnalysisCache = map;
   return map;
+}
+
+export async function fetchRootCatalogAnalysis() {
+  if (!API_URL) return null;
+  if (rootCatalogAnalysisCache !== undefined) return rootCatalogAnalysisCache;
+  rootCatalogAnalysisCache = await fetchActivity('/catalogs/%E2%88%85/analysis', parseCatalogActivity);
+  return rootCatalogAnalysisCache;
 }
 
 export async function fetchAllCatalogAnalysis() {
