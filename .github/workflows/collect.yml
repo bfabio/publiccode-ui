@@ -37,5 +37,5 @@ jobs:
         env:
           SOFTWARE_CATALOG_API_BASE_URL: ${{ vars.API_URL }}
           SOFTWARE_CATALOG_API_BEARER_TOKEN: ${{ secrets.CATALOG_API_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
