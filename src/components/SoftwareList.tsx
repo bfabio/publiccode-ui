@@ -103,7 +103,7 @@ interface Labels {
 
 const INITIAL_VISIBLE_ITEMS = 80;
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats> }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {} }) => {
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats }) => {
   const activityConfig = useGlobalActivityConfigValue();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
@@ -242,7 +242,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             <footer>
               {item.activity && (
                 <span className="activity-badge" title={l.activityScore ?? "Activity score"}>
-                  {Math.round(computeVitality(item.activity, statsByCatalog[item.catalogId] ?? null, activityConfig).score100)}
+                  {Math.round(computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig).score100)}
                 </span>
               )}
               {catalogs && item.catalogName && (

@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import SetupRequired from '../../../components/SetupRequired.astro';
-import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, apiConfigured } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis, apiConfigured } from '../../../lib/api.js';
 import { resolveLogoAsset } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
@@ -20,6 +20,7 @@ const allSoftware = await fetchAllSoftware();
 const catalogs = await fetchCatalogs();
 const softwareAnalysis = await fetchAllSoftwareAnalysis();
 const catalogAnalysis = await fetchAllCatalogAnalysis();
+const rootAnalysis = await fetchRootCatalogAnalysis();
 const statsByCatalog = Object.fromEntries(Array.from(catalogAnalysis, ([id, a]) => [id, a.stats]));
 const multiCatalog = catalogs.length > 1;
 const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
@@ -67,6 +68,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
   <SoftwareList client:visible items={items} base={base} locale={locale}
     catalogs={multiCatalog ? catalogs : undefined}
     statsByCatalog={statsByCatalog}
+    globalStats={rootAnalysis?.stats ?? null}
     labels={{
       allCategories: t(locale, 'all_categories'),
       allStatuses: t(locale, 'all_statuses'),
