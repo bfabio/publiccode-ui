@@ -7,6 +7,7 @@ import { base } from '../../../lib/url.js';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { SoftwareList } from '../../../components/SoftwareList';
 import { resolveLicense } from '../../../lib/license.js';
+import { statsByCatalog as buildStatsByCatalog } from '../../../lib/activity.ts';
 
 export function getStaticPaths() {
   return [
@@ -21,7 +22,7 @@ const catalogs = await fetchCatalogs();
 const softwareAnalysis = await fetchAllSoftwareAnalysis();
 const catalogAnalysis = await fetchAllCatalogAnalysis();
 const rootAnalysis = await fetchRootCatalogAnalysis();
-const statsByCatalog = Object.fromEntries(Array.from(catalogAnalysis, ([id, a]) => [id, a.stats]));
+const statsByCatalog = buildStatsByCatalog(catalogAnalysis);
 const multiCatalog = catalogs.length > 1;
 const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
 
@@ -88,6 +89,10 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       showMore: t(locale, 'show_more'),
       hasActivityData: t(locale, 'has_activity'),
       activityScore: t(locale, 'activity_score'),
+      activityScoreNa: t(locale, 'activity_score_na'),
+      activityScoreScope: t(locale, 'activity_score_scope'),
+      activityCapDisabled: t(locale, 'activity_cap_disabled'),
+      activityCapUnknown: t(locale, 'activity_cap_unknown'),
     }} />
 </Layout>
 ) : (

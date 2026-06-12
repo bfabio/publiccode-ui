@@ -99,6 +99,10 @@ interface Labels {
   showMore: string;
   hasActivityData?: string;
   activityScore?: string;
+  activityScoreNa?: string;
+  activityScoreScope?: string;
+  activityCapDisabled?: string;
+  activityCapUnknown?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
@@ -240,11 +244,31 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
-              {item.activity && (
-                <span className="activity-badge" title={l.activityScore ?? "Activity score"}>
-                  {Math.round(computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig).score100)}
-                </span>
-              )}
+              {item.activity && (() => {
+                const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
+                if (v.score100 === null) {
+                  return (
+                    <span className="activity-badge is-na" title={l.activityScoreNa ?? "Activity score unavailable"}>
+                      n/a
+                    </span>
+                  );
+                }
+                const scope = v.covered < v.total
+                  ? ` (${(l.activityScoreScope ?? "based on {covered} of {total} metrics")
+                      .replace("{covered}", String(v.covered))
+                      .replace("{total}", String(v.total))})`
+                  : "";
+                const capNote = v.cap && v.score100 === v.cap.limit
+                  ? ` (${v.cap.reason === "disabled"
+                      ? (l.activityCapDisabled ?? "capped at 89: a forge feature is disabled")
+                      : (l.activityCapUnknown ?? "capped at 79: some metrics are unknown")})`
+                  : "";
+                return (
+                  <span className="activity-badge" title={`${l.activityScore ?? "Activity score"}${scope}${capNote}`}>
+                    {Math.round(v.score100)}
+                  </span>
+                );
+              })()}
               {catalogs && item.catalogName && (
                 <span className="catalog-badge">{item.catalogName}</span>
               )}

@@ -1,0 +1,39 @@
+name: Analysis contract
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test
+
+  contract-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Diff vendored fixtures against the upstream analysis contract
+        run: |
+          base="https://raw.githubusercontent.com/italia/developers-italia-api/main/docs/analysis/fixtures"
+          rc=0
+          for f in $(cd test/fixtures/analysis && find . -name '*.json' | sed 's|^\./||'); do
+            if ! curl -sSf "$base/$f" -o /tmp/upstream.json; then
+              echo "::error::$f not found upstream (contract moved or not landed yet)"
+              rc=1
+              continue
+            fi
+            if ! diff -u /tmp/upstream.json "test/fixtures/analysis/$f"; then
+              echo "::error::$f diverges from the upstream contract"
+              rc=1
+            fi
+          done
+          exit $rc

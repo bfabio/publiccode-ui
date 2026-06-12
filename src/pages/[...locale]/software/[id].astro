@@ -7,6 +7,7 @@ import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.j
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, localizeDescription } from '../../../lib/i18n.js';
+import { usableStats } from '../../../lib/activity.ts';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
@@ -28,7 +29,7 @@ export async function getStaticPaths() {
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         multiCatalog,
         activity: softwareAnalysis.get(s.id) ?? null,
-        stats: (rootAnalysis ?? catalogAnalysis.get(s.catalogId))?.stats ?? null,
+        stats: usableStats(rootAnalysis) ?? usableStats(catalogAnalysis.get(s.catalogId) ?? null),
       },
     }))
   );

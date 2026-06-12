@@ -1,4 +1,5 @@
-import type { SoftwareActivity, CatalogStats, MetricStats, StatMetric } from '../types/analysis';
+import type { SoftwareActivity, CatalogStats, MetricStats, StatMetric, ForgeMetric } from '../types/analysis';
+import { FEATURE_OF } from './activity';
 
 export type IssueMode = 'ratio' | 'open';
 export type XmaxMode = 'max' | 'p95';
@@ -40,6 +41,20 @@ export const DIMENSION_ORDER: DimensionKey[] = [
   'issues',
   'forks',
 ];
+
+const FORGE_METRICS: ForgeMetric[] = [
+  'stars',
+  'forks',
+  'issuesOpen',
+  'issuesClosed',
+  'pullRequestsAllTime',
+  'pullRequestsRecent',
+];
+
+export interface VitalityCap {
+  limit: 89 | 79;
+  reason: 'disabled' | 'unknown';
+}
 
 /**
  * Set one dimension weight and rescale the other five so the six always
@@ -107,13 +122,18 @@ export interface DimensionResult {
 }
 
 export interface VitalityResult {
-  score100: number;
+  score100: number | null;
   dimensions: DimensionResult[];
   approximated: boolean;
   weightSum: number;
+  failed: DimensionKey[];
+  covered: number;
+  total: number;
+  cap: VitalityCap | null;
 }
 
 const isPresent = (v: number | null | undefined): v is number => typeof v === 'number';
+const isFailed = (v: number | null | undefined): v is null => v === null;
 
 interface CompositePart {
   value: number | null | undefined;
@@ -234,9 +254,51 @@ export function computeVitality(
     d.contribution = sumW > 0 ? (100 * d.weight * (d.normalized as number)) / sumW : 0;
   }
 
-  const score100 = presentDims.reduce((acc, d) => acc + d.contribution, 0);
+  // A null anywhere means the collector failed, so trust nothing:
+  // even a field the current issueMode ignores suppresses the score.
+  const failed = (
+    [
+      ['history', isFailed(activity.pullRequestsAllTime)],
+      ['activity', isFailed(activity.pullRequestsRecent)],
+      ['stars', isFailed(activity.stars)],
+      ['issues', isFailed(activity.issuesOpen) || isFailed(activity.issuesClosed)],
+      ['forks', isFailed(activity.forks)],
+    ] as [DimensionKey, boolean][]
+  )
+    .filter(([, f]) => f)
+    .map(([k]) => k);
+
+  const disabledFeatures = activity.disabled ?? [];
+  const missing = FORGE_METRICS.filter((m) => !(m in activity));
+  const hasUnknown = missing.some((m) => !disabledFeatures.includes(FEATURE_OF[m]));
+  const hasDisabled = missing.some((m) => disabledFeatures.includes(FEATURE_OF[m]));
+
+  // The SSL Labs model: the sub-score stays renormalized, incomplete
+  // evidence only bounds the claim.
+  const cap: VitalityCap | null =
+    failed.length > 0 ? null
+    : hasUnknown ? { limit: 79, reason: 'unknown' }
+    : hasDisabled ? { limit: 89, reason: 'disabled' }
+    : null;
+
+  const score100 =
+    failed.length > 0
+      ? null
+      : Math.min(
+          presentDims.reduce((acc, d) => acc + d.contribution, 0),
+          cap?.limit ?? 100,
+        );
   const weightSum = DIMENSION_ORDER.reduce((acc, k) => acc + weights[k], 0);
   const approximated = presentDims.some((d) => d.approximated);
 
-  return { score100, dimensions: ordered, approximated, weightSum };
+  return {
+    score100,
+    dimensions: ordered,
+    approximated,
+    weightSum,
+    failed,
+    covered: presentDims.length,
+    total: DIMENSION_ORDER.length,
+    cap,
+  };
 }

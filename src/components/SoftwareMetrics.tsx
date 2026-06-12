@@ -53,8 +53,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
   const toggleSplit = (key: DimensionKey) =>
     setOpenSplits((s) => ({ ...s, [key]: !s[key] }));
 
-  const score = Math.round(result.score100);
-
   return (
     <section className="software-metrics">
       <h2><FontAwesomeIcon icon={faChartColumn} /> {L.section}</h2>
@@ -66,12 +64,14 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
             {code.map((row) => {
               if (row.kind === "forge") {
                 const fs = fieldState(activity, row.key);
-                if (fs.state === "absent") return null;
                 return (
                   <React.Fragment key={row.label}>
                     <dt>{row.label}</dt>
-                    <dd className={fs.state === "unavailable" ? "is-na" : undefined}>
-                      {fs.state === "value" ? fmt(fs.value, locale) : L.unavailable}
+                    <dd className={fs.state === "value" ? undefined : "is-na"}>
+                      {fs.state === "value" ? fmt(fs.value, locale)
+                        : fs.state === "unavailable" ? L.unavailable
+                        : fs.state === "disabled" ? L.rowDisabled
+                        : L.rowUnknown}
                     </dd>
                   </React.Fragment>
                 );
@@ -90,12 +90,14 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
           <dl>
             {community.map(([label, key]) => {
               const fs = fieldState(activity, key);
-              if (fs.state === "absent") return null;
               return (
                 <React.Fragment key={label}>
                   <dt>{label}</dt>
-                  <dd className={fs.state === "unavailable" ? "is-na" : undefined}>
-                    {fs.state === "value" ? fmt(fs.value, locale) : L.unavailable}
+                  <dd className={fs.state === "value" ? undefined : "is-na"}>
+                    {fs.state === "value" ? fmt(fs.value, locale)
+                      : fs.state === "unavailable" ? L.unavailable
+                      : fs.state === "disabled" ? L.rowDisabled
+                      : L.rowUnknown}
                   </dd>
                 </React.Fragment>
               );
@@ -110,11 +112,23 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
       </p>
 
       <div className="vitality-badge">
-        <div className="vitality-score">
-          <span className="vitality-value">{score}</span>
-          <span className="vitality-max">/ 100</span>
-        </div>
+        {result.score100 === null ? (
+          <p className="vitality-unavailable">{L.scoreUnavailable}</p>
+        ) : (
+          <div className="vitality-score">
+            <span className="vitality-value">{Math.round(result.score100)}</span>
+            <span className="vitality-max">/ 100</span>
+          </div>
+        )}
         <div className="vitality-meta">
+          {result.score100 !== null && result.cap && result.score100 === result.cap.limit && (
+            <p className="vitality-scope">
+              {result.cap.reason === "disabled" ? L.capDisabled : L.capUnknown}
+            </p>
+          )}
+          {result.score100 !== null && result.covered < result.total && (
+            <p className="vitality-scope">{L.scoreScope(result.covered, result.total)}</p>
+          )}
           <div className="vitality-actions">
             <button type="button" onClick={() => setShowDebug((s) => !s)}>
               {showDebug ? L.debugHide : L.debugShow}
@@ -201,7 +215,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
             <tr>
               <td colSpan={3}></td>
               <td></td>
-              <td>{result.score100.toFixed(1)}</td>
+              <td>{result.score100 === null ? L.na : result.score100.toFixed(1)}</td>
             </tr>
           </tfoot>
         </table>
