@@ -6,7 +6,13 @@ import {
   writeUrlConfig,
   clearUrlConfig,
   pickConfig,
-  subscribeGlobal,
+  subscribeStore,
+  readSoftwareConfig,
+  writeSoftwareConfig,
+  clearSoftwareConfig,
+  softwareKey,
+  STORAGE_KEY,
+  readAllSoftwareConfigs,
 } from './vitalityStore';
 import {
   rebalanceWeights,
@@ -43,30 +49,41 @@ export function useGlobalActivityConfig() {
   };
 }
 
-export function useGlobalActivityConfigValue(): VitalityConfig {
-  const [config, setConfig] = useState<VitalityConfig>(() => readGlobalConfig());
-  useEffect(() => subscribeGlobal(() => setConfig(readGlobalConfig())), []);
-  return config;
-}
-
-export function usePageActivityConfig() {
+export function usePageActivityConfig(softwareId: string) {
   const [config, setConfig] = useState<VitalityConfig>(() =>
-    pickConfig(readUrlConfig(), readGlobalConfig()),
+    pickConfig(readUrlConfig(), readSoftwareConfig(softwareId), readGlobalConfig()),
   );
-  const [overridden, setOverridden] = useState<boolean>(() => readUrlConfig() !== null);
+  const [overridden, setOverridden] = useState<boolean>(
+    () => readUrlConfig() !== null || readSoftwareConfig(softwareId) !== null,
+  );
   const overriddenRef = useRef(overridden);
   overriddenRef.current = overridden;
 
   useEffect(
     () =>
-      subscribeGlobal(() => {
-        if (!overriddenRef.current) setConfig(readGlobalConfig());
+      subscribeStore((key) => {
+        if (key === STORAGE_KEY) {
+          if (!overriddenRef.current) setConfig(readGlobalConfig());
+          return;
+        }
+        if (key !== null && key !== softwareKey(softwareId)) return;
+        const stored = readSoftwareConfig(softwareId);
+        if (stored) {
+          setConfig(stored);
+          writeUrlConfig(stored);
+          setOverridden(true);
+        } else {
+          clearUrlConfig();
+          setConfig(readGlobalConfig());
+          setOverridden(false);
+        }
       }),
-    [],
+    [softwareId],
   );
 
   const edit = (next: VitalityConfig) => {
     setConfig(next);
+    writeSoftwareConfig(softwareId, next);
     writeUrlConfig(next);
     setOverridden(true);
   };
@@ -79,9 +96,31 @@ export function usePageActivityConfig() {
     setIssueMode: (m: VitalityConfig['issueMode']) => edit({ ...config, issueMode: m }),
     setXmaxMode: (m: VitalityConfig['xmaxMode']) => edit({ ...config, xmaxMode: m }),
     resetToGlobal: () => {
+      clearSoftwareConfig(softwareId);
       clearUrlConfig();
       setConfig(readGlobalConfig());
       setOverridden(false);
     },
+  };
+}
+
+export function useActivityConfigs() {
+  const [global, setGlobal] = useState<VitalityConfig>(DEFAULT_CONFIG);
+  const [overrides, setOverrides] = useState<Map<string, VitalityConfig>>(
+    () => new Map(),
+  );
+
+  useEffect(() => {
+    const load = () => {
+      setGlobal(readGlobalConfig());
+      setOverrides(readAllSoftwareConfigs());
+    };
+    load();
+    return subscribeStore(load);
+  }, []);
+
+  return {
+    configFor: (id: string) => overrides.get(id) ?? global,
+    hasOverride: (id: string) => overrides.has(id),
   };
 }

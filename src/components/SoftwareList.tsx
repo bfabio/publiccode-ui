@@ -4,7 +4,7 @@ import { faGavel } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 import { computeVitality } from "../lib/vitality";
-import { useGlobalActivityConfigValue } from "../lib/useVitalityConfig";
+import { useActivityConfigs } from "../lib/useVitalityConfig";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 
 function highlight(text: string, query: string) {
@@ -103,12 +103,13 @@ interface Labels {
   activityScoreScope?: string;
   activityCapDisabled?: string;
   activityCapUnknown?: string;
+  activityCustomWeights?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats }) => {
-  const activityConfig = useGlobalActivityConfigValue();
+  const { configFor, hasOverride } = useActivityConfigs();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(() => readParam("q"));
@@ -245,10 +246,15 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             </header>
             <footer>
               {item.activity && (() => {
-                const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
+                const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id));
+                const custom = hasOverride(item.id);
+                const customNote = custom
+                  ? ` (${l.activityCustomWeights ?? "custom weights for this software"})`
+                  : "";
+                const badgeClass = custom ? " is-custom" : "";
                 if (v.score100 === null) {
                   return (
-                    <span className="activity-badge is-na" title={l.activityScoreNa ?? "Activity score unavailable"}>
+                    <span className={`activity-badge is-na${badgeClass}`} title={`${l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>
                       n/a
                     </span>
                   );
@@ -264,7 +270,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       : (l.activityCapUnknown ?? "capped at 79: some metrics are unknown")})`
                   : "";
                 return (
-                  <span className="activity-badge" title={`${l.activityScore ?? "Activity score"}${scope}${capNote}`}>
+                  <span className={`activity-badge${badgeClass}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
                     {Math.round(v.score100)}
                   </span>
                 );

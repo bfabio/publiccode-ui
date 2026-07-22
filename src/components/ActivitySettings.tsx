@@ -4,6 +4,7 @@ import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import { useGlobalActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
+import { WeightStepper } from "./WeightStepper";
 
 type SubKey = keyof VitalityConfig["subWeights"];
 
@@ -36,14 +37,11 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
                 <tr>
                   <td>{L.dim[key]}</td>
                   <td>
-                    <input
-                      type="number"
-                      className="weight-input"
-                      min={0}
-                      max={100}
-                      step={1}
+                    <WeightStepper
                       value={Math.round(config.weights[key] * 100)}
-                      onChange={(e) => setWeight(key, Number(e.target.value) / 100)}
+                      onChange={(pct) => setWeight(key, pct / 100)}
+                      decLabel={L.stepDown}
+                      incLabel={L.stepUp}
                     />{" %"}
                   </td>
                 </tr>
@@ -53,11 +51,11 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
                       <div className="vitality-split">
                         <label>
                           <span>{L.commits}</span>
-                          <input type="number" min={0} max={100} step={1} value={Math.round(config.subWeights[split.c] * 100)} onChange={(e) => setSplit(split.c, split.m, Number(e.target.value) / 100)} />{" %"}
+                          <WeightStepper value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => setSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                         </label>
                         <label>
                           <span>{L.merges}</span>
-                          <input type="number" min={0} max={100} step={1} value={Math.round(config.subWeights[split.m] * 100)} onChange={(e) => setSplit(split.m, split.c, Number(e.target.value) / 100)} />{" %"}
+                          <WeightStepper value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => setSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                         </label>
                       </div>
                     </td>

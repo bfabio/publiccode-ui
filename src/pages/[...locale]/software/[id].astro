@@ -88,7 +88,7 @@ const platforms = pc.platforms ?? [];
       {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
-    {activity && <SoftwareMetrics client:visible activity={activity} stats={stats} locale={locale} />}
+    {activity && <SoftwareMetrics client:visible softwareId={software.id} activity={activity} stats={stats} locale={locale} />}
 
     {features.length > 0 && (
       <section class="software-features">

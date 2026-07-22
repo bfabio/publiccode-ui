@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartColumn, faAngleDown } from "@fortawesome/free-solid-svg-icons";
+import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { computeVitality, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { usePageActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
+import { WeightStepper } from "./WeightStepper";
 
 type SubKey = keyof VitalityConfig["subWeights"];
 
@@ -22,14 +23,15 @@ type CodeRow =
   | { label: string; kind: "forge"; key: ForgeMetric };
 
 interface Props {
+  softwareId: string;
   activity: SoftwareActivity;
   stats: CatalogStats | null;
   locale?: string;
 }
 
-export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en" }) => {
+export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
-  const { config, overridden, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig();
+  const { config, overridden, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const [showDebug, setShowDebug] = useState(false);
   const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
 
@@ -121,6 +123,14 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
           </div>
         )}
         <div className="vitality-meta">
+          {overridden && (
+            <p className="vitality-override">
+              <span>{L.overrideActive}</span>
+              <button type="button" onClick={resetToGlobal} title={L.resetGlobal} aria-label={L.resetGlobal}>
+                <FontAwesomeIcon icon={faRotateLeft} />
+              </button>
+            </p>
+          )}
           {result.score100 !== null && result.cap && result.score100 === result.cap.limit && (
             <p className="vitality-scope">
               {result.cap.reason === "disabled" ? L.capDisabled : L.capUnknown}
@@ -175,14 +185,11 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
                           {(d.normalized as number).toFixed(2)}
                         </td>
                         <td>
-                          <input
-                            type="number"
-                            className="weight-input"
-                            min={0}
-                            max={100}
-                            step={1}
+                          <WeightStepper
                             value={Math.round(config.weights[d.key] * 100)}
-                            onChange={(e) => setWeight(d.key, Number(e.target.value) / 100)}
+                            onChange={(pct) => setWeight(d.key, pct / 100)}
+                            decLabel={L.stepDown}
+                            incLabel={L.stepUp}
                           />{" %"}
                         </td>
                         <td>{d.contribution.toFixed(1)}</td>
@@ -197,11 +204,11 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
                         <div className="vitality-split">
                           <label>
                             <span>{L.commits}</span>
-                            <input type="number" min={0} max={100} step={1} value={Math.round(config.subWeights[split.c] * 100)} onChange={(e) => setSplit(split.c, split.m, Number(e.target.value) / 100)} />{" %"}
+                            <WeightStepper value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => setSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                           </label>
                           <label>
                             <span>{L.merges}</span>
-                            <input type="number" min={0} max={100} step={1} value={Math.round(config.subWeights[split.m] * 100)} onChange={(e) => setSplit(split.m, split.c, Number(e.target.value) / 100)} />{" %"}
+                            <WeightStepper value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => setSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                           </label>
                         </div>
                       </td>
@@ -237,10 +244,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ activity, stats, locale = "en
               </select>
             </label>
           </div>
-
-          {overridden && (
-            <button type="button" className="vitality-reset" onClick={resetToGlobal}>{L.resetGlobal}</button>
-          )}
         </div>
         </>
       )}

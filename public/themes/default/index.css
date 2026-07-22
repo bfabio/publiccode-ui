@@ -497,6 +497,16 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: var(--text-tertiary);
   font-weight: 400;
 }
+.activity-badge.is-custom::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+  vertical-align: 2px;
+}
 .vitality-unavailable {
   margin: 0;
   color: var(--text-tertiary);
@@ -1221,7 +1231,6 @@ dialog nav button:hover {
   border-color: var(--accent);
 }
 .vitality-reset {
-  align-self: flex-start;
   font: inherit;
   font-size: 12px;
   font-weight: 510;
@@ -1235,4 +1244,71 @@ dialog nav button:hover {
 .vitality-reset:hover {
   color: var(--text-primary);
   border-color: var(--text-quaternary);
+}
+.vitality-override {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 510;
+  color: var(--accent-bright);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  padding: 3px 6px 3px 10px;
+}
+.vitality-override button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  color: var(--accent-bright);
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--accent);
+  padding: 0 0 0 6px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.vitality-override:hover button,
+.vitality-override button:focus-visible {
+  opacity: 1;
+}
+.weight-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.weight-stepper button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  font-size: 10px;
+  color: var(--text-secondary);
+  background: var(--surface-btn);
+  border: 1px solid var(--border-solid);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.weight-stepper button:hover {
+  color: var(--text-primary);
+  border-color: var(--text-quaternary);
+}
+.weight-stepper .weight-input {
+  width: 44px;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.weight-stepper .weight-input::-webkit-outer-spin-button,
+.weight-stepper .weight-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

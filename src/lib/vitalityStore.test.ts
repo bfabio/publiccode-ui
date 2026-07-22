@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { mergeConfig, parseConfig, isDefaultConfig, pickConfig } from './vitalityStore.ts';
-import { DEFAULT_CONFIG } from './vitality.ts';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  mergeConfig, parseConfig, isDefaultConfig, pickConfig,
+  softwareKey, readSoftwareConfig, writeSoftwareConfig,
+  clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore,
+  STORAGE_KEY, SOFTWARE_PREFIX,
+} from './vitalityStore.ts';
+import { DEFAULT_CONFIG, type VitalityConfig } from './vitality.ts';
 
 describe('mergeConfig', () => {
   it('fills missing fields from defaults', () => {
@@ -38,11 +43,85 @@ describe('isDefaultConfig', () => {
 });
 
 describe('pickConfig', () => {
-  it('prefers url, then global, then default', () => {
+  it('prefers url, then software, then global, then default', () => {
     const url = { ...DEFAULT_CONFIG, xmaxMode: 'p95' as const };
-    const global = { ...DEFAULT_CONFIG, issueMode: 'open' as const };
-    expect(pickConfig(url, global)).toBe(url);
-    expect(pickConfig(null, global)).toBe(global);
-    expect(pickConfig(null, null)).toBe(DEFAULT_CONFIG);
+    const software = { ...DEFAULT_CONFIG, issueMode: 'open' as const };
+    const global = { ...DEFAULT_CONFIG, xmaxMode: 'p95' as const, issueMode: 'open' as const };
+    expect(pickConfig(url, software, global)).toBe(url);
+    expect(pickConfig(null, software, global)).toBe(software);
+    expect(pickConfig(null, null, global)).toBe(global);
+    expect(pickConfig(null, null, null)).toBe(DEFAULT_CONFIG);
+  });
+});
+
+class FakeStorage {
+  private m = new Map<string, string>();
+  get length() { return this.m.size; }
+  key(i: number) { return [...this.m.keys()][i] ?? null; }
+  getItem(k: string) { return this.m.get(k) ?? null; }
+  setItem(k: string, v: string) { this.m.set(k, v); }
+  removeItem(k: string) { this.m.delete(k); }
+  clear() { this.m.clear(); }
+}
+
+function stubWindow() {
+  const storage = new FakeStorage();
+  const handlers: ((e: { key: string | null }) => void)[] = [];
+  vi.stubGlobal('window', {
+    localStorage: storage,
+    addEventListener: (_t: string, h: (e: { key: string | null }) => void) => handlers.push(h),
+    removeEventListener: vi.fn(),
+  });
+  return { storage, fire: (key: string | null) => handlers.forEach((h) => h({ key })) };
+}
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('software configs', () => {
+  const custom: VitalityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
+
+  it('builds the key from the prefix', () => {
+    expect(softwareKey('abc')).toBe(`${SOFTWARE_PREFIX}abc`);
+    expect(softwareKey('abc').startsWith(`${STORAGE_KEY}:`)).toBe(true);
+  });
+
+  it('roundtrips write, read, clear', () => {
+    stubWindow();
+    expect(readSoftwareConfig('abc')).toBeNull();
+    writeSoftwareConfig('abc', custom);
+    expect(readSoftwareConfig('abc')?.issueMode).toBe('open');
+    clearSoftwareConfig('abc');
+    expect(readSoftwareConfig('abc')).toBeNull();
+  });
+
+  it('returns null for an unparseable stored value', () => {
+    const { storage } = stubWindow();
+    storage.setItem(softwareKey('abc'), '{not json');
+    expect(readSoftwareConfig('abc')).toBeNull();
+  });
+
+  it('scans only per software keys, skipping foreign and broken ones', () => {
+    const { storage } = stubWindow();
+    writeSoftwareConfig('abc', custom);
+    storage.setItem(STORAGE_KEY, JSON.stringify(custom));
+    storage.setItem('unrelated', 'x');
+    storage.setItem(softwareKey('broken'), '{not json');
+    const all = readAllSoftwareConfigs();
+    expect([...all.keys()]).toEqual(['abc']);
+    expect(all.get('abc')?.issueMode).toBe('open');
+  });
+});
+
+describe('subscribeStore', () => {
+  it('fires for our keys and full clears, not foreign keys', () => {
+    const { fire } = stubWindow();
+    const seen: (string | null)[] = [];
+    subscribeStore((k) => seen.push(k));
+    fire(STORAGE_KEY);
+    fire(softwareKey('abc'));
+    fire('unrelated-key');
+    fire('publiccode-ui:vitalityBackup');
+    fire(null);
+    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), null]);
   });
 });
