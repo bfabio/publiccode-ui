@@ -233,10 +233,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {visibleItems.map((item) => (
           <article key={item.id}>
-            <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`}>
-              <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
+            <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`} suppressHydrationWarning>
+              <span className="logo-placeholder" aria-hidden="true" suppressHydrationWarning>{item.name.charAt(0).toUpperCase()}</span>
               {item.logo && (
-                <img className="image-fallback" src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy" />
+                <img className="image-fallback" src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy" suppressHydrationWarning />
               )}
             </figure>
             <header>
