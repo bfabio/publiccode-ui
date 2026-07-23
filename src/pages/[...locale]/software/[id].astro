@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import { faIcon } from '../../../lib/icons.js';
 import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllOpenCodeBadges, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
 import { SoftwareMetrics } from '../../../components/SoftwareMetrics';
+import { ActivityRadar } from '../../../components/ActivityRadar';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
@@ -85,27 +86,35 @@ const allBadges = badges
   : [];
 
 const levelValue = { no: 0, bronze: 1, silver: 2, gold: 3 };
-const radarLevels = 4;
 const radarSize = 300;
 const radarCenter = radarSize / 2;
 const radarRadius = 90;
-const radarAxes = badgeDefs.map((badge, index) => {
-  const angle = (Math.PI * 2 * index) / badgeDefs.length - Math.PI / 2;
-  const value = badges ? (levelValue[badges[badge.key]] ?? 0) + 1 : 1;
-  return { label: badge.label, angle, value };
-});
 const radarPoint = (angle: number, radius: number) =>
   `${radarCenter + radius * Math.cos(angle)},${radarCenter + radius * Math.sin(angle)}`;
 const radarXY = (angle: number, radius: number) => ({
   x: radarCenter + radius * Math.cos(angle),
   y: radarCenter + radius * Math.sin(angle),
 });
-const radarGrid = [1, 2, 3, 4, 5].map((level) =>
-  radarAxes.map((axis) => radarPoint(axis.angle, (radarRadius * level) / (radarLevels + 1))).join(' ')
+const makeRadar = (items: { label: string; value: number }[], maxValue: number) => {
+  const axes = items.map((item, index) => ({
+    ...item,
+    angle: (Math.PI * 2 * index) / items.length - Math.PI / 2,
+  }));
+  return {
+    axes,
+    grid: [1, 2, 3, 4, 5].map((level) =>
+      axes.map((axis) => radarPoint(axis.angle, (radarRadius * level) / 5)).join(' ')
+    ),
+    data: axes.map((axis) => radarPoint(axis.angle, radarRadius * Math.min(axis.value / maxValue, 1))).join(' '),
+  };
+};
+const badgeRadar = makeRadar(
+  badgeDefs.map((badge) => ({
+    label: badge.label,
+    value: badges ? (levelValue[badges[badge.key]] ?? 0) + 1 : 1,
+  })),
+  5,
 );
-const radarData = radarAxes
-  .map((axis) => radarPoint(axis.angle, (radarRadius * axis.value) / (radarLevels + 1)))
-  .join(' ');
 ---
 
 <Layout title={pc.name} description={desc.shortDescription} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
@@ -173,19 +182,30 @@ const radarData = radarAxes
         <button class="badge badge-chart" type="button" popovertarget="radar-popover" style="anchor-name: --radar-button" aria-label={t(locale, 'badges')}>
           <Fragment set:html={faIcon('chart-pie')} />
         </button>
-        <div id="radar-popover" popover style="position-anchor: --radar-button">
-          <svg class="radar-chart" viewBox={`0 0 ${radarSize} ${radarSize}`} role="img" aria-label={t(locale, 'badges')}>
-            {radarGrid.map((points) => <polygon points={points} class="radar-ring" />)}
-            {radarAxes.map((axis) => {
-              const to = radarXY(axis.angle, radarRadius);
-              return <line x1={radarCenter} y1={radarCenter} x2={to.x} y2={to.y} class="radar-axis" />;
-            })}
-            <polygon points={radarData} class="radar-fill" />
-            {radarAxes.map((axis) => {
-              const position = radarXY(axis.angle, radarRadius + 24);
-              return <text x={position.x} y={position.y} class="radar-label" text-anchor="middle" dominant-baseline="central">{axis.label}</text>;
-            })}
-          </svg>
+        <div id="radar-popover" popover style="position-anchor: --radar-button" data-radar-tabs>
+          <div class="radar-tabs" role="tablist" aria-label={t(locale, 'badges')}>
+            <button id="radar-tab-badges" class="radar-tab" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-badges" data-radar-tab="badges">{t(locale, 'badges')}</button>
+            <button id="radar-tab-activity" class="radar-tab" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-activity" data-radar-tab="activity">{t(locale, 'activity_score')}</button>
+          </div>
+          <div id="radar-panel-badges" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-badges" data-radar-panel="badges">
+            <svg class="radar-chart" viewBox={`0 0 ${radarSize} ${radarSize}`} role="img" aria-label={t(locale, 'badges')}>
+              {badgeRadar.grid.map((points) => <polygon points={points} class="radar-ring" />)}
+              {badgeRadar.axes.map((axis) => {
+                const to = radarXY(axis.angle, radarRadius);
+                return <line x1={radarCenter} y1={radarCenter} x2={to.x} y2={to.y} class="radar-axis" />;
+              })}
+              <polygon points={badgeRadar.data} class="radar-fill" />
+              {badgeRadar.axes.map((axis) => {
+                const position = radarXY(axis.angle, radarRadius + 24);
+                return <text x={position.x} y={position.y} class="radar-label" text-anchor="middle" dominant-baseline="central">{axis.label}</text>;
+              })}
+            </svg>
+          </div>
+          <div id="radar-panel-activity" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-activity" data-radar-panel="activity" hidden>
+            {activity
+              ? <ActivityRadar client:load softwareId={software.id} activity={activity} stats={stats} locale={locale} />
+              : <p class="radar-empty">{t(locale, 'no_activity_data')}</p>}
+          </div>
         </div>
       </section>
     )}
@@ -245,6 +265,24 @@ const radarData = radarAxes
     )}
   </article>
 </Layout>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-radar-tabs]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-radar-tab]'));
+    const panels = Array.from(root.querySelectorAll<HTMLElement>('[data-radar-panel]'));
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        const active = tab.dataset.radarTab;
+        for (const candidate of tabs) {
+          candidate.setAttribute('aria-selected', String(candidate === tab));
+        }
+        for (const panel of panels) {
+          panel.hidden = panel.dataset.radarPanel !== active;
+        }
+      });
+    }
+  });
+</script>
 
 <script>
   const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;

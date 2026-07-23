@@ -325,6 +325,36 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   }
   .badge-link svg { width: 0.8em; }
   #radar-popover { padding: 0.6rem; }
+  .radar-tabs {
+    display: flex;
+    gap: 0.2rem;
+    margin: 0 0 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .radar-tab {
+    padding: 0.35rem 0.5rem 0.45rem;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 510;
+  }
+  .radar-tab[aria-selected="true"] {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent-bright);
+  }
+  .radar-empty {
+    width: min(300px, calc(100vw - 4rem));
+    margin: 0;
+    padding: 2rem 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    text-align: center;
+  }
+  .activity-radar.is-loading { visibility: hidden; }
   .radar-chart {
     display: block;
     width: min(300px, calc(100vw - 4rem));
