@@ -64,7 +64,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       const saved = localStorage.getItem('theme');
       const activeTheme = themes.includes(saved) ? saved : defaultTheme;
       document.getElementById('theme-css').href = `${base}/themes/${activeTheme}/index.css`;
-      if (localStorage.getItem('publiccode-ui:opencode-badges') === '0') {
+      if (localStorage.getItem('publiccode-ui:opencode-badges') !== '1') {
         document.documentElement.setAttribute('data-opencode-badges-hidden', '');
       }
     </script>

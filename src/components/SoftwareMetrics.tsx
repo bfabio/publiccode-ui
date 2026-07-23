@@ -1,19 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
-import { computeVitality, type VitalityConfig, type DimensionKey } from "../lib/vitality";
+import { faChartColumn, faAngleDown, faRotateLeft, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { computeVitality } from "../lib/vitality";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
-import { usePageActivityConfig } from "../lib/useVitalityConfig";
+import { useCapWarningVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
-import { WeightStepper } from "./WeightStepper";
-
-type SubKey = keyof VitalityConfig["subWeights"];
-
-const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
-  history: { c: "phC", m: "phM" },
-  activity: { c: "caC", m: "caM" },
-};
+import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
 
 const fmt = (n: number | null | undefined, locale: string) =>
   typeof n === "number" ? n.toLocaleString(locale) : null;
@@ -31,11 +24,17 @@ interface Props {
 
 export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
-  const { config, overridden, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
+  const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
+  const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const [showDebug, setShowDebug] = useState(false);
-  const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
+
+  const confirmResetToGlobal = () => {
+    if (window.confirm(L.resetGlobalConfirmation)) resetToGlobal();
+  };
 
   const result = useMemo(() => computeVitality(activity, stats, config), [activity, stats, config]);
+  const hasUnknownCap = result.score100 !== null && result.cap?.reason === "unknown" && result.score100 === result.cap.limit;
+  const showCapWarning = capWarningsReady && capWarningsEnabled && hasUnknownCap;
 
   const win = activity.recentDays ?? 180;
   const code: CodeRow[] = [
@@ -51,9 +50,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
     [L.issuesOpen, "issuesOpen"],
     [L.issuesClosed, "issuesClosed"],
   ];
-
-  const toggleSplit = (key: DimensionKey) =>
-    setOpenSplits((s) => ({ ...s, [key]: !s[key] }));
 
   return (
     <section className="software-metrics">
@@ -113,140 +109,54 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
         {activity.oldestCommit && <> &middot; {L.oldestCommit}: <strong>{activity.oldestCommit}</strong></>}
       </p>
 
-      <div className="vitality-badge">
+      <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${showCapWarning ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
         {result.score100 === null ? (
           <p className="vitality-unavailable">{L.scoreUnavailable}</p>
         ) : (
           <div className="vitality-score">
-            <span className="vitality-value">{Math.round(result.score100)}</span>
+            <span className={`vitality-value${overridden ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
             <span className="vitality-max">/ 100</span>
           </div>
         )}
         <div className="vitality-meta">
           {overridden && (
-            <p className="vitality-override">
+            <span className="vitality-override">
               <span>{L.overrideActive}</span>
-              <button type="button" onClick={resetToGlobal} title={L.resetGlobal} aria-label={L.resetGlobal}>
+              <button type="button" onClick={confirmResetToGlobal} title={L.resetGlobal} aria-label={L.resetGlobal}>
                 <FontAwesomeIcon icon={faRotateLeft} />
               </button>
-            </p>
+            </span>
           )}
           {result.score100 !== null && result.cap && result.score100 === result.cap.limit && (
-            <p className="vitality-scope">
+            <p className={`vitality-scope${showCapWarning ? " vitality-cap-warning" : ""}`}>
+              {showCapWarning && <FontAwesomeIcon icon={faTriangleExclamation} aria-hidden="true" />}
               {result.cap.reason === "disabled" ? L.capDisabled : L.capUnknown}
             </p>
           )}
           {result.score100 !== null && result.covered < result.total && (
             <p className="vitality-scope">{L.scoreScope(result.covered, result.total)}</p>
           )}
-          <div className="vitality-actions">
-            <button type="button" onClick={() => setShowDebug((s) => !s)}>
-              {showDebug ? L.debugHide : L.debugShow}
-              <FontAwesomeIcon icon={faAngleDown} className={showDebug ? "rot" : undefined} />
-            </button>
-          </div>
         </div>
+        <button type="button" className="vitality-weights-toggle" onClick={() => setShowDebug((s) => !s)} aria-expanded={showDebug}>
+          <span>{showDebug ? L.debugHide : L.debugShow}</span>
+          <FontAwesomeIcon icon={faAngleDown} className={showDebug ? "rot" : undefined} />
+        </button>
+
+        {showDebug && (
+          <div className="vitality-weights-panel">
+            <VitalityWeightsWidget
+              result={result}
+              config={config}
+              labels={L}
+              locale={locale}
+              onWeight={setWeight}
+              onSplit={setSplit}
+              onIssueMode={setIssueMode}
+              onXmaxMode={setXmaxMode}
+            />
+          </div>
+        )}
       </div>
-
-      {showDebug && (
-        <>
-        <table className="vitality-debug">
-          <thead>
-            <tr>
-              <th>{L.colDimension}</th>
-              <th>{L.colRaw}</th>
-              <th>{L.colNorm}</th>
-              <th>{L.colWeight}</th>
-              <th>{L.colContribution}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {result.dimensions.map((d) => {
-              const split = d.present ? SPLIT[d.key] : undefined;
-              const open = split && openSplits[d.key];
-              return (
-                <React.Fragment key={d.key}>
-                  <tr className={d.present ? undefined : "is-excluded"}>
-                    <td>
-                      {split ? (
-                        <button type="button" className="vitality-split-toggle" aria-expanded={!!open} onClick={() => toggleSplit(d.key)}>
-                          <FontAwesomeIcon icon={faAngleDown} className={open ? "rot" : undefined} />
-                          {L.dim[d.key]}
-                        </button>
-                      ) : (
-                        L.dim[d.key]
-                      )}
-                    </td>
-                    {d.present ? (
-                      <>
-                        <td>{(d.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}</td>
-                        <td>
-                          <span className="bar-track"><span className="bar-fill" style={{ width: `${(d.normalized as number) * 100}%` }} /></span>
-                          {(d.normalized as number).toFixed(2)}
-                        </td>
-                        <td>
-                          <WeightStepper
-                            value={Math.round(config.weights[d.key] * 100)}
-                            onChange={(pct) => setWeight(d.key, pct / 100)}
-                            decLabel={L.stepDown}
-                            incLabel={L.stepUp}
-                          />{" %"}
-                        </td>
-                        <td>{d.contribution.toFixed(1)}</td>
-                      </>
-                    ) : (
-                      <td colSpan={4} className="is-na">{L.excluded}</td>
-                    )}
-                  </tr>
-                  {open && split && (
-                    <tr className="vitality-split-row">
-                      <td colSpan={5}>
-                        <div className="vitality-split">
-                          <label>
-                            <span>{L.commits}</span>
-                            <WeightStepper value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => setSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
-                          </label>
-                          <label>
-                            <span>{L.merges}</span>
-                            <WeightStepper value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => setSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
-                          </label>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={3}></td>
-              <td></td>
-              <td>{result.score100 === null ? L.na : result.score100.toFixed(1)}</td>
-            </tr>
-          </tfoot>
-        </table>
-
-        <div className="vitality-config">
-          <div className="config-grid">
-            <label>
-              <span>{L.issueMode}</span>
-              <select value={config.issueMode} onChange={(e) => setIssueMode(e.target.value as VitalityConfig["issueMode"])}>
-                <option value="ratio">{L.modeRatio}</option>
-                <option value="open">{L.modeOpen}</option>
-              </select>
-            </label>
-            <label>
-              <span>{L.xmaxMode}</span>
-              <select value={config.xmaxMode} onChange={(e) => setXmaxMode(e.target.value as VitalityConfig["xmaxMode"])}>
-                <option value="max">{L.xmaxMax}</option>
-                <option value="p95">{L.xmaxP95}</option>
-              </select>
-            </label>
-          </div>
-        </div>
-        </>
-      )}
     </section>
   );
 };

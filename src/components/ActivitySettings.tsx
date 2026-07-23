@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, type VitalityConfig, type DimensionKey } from "../lib/vitality";
-import { useGlobalActivityConfig } from "../lib/useVitalityConfig";
+import { useCapWarningVisibility, useGlobalActivityConfig, useOpenCodeBadgeVisibility } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -15,12 +15,51 @@ const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
 
 export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
-  const { config, setWeight, setSplit, setIssueMode, setXmaxMode, reset } = useGlobalActivityConfig();
+  const { config, ready: configReady, setWeight, setSplit, setIssueMode, setXmaxMode, reset } = useGlobalActivityConfig();
+  const { enabled: capWarningsEnabled, ready: capWarningsReady, setEnabled: setCapWarningsEnabled } = useCapWarningVisibility();
+  const { enabled: openCodeBadgesEnabled, ready: openCodeBadgesReady, setEnabled: setOpenCodeBadgesEnabled } = useOpenCodeBadgeVisibility();
+
+  const confirmReset = () => {
+    if (window.confirm(L.resetConfirmation)) reset();
+  };
 
   return (
-    <section className="software-metrics activity-settings">
+    <section className={`software-metrics activity-settings${configReady && capWarningsReady && openCodeBadgesReady ? "" : " is-loading"}`}>
       <h2><FontAwesomeIcon icon={faChartColumn} /> {L.section}</h2>
       <p className="settings-intro">{L.settingsIntro}</p>
+
+      <div className="settings-preference">
+        <span>
+          <strong>{L.capWarning}</strong>
+        </span>
+        <button
+          type="button"
+          className={`settings-switch${capWarningsEnabled ? " is-on" : ""}`}
+          role="switch"
+          aria-checked={capWarningsEnabled}
+          aria-label={L.capWarning}
+          onClick={() => setCapWarningsEnabled(!capWarningsEnabled)}
+        >
+          <span aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="settings-preference">
+        <span>
+          <strong>{L.openCodeBadges}</strong>
+          <small>{L.openCodeBadgesHelp}</small>
+        </span>
+        <button
+          type="button"
+          className={`settings-switch${openCodeBadgesEnabled ? " is-on" : ""}`}
+          role="switch"
+          aria-checked={openCodeBadgesEnabled}
+          aria-label={L.openCodeBadges}
+          onClick={() => setOpenCodeBadgesEnabled(!openCodeBadgesEnabled)}
+        >
+          <span aria-hidden="true" />
+        </button>
+      </div>
 
       <table className="vitality-debug">
         <thead>
@@ -85,7 +124,7 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
           </label>
         </div>
 
-        <button type="button" className="vitality-reset" onClick={reset}>{L.reset}</button>
+        <button type="button" className="vitality-reset" onClick={confirmReset}>{L.reset}</button>
       </div>
     </section>
   );

@@ -3,7 +3,9 @@ import {
   mergeConfig, parseConfig, isDefaultConfig, pickConfig,
   softwareKey, readSoftwareConfig, writeSoftwareConfig,
   clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore,
-  STORAGE_KEY, SOFTWARE_PREFIX,
+  STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
+  CAP_WARNING_VISIBILITY_KEY, readCapWarningVisibility, writeCapWarningVisibility,
+  withActivityConfig,
 } from './vitalityStore.ts';
 import { DEFAULT_CONFIG, type VitalityConfig } from './vitality.ts';
 
@@ -119,9 +121,51 @@ describe('subscribeStore', () => {
     subscribeStore((k) => seen.push(k));
     fire(STORAGE_KEY);
     fire(softwareKey('abc'));
+    fire(OPENCODE_BADGES_VISIBILITY_KEY);
+    fire(CAP_WARNING_VISIBILITY_KEY);
     fire('unrelated-key');
     fire('publiccode-ui:vitalityBackup');
     fire(null);
-    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), null]);
+    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, null]);
+  });
+});
+
+describe('openCode badge visibility', () => {
+  it('is disabled by default and persists only the enabled state', () => {
+    const { storage } = stubWindow();
+    expect(readOpenCodeBadgeVisibility()).toBe(false);
+    writeOpenCodeBadgeVisibility(true);
+    expect(readOpenCodeBadgeVisibility()).toBe(true);
+    expect(storage.getItem(OPENCODE_BADGES_VISIBILITY_KEY)).toBe('1');
+    writeOpenCodeBadgeVisibility(false);
+    expect(readOpenCodeBadgeVisibility()).toBe(false);
+    expect(storage.getItem(OPENCODE_BADGES_VISIBILITY_KEY)).toBeNull();
+  });
+});
+
+describe('cap warning visibility', () => {
+  it('is enabled by default and persists only the disabled state', () => {
+    const { storage } = stubWindow();
+    expect(readCapWarningVisibility()).toBe(true);
+    writeCapWarningVisibility(false);
+    expect(readCapWarningVisibility()).toBe(false);
+    writeCapWarningVisibility(true);
+    expect(readCapWarningVisibility()).toBe(true);
+    expect(storage.getItem(CAP_WARNING_VISIBILITY_KEY)).toBeNull();
+  });
+});
+
+describe('withActivityConfig', () => {
+  it('adds a shareable activity config without dropping existing query params', () => {
+    const href = withActivityConfig('/software/abc?tab=metrics', DEFAULT_CONFIG);
+    const [path, query] = href.split('?');
+    const params = new URLSearchParams(query);
+    expect(path).toBe('/software/abc');
+    expect(params.get('tab')).toBe('metrics');
+    expect(parseConfig(params.get('activity'))).toEqual(DEFAULT_CONFIG);
+  });
+
+  it('leaves regular software links untouched', () => {
+    expect(withActivityConfig('/software/abc', null)).toBe('/software/abc');
   });
 });

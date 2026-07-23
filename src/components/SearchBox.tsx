@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { readSoftwareConfig, withActivityConfig } from "../lib/vitalityStore";
 
 interface SearchItem {
   id: string;
@@ -45,6 +46,9 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const [navigating, setNavigating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const softwareHref = useCallback((id: string) =>
+    withActivityConfig(`${base}/software/${id}`, readSoftwareConfig(id)),
+  [base]);
 
   const suggestions = useMemo(() => {
     if (!inputValue || inputValue.length < 2) return [];
@@ -79,7 +83,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
       e.preventDefault();
       if (selectedIdx >= 0 && suggestions.length > 0) {
         setNavigating(true);
-        window.location.href = `${base}/software/${suggestions[selectedIdx].id}`;
+        window.location.href = softwareHref(suggestions[selectedIdx].id);
       } else if (inputValue.trim()) {
         setNavigating(true);
         window.location.href = `${base}/software/?q=${encodeURIComponent(inputValue.trim())}`;
@@ -94,7 +98,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
       e.preventDefault();
       setSelectedIdx((i) => (i - 1 + suggestions.length) % suggestions.length);
     }
-  }, [showSuggestions, suggestions, selectedIdx, base, inputValue, update]);
+  }, [showSuggestions, suggestions, selectedIdx, base, inputValue, update, softwareHref]);
 
   return (
     <search className="catalog-search">
@@ -143,7 +147,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
               role="option"
               aria-selected={i === selectedIdx}
               className={i === selectedIdx ? "selected" : ""}
-              onMouseDown={() => { window.location.href = `${base}/software/${s.id}`; }}
+              onMouseDown={() => { window.location.href = softwareHref(s.id); }}
               onMouseEnter={() => setSelectedIdx(i)}
             >
               <span className={`suggestion-thumb image-shell ${s.logo ? 'image-loading' : ''}`}>
