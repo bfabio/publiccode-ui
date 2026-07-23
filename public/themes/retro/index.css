@@ -178,7 +178,19 @@ nav[aria-label="Breadcrumb"] li + li::before {
   content: ": ";
 }
 .catalog-results .activity-index-label {
-  position: relative;
+  display: inline-grid;
+  grid-template-columns: 18px max-content 18px;
+  align-items: center;
+  column-gap: 4px;
+  white-space: nowrap;
+}
+.catalog-results .activity-index-label-text { white-space: nowrap; }
+.catalog-results .activity-cap-warning-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 .catalog-results .activity-custom-toggle,
 .catalog-results .activity-custom-toggle-placeholder {
@@ -350,14 +362,9 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: #c0bfbc;
 }
 .activity-cap-warning {
-  position: absolute;
-  top: 50%;
-  right: calc(100% + 5px);
   display: inline-flex;
   align-items: center;
   color: #a64d45;
-  pointer-events: none;
-  transform: translateY(-50%);
 }
 .catalog-results .activity-badge.is-capped-unknown {
   color: #a64d45;

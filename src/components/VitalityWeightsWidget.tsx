@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { type DimensionKey, type VitalityConfig, type VitalityResult } from "../lib/vitality";
+import { DIMENSION_ORDER, type DimensionKey, type VitalityConfig, type VitalityResult } from "../lib/vitality";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -24,6 +24,27 @@ interface Props {
   onXmaxMode: (mode: VitalityConfig["xmaxMode"]) => void;
 }
 
+export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels">> = ({ config, labels: L }) => (
+  <div className="vitality-weight-distribution">
+    <div className="vitality-weight-bar" role="list" aria-label={L.weights}>
+      {DIMENSION_ORDER.map((key) => {
+        const percentage = Math.round(config.weights[key] * 100);
+        const label = `${L.dim[key]}: ${percentage}%`;
+        return (
+          <span
+            key={key}
+            className={`vitality-weight-segment is-${key}`}
+            style={{ flexGrow: percentage, flexBasis: 0 }}
+            role="listitem"
+            title={label}
+            aria-label={label}
+          />
+        );
+      })}
+    </div>
+  </div>
+);
+
 export const VitalityWeightsWidget: React.FC<Props> = ({
   result,
   config,
@@ -39,6 +60,8 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
 
   return (
     <>
+      <VitalityWeightDistribution config={config} labels={L} />
+
       <table className="vitality-debug">
         <thead>
           <tr>

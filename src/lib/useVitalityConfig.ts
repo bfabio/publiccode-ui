@@ -19,6 +19,9 @@ import {
   readCapWarningVisibility,
   writeCapWarningVisibility,
   CAP_WARNING_VISIBILITY_KEY,
+  readListWeightDistributionVisibility,
+  writeListWeightDistributionVisibility,
+  LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY,
 } from './vitalityStore';
 import {
   rebalanceWeights,
@@ -211,6 +214,27 @@ export function useCapWarningVisibility() {
   const update = (next: boolean) => {
     setEnabled(next);
     writeCapWarningVisibility(next);
+  };
+
+  return { enabled, ready, setEnabled: update };
+}
+
+export function useListWeightDistributionVisibility() {
+  const [enabled, setEnabled] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useClientLayoutEffect(() => {
+    const load = () => setEnabled(readListWeightDistributionVisibility());
+    load();
+    setReady(true);
+    return subscribeStore((key) => {
+      if (key === null || key === LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY) load();
+    });
+  }, []);
+
+  const update = (next: boolean) => {
+    setEnabled(next);
+    writeListWeightDistributionVisibility(next);
   };
 
   return { enabled, ready, setEnabled: update };

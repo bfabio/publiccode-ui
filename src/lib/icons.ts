@@ -15,7 +15,6 @@ import {
   faAlignLeft,
   faAddressBook,
   faLayerGroup,
-  faPalette,
   faGear,
   faScaleBalanced,
   faChartPie,
@@ -30,7 +29,7 @@ import { faCalendar } from '@fortawesome/free-regular-svg-icons';
 library.add(
   faCodeBranch, faGlobe, faBook, faFileCode, faGavel, faCircleInfo,
   faCube, faWrench, faDesktop, faLanguage, faListCheck, faImages,
-  faAlignLeft, faAddressBook, faLayerGroup, faPalette, faGear, faCalendar,
+  faAlignLeft, faAddressBook, faLayerGroup, faGear, faCalendar,
   faScaleBalanced, faChartPie, faArrowUpRightFromSquare,
   faShieldHalved, faHeartPulse, faArrowsRotate, faLink,
 );

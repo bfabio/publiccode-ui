@@ -337,7 +337,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-results article {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 136px;
+  grid-template-columns: minmax(0, 1fr) 160px;
   gap: 0;
   align-items: start;
   padding: 1.5rem 1.75rem;
@@ -350,7 +350,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   contain-intrinsic-size: auto 110px;
 }
 .catalog-results article:not(:has(figure)) {
-  grid-template-columns: 1fr 136px;
+  grid-template-columns: minmax(0, 1fr) 160px;
 }
 .catalog-results article figure {
   display: none;
@@ -424,13 +424,13 @@ nav[aria-label="Breadcrumb"] li + li::before {
   grid-row: 1;
   align-self: stretch;
   box-sizing: border-box;
-  width: 100%;
+  width: 160px;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-left: 0;
+  margin-left: 1rem;
   padding: 0 1rem;
   border-left: 1px solid var(--border-standard);
   text-align: center;
@@ -461,14 +461,24 @@ nav[aria-label="Breadcrumb"] li + li::before {
   .activity-index-skeleton-value { animation: none; }
 }
 .activity-index-label {
-  display: inline-flex;
+  display: grid;
   position: relative;
+  grid-template-columns: 18px max-content 18px;
   align-items: center;
-  gap: 5px;
+  column-gap: 4px;
   font-size: 10px;
   font-weight: 500;
   color: var(--text-quaternary);
   text-transform: uppercase;
+  white-space: nowrap;
+}
+.activity-index-label-text { white-space: nowrap; }
+.activity-cap-warning-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
 }
 .activity-custom-toggle,
 .activity-custom-toggle-placeholder {
@@ -701,15 +711,10 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: #c0bfbc;
 }
 .activity-cap-warning {
-  position: absolute;
-  top: 50%;
-  right: calc(100% + 6px);
   display: inline-flex;
   align-items: center;
   color: #c86e66;
   font-size: 12px;
-  pointer-events: none;
-  transform: translateY(-50%);
 }
 .activity-badge.is-capped-unknown {
   color: #c86e66;

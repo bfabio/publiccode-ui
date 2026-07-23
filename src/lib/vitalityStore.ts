@@ -4,6 +4,7 @@ export const STORAGE_KEY = 'publiccode-ui:vitality';
 export const URL_PARAM = 'activity';
 export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
 export const CAP_WARNING_VISIBILITY_KEY = 'publiccode-ui:activity-cap-warning';
+export const LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY = 'publiccode-ui:list-weight-distribution';
 
 export function readOpenCodeBadgeVisibility(): boolean {
   if (typeof window === 'undefined') return false;
@@ -25,6 +26,17 @@ export function writeCapWarningVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   if (enabled) window.localStorage.removeItem(CAP_WARNING_VISIBILITY_KEY);
   else window.localStorage.setItem(CAP_WARNING_VISIBILITY_KEY, '0');
+}
+
+export function readListWeightDistributionVisibility(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.localStorage.getItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY) === '1';
+}
+
+export function writeListWeightDistributionVisibility(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  if (enabled) window.localStorage.setItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, '1');
+  else window.localStorage.removeItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY);
 }
 
 export function mergeConfig(c: Partial<VitalityConfig> | null): VitalityConfig {
@@ -105,7 +117,7 @@ export function readAllSoftwareConfigs(): Map<string, VitalityConfig> {
 export function subscribeStore(callback: (key: string | null) => void): () => void {
   if (typeof window === 'undefined') return () => {};
   const handler = (e: StorageEvent) => {
-    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
+    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key === LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
   };
   window.addEventListener('storage', handler);
   return () => window.removeEventListener('storage', handler);

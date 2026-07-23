@@ -2,7 +2,7 @@ import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, type VitalityConfig, type DimensionKey } from "../lib/vitality";
-import { useCapWarningVisibility, useGlobalActivityConfig, useOpenCodeBadgeVisibility } from "../lib/useVitalityConfig";
+import { useCapWarningVisibility, useGlobalActivityConfig, useListWeightDistributionVisibility, useOpenCodeBadgeVisibility } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -17,6 +17,7 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
   const L = LABELS[locale === "it" ? "it" : "en"];
   const { config, ready: configReady, setWeight, setSplit, setIssueMode, setXmaxMode, reset } = useGlobalActivityConfig();
   const { enabled: capWarningsEnabled, ready: capWarningsReady, setEnabled: setCapWarningsEnabled } = useCapWarningVisibility();
+  const { enabled: listWeightDistributionEnabled, ready: listWeightDistributionReady, setEnabled: setListWeightDistributionEnabled } = useListWeightDistributionVisibility();
   const { enabled: openCodeBadgesEnabled, ready: openCodeBadgesReady, setEnabled: setOpenCodeBadgesEnabled } = useOpenCodeBadgeVisibility();
 
   const confirmReset = () => {
@@ -24,7 +25,7 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
   };
 
   return (
-    <section className={`software-metrics activity-settings${configReady && capWarningsReady && openCodeBadgesReady ? "" : " is-loading"}`}>
+    <section className={`software-metrics activity-settings${configReady && capWarningsReady && listWeightDistributionReady && openCodeBadgesReady ? "" : " is-loading"}`}>
       <h2><FontAwesomeIcon icon={faChartColumn} /> {L.section}</h2>
       <p className="settings-intro">{L.settingsIntro}</p>
 
@@ -39,6 +40,22 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
           aria-checked={capWarningsEnabled}
           aria-label={L.capWarning}
           onClick={() => setCapWarningsEnabled(!capWarningsEnabled)}
+        >
+          <span aria-hidden="true" />
+        </button>
+      </div>
+
+      <div className="settings-preference">
+        <span>
+          <strong>{L.listWeightDistribution}</strong>
+        </span>
+        <button
+          type="button"
+          className={`settings-switch${listWeightDistributionEnabled ? " is-on" : ""}`}
+          role="switch"
+          aria-checked={listWeightDistributionEnabled}
+          aria-label={L.listWeightDistribution}
+          onClick={() => setListWeightDistributionEnabled(!listWeightDistributionEnabled)}
         >
           <span aria-hidden="true" />
         </button>
