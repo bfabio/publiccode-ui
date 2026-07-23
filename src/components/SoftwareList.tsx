@@ -277,14 +277,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
-              <div className="software-tags">
-                <ul className="categories" aria-label="Categories">
-                  {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
-                </ul>
-                {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
-                  <VitalityWeightDistribution config={itemActivityConfig} labels={weightLabels} />
-                )}
-              </div>
+              <ul className="categories" aria-label="Categories">
+                {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
+              </ul>
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
                 return d ? <span className="card-date"><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time></span> : null;
@@ -293,6 +288,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 item.license.url
                   ? <a href={item.license.url} className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
                   : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
+              )}
+              {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
+                <div className="software-weight-distribution">
+                  <VitalityWeightDistribution config={itemActivityConfig} labels={weightLabels} />
+                </div>
               )}
             </footer>
             {item.activity && (() => {
