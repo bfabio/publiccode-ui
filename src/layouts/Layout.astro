@@ -83,16 +83,15 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
           </ol>
         </nav>
       )}
-      <a class="settings-link" href={settingsHref} aria-label={t(locale, 'settings')} title={t(locale, 'settings')}>
-        <Fragment set:html={faIcon('gear')} />
-      </a>
-      <div class="theme-switcher">
-        <button type="button" id="theme-btn" aria-label="Switch theme" title="Switch theme">
-          <Fragment set:html={faIcon('palette')} />
+      <div class="settings-menu">
+        <button type="button" id="settings-btn" aria-label={t(locale, 'settings')} title={t(locale, 'settings')} aria-haspopup="menu" aria-expanded="false">
+          <Fragment set:html={faIcon('gear')} />
         </button>
-        <ul id="theme-menu" hidden>
+        <ul id="settings-menu" role="menu" hidden>
+          <li role="none"><a href={settingsHref} role="menuitem">{t(locale, 'settings')}</a></li>
+          <li class="settings-menu-label" role="presentation">{t(locale, 'theme')}</li>
           {themes.map((t) => (
-            <li><button type="button" data-theme={t}>{t}</button></li>
+            <li role="none"><button type="button" role="menuitemradio" data-theme={t}>{t}</button></li>
           ))}
         </ul>
       </div>
@@ -104,13 +103,13 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
 </html>
 
 <script is:inline define:vars={{ base, defaultTheme, themes }}>
-  const btn = document.getElementById('theme-btn');
-  const menu = document.getElementById('theme-menu');
+  const btn = document.getElementById('settings-btn');
+  const menu = document.getElementById('settings-menu');
   const link = document.getElementById('theme-css');
 
   function markActive(theme) {
     menu.querySelectorAll('[data-theme]').forEach((b) => {
-      b.setAttribute('aria-current', b.dataset.theme === theme ? 'true' : 'false');
+      b.setAttribute('aria-checked', b.dataset.theme === theme ? 'true' : 'false');
     });
   }
 
@@ -120,6 +119,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       markActive(themes.includes(saved) ? saved : defaultTheme);
     }
     menu.hidden = !menu.hidden;
+    btn.setAttribute('aria-expanded', String(!menu.hidden));
   });
 
   menu.addEventListener('click', (e) => {
@@ -130,10 +130,14 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     localStorage.setItem('theme', theme);
     markActive(theme);
     menu.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
   });
 
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.theme-switcher')) menu.hidden = true;
+    if (!e.target.closest('.settings-menu')) {
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+    }
   });
 </script>
 
@@ -147,23 +151,12 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     flex: 1;
     padding: 0;
   }
-  .settings-link {
+  .settings-menu {
     margin-left: auto;
-    display: inline-flex;
-    align-items: center;
-    padding: 8px;
-    color: inherit;
-    opacity: 0.5;
-    transition: opacity 0.15s;
-  }
-  .settings-link:hover {
-    opacity: 1;
-  }
-  .theme-switcher {
     position: relative;
     flex-shrink: 0;
   }
-  #theme-btn {
+  #settings-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -173,10 +166,10 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     opacity: 0.5;
     transition: opacity 0.15s;
   }
-  #theme-btn:hover {
+  #settings-btn:hover {
     opacity: 1;
   }
-  #theme-menu {
+  #settings-menu {
     position: absolute;
     right: 0;
     top: 100%;
@@ -190,8 +183,10 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     z-index: 100;
     min-width: 120px;
   }
-  #theme-menu button {
+  #settings-menu button,
+  #settings-menu a {
     display: block;
+    box-sizing: border-box;
     width: 100%;
     padding: 6px 12px;
     border: none;
@@ -203,15 +198,27 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     border-radius: 4px;
     color: inherit;
     text-transform: capitalize;
+    text-decoration: none;
   }
-  #theme-menu button:hover {
+  #settings-menu button:hover,
+  #settings-menu a:hover {
     background: var(--surface-btn-hover, rgba(0,0,0,0.05));
   }
-  #theme-menu button[aria-current="true"] {
+  #settings-menu button[aria-checked="true"] {
     font-weight: 600;
   }
-  #theme-menu button[aria-current="true"]::after {
+  #settings-menu button[aria-checked="true"]::after {
     content: ' *';
+  }
+  .settings-menu-label {
+    margin: 4px 8px 2px;
+    padding-top: 6px;
+    color: var(--text-quaternary, #888);
+    border-top: 1px solid var(--border-subtle, #eee);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 </style>
 
