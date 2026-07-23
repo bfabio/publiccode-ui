@@ -1,11 +1,14 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel } from "@fortawesome/free-solid-svg-icons";
+import { faGavel, faRotateLeft, faSliders, faTriangleExclamation, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 import { computeVitality } from "../lib/vitality";
-import { useGlobalActivityConfigValue } from "../lib/useVitalityConfig";
+import { useActivityConfigs, useCapWarningVisibility } from "../lib/useVitalityConfig";
+import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
+import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
+import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -99,13 +102,20 @@ interface Labels {
   showMore: string;
   hasActivityData?: string;
   activityScore?: string;
+  activityScoreNa?: string;
+  activityScoreScope?: string;
+  activityCapDisabled?: string;
+  activityCapUnknown?: string;
+  activityCustomWeights?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats }) => {
-  const activityConfig = useGlobalActivityConfigValue();
+  const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
+  const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
+  const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(() => readParam("q"));
   const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "release_date_desc");
@@ -116,6 +126,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [catalog, setCatalog] = useState(() => readParam("catalog"));
   const [onlyActivity, setOnlyActivity] = useState(() => readParam("activity") === "1");
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
+  const [openScoreId, setOpenScoreId] = useState<string | null>(null);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -130,6 +141,24 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
   }, [deferredQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy]);
+
+  useEffect(() => {
+    if (!openScoreId) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest(".activity-score-panel, .activity-custom-toggle")) setOpenScoreId(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenScoreId(null);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [openScoreId]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
@@ -227,33 +256,31 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
       <section className="catalog-results">
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
-        {visibleItems.map((item) => (
-          <article key={item.id}>
-            <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`}>
-              <span className="logo-placeholder" aria-hidden="true">{item.name.charAt(0).toUpperCase()}</span>
+        {visibleItems.map((item) => {
+          const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
+          const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
+          return (
+          <article key={item.id} className={openScoreId === item.id ? "is-score-open" : undefined}>
+            {catalogs && item.catalogName && (
+              <span className="catalog-badge">{item.catalogName}</span>
+            )}
+            <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`} suppressHydrationWarning>
+              <span className="logo-placeholder" aria-hidden="true" suppressHydrationWarning>{item.name.charAt(0).toUpperCase()}</span>
               {item.logo && (
-                <img className="image-fallback" src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy" />
+                <img className="image-fallback" src={item.logo} data-fallback={item.logoFallback ?? undefined} alt="" loading="lazy" suppressHydrationWarning />
               )}
             </figure>
             <header>
-              <h2><a href={`${base}/software/${item.id}`}>{highlight(item.name, query)}</a></h2>
+              <h2><a href={detailHref}>{highlight(item.name, query)}</a></h2>
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
-              {item.activity && (
-                <span className="activity-badge" title={l.activityScore ?? "Activity score"}>
-                  {Math.round(computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig).score100)}
-                </span>
-              )}
-              {catalogs && item.catalogName && (
-                <span className="catalog-badge">{item.catalogName}</span>
-              )}
               <ul className="categories" aria-label="Categories">
                 {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
-              </ul>{" "}
+              </ul>
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
-                return d ? <><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time>{" "}</> : null;
+                return d ? <span className="card-date"><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time></span> : null;
               })()}
               {item.license && (
                 item.license.url
@@ -261,8 +288,113 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
               )}
             </footer>
+            {item.activity && (() => {
+              const activityConfig = configFor(item.id);
+              const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
+              if (!activityConfigReady) {
+                return (
+                  <div className="activity-index is-loading" aria-busy="true" aria-label={l.activityScore ?? "Activity score"}>
+                    <span className="activity-index-skeleton-label" aria-hidden="true" />
+                    <span className="activity-index-skeleton-value" aria-hidden="true" />
+                  </div>
+                );
+              }
+              const custom = customConfig !== null;
+              const hasUnknownCap = v.score100 !== null && v.cap?.reason === "unknown" && v.score100 === v.cap.limit;
+              const showCapWarning = capWarningsReady && capWarningsEnabled && hasUnknownCap;
+              const customNote = custom
+                ? ` (${l.activityCustomWeights ?? "Custom weights for this software"})`
+                : "";
+              const expanded = custom && openScoreId === item.id;
+              const scorePanelId = `activity-score-${item.id}`;
+              const toggleScorePanel = () => {
+                setOpenScoreId((open) => open === item.id ? null : item.id);
+              };
+              const resetScorePanel = () => {
+                if (window.confirm(weightLabels.resetGlobalConfirmation)) {
+                  resetFor(item.id);
+                  setOpenScoreId(null);
+                }
+              };
+              const customWeightTrigger = custom ? (
+                <button type="button" className="activity-custom-toggle" onClick={toggleScorePanel} aria-expanded={expanded} aria-controls={scorePanelId} aria-label={l.activityCustomWeights ?? "Custom weights for this software"} title={l.activityCustomWeights ?? "Custom weights for this software"}>
+                  <FontAwesomeIcon icon={faSliders} />
+                </button>
+              ) : (
+                <span className="activity-custom-toggle-placeholder" aria-hidden="true" />
+              );
+              const scorePanel = expanded ? (
+                <div className="activity-score-panel" id={scorePanelId}>
+                  <svg className="activity-score-pointer" viewBox="0 0 14 8" aria-hidden="true" focusable="false">
+                    <path d="M7 0.5 13.5 7.5h-13Z" />
+                  </svg>
+                  <div className="activity-score-panel-header">
+                    <span>{weightLabels.weights}</span>
+                    <div className="activity-score-panel-tools">
+                      <button type="button" className="activity-score-reset" onClick={resetScorePanel} title={weightLabels.resetGlobal}>
+                        <FontAwesomeIcon icon={faRotateLeft} />
+                        <span>{weightLabels.resetGlobal}</span>
+                      </button>
+                      <button type="button" className="activity-score-close" onClick={toggleScorePanel} aria-label={weightLabels.popoverClose} title={weightLabels.popoverClose}>
+                        <FontAwesomeIcon icon={faXmark} />
+                      </button>
+                    </div>
+                  </div>
+                  {v.score100 === null && <p>{weightLabels.scoreUnavailable}</p>}
+                  <VitalityWeightsWidget
+                    result={v}
+                    config={activityConfig}
+                    labels={weightLabels}
+                    locale={locale}
+                    onWeight={(key, value) => setWeightFor(item.id, key, value)}
+                    onSplit={(edited, other, value) => setSplitFor(item.id, edited, other, value)}
+                    onIssueMode={(mode) => setIssueModeFor(item.id, mode)}
+                    onXmaxMode={(mode) => setXmaxModeFor(item.id, mode)}
+                  />
+                  <div className="activity-score-actions">
+                    <button type="button" onClick={toggleScorePanel}>{weightLabels.popoverConfirm}</button>
+                  </div>
+                </div>
+              ) : null;
+              if (v.score100 === null) {
+                return (
+                  <div className="activity-index">
+                    <div className="activity-index-label">
+                      {l.activityScore ?? "Activity score"}
+                      {customWeightTrigger}
+                    </div>
+                    <span className={`activity-badge is-na${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>n/a</span>
+                    {scorePanel}
+                  </div>
+                );
+              }
+              const scope = v.covered < v.total
+                ? ` (${(l.activityScoreScope ?? "based on {covered} of {total} metrics")
+                    .replace("{covered}", String(v.covered))
+                    .replace("{total}", String(v.total))})`
+                : "";
+              const capNote = v.cap && v.score100 === v.cap.limit
+                ? ` (${v.cap.reason === "disabled"
+                    ? (l.activityCapDisabled ?? "capped at 89: a forge feature is disabled")
+                    : (l.activityCapUnknown ?? "capped at 79: some metrics are unknown")})`
+                : "";
+              return (
+                  <div className={`activity-index${showCapWarning ? " is-capped-unknown" : ""}`}>
+                    <div className="activity-index-label">
+                      {showCapWarning && <span className="activity-cap-warning" title={l.activityCapUnknown ?? "Capped because some metrics are unknown"}><FontAwesomeIcon icon={faTriangleExclamation} /></span>}
+                      {l.activityScore ?? "Activity score"}
+                      {customWeightTrigger}
+                    </div>
+                  <span className={`activity-badge${custom ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
+                    {Math.round(v.score100)}
+                  </span>
+                    {scorePanel}
+                  </div>
+              );
+            })()}
           </article>
-        ))}
+          );
+        })}
       </section>
       {visibleCount < sorted.length && (
         <div className="catalog-more">

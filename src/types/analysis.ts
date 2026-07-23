@@ -12,6 +12,7 @@ export interface SoftwareActivity {
   oldestCommit?: string;
   tags: number;
   recentDays: number;
+  disabled?: string[];
 }
 
 export interface MetricStats {

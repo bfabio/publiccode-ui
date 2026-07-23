@@ -1,0 +1,18 @@
+{
+  "v": 1,
+  "updatedAt": "2026-06-12T10:00:00Z",
+  "softwareCount": 3,
+  "recentDays": 90,
+  "stats": {
+    "commitsAllTime": { "max": 700, "min": 100, "count": 3, "mean": 333.3, "median": 200.0, "p95": 700 },
+    "commitsRecent": { "max": 60, "min": 10, "count": 3, "mean": 30.0, "median": 20.0, "p95": 60 },
+    "contributors": { "max": 10, "min": 3, "count": 3, "mean": 6.0, "median": 5.0, "p95": 10 },
+    "forks": { "max": 12, "min": 1, "count": 3, "mean": 5.0, "median": 2.0, "p95": 12 },
+    "issuesClosed": { "max": 60, "min": 5, "count": 3, "mean": 25.0, "median": 10.0, "p95": 60 },
+    "issuesOpen": { "max": 13, "min": 0, "count": 3, "mean": 5.0, "median": 2.0, "p95": 13 },
+    "pullRequestsAllTime": { "max": 51, "min": 8, "count": 3, "mean": 25.0, "median": 16.0, "p95": 51 },
+    "pullRequestsRecent": { "max": 12, "min": 1, "count": 3, "mean": 5.0, "median": 2.0, "p95": 12 },
+    "stars": { "max": 120, "min": 10, "count": 3, "mean": 50.0, "median": 20.0, "p95": 120 },
+    "tags": { "max": 9, "min": 2, "count": 3, "mean": 5.0, "median": 4.0, "p95": 9 }
+  }
+}

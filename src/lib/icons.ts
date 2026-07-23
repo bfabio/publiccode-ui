@@ -17,6 +17,13 @@ import {
   faLayerGroup,
   faPalette,
   faGear,
+  faScaleBalanced,
+  faChartPie,
+  faArrowUpRightFromSquare,
+  faShieldHalved,
+  faHeartPulse,
+  faArrowsRotate,
+  faLink,
 } from '@fortawesome/free-solid-svg-icons';
 import { faCalendar } from '@fortawesome/free-regular-svg-icons';
 
@@ -24,6 +31,8 @@ library.add(
   faCodeBranch, faGlobe, faBook, faFileCode, faGavel, faCircleInfo,
   faCube, faWrench, faDesktop, faLanguage, faListCheck, faImages,
   faAlignLeft, faAddressBook, faLayerGroup, faPalette, faGear, faCalendar,
+  faScaleBalanced, faChartPie, faArrowUpRightFromSquare,
+  faShieldHalved, faHeartPulse, faArrowsRotate, faLink,
 );
 
 export function faIcon(name: string, prefix: 'fas' | 'far' = 'fas'): string {
