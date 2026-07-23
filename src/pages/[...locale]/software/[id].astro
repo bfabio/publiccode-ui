@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { faIcon } from '../../../lib/icons.js';
-import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllOpenCodeBadges, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
 import { SoftwareMetrics } from '../../../components/SoftwareMetrics';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
@@ -18,6 +18,7 @@ export async function getStaticPaths() {
   const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
   const multiCatalog = catalogs.length > 1;
   const softwareAnalysis = await fetchAllSoftwareAnalysis();
+  const openCodeBadges = await fetchAllOpenCodeBadges();
   const catalogAnalysis = await fetchAllCatalogAnalysis();
   const rootAnalysis = await fetchRootCatalogAnalysis();
   const locales = [undefined, 'it'];
@@ -29,6 +30,7 @@ export async function getStaticPaths() {
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         multiCatalog,
         activity: softwareAnalysis.get(s.id) ?? null,
+        badges: openCodeBadges.get(s.id) ?? null,
         stats: usableStats(rootAnalysis) ?? usableStats(catalogAnalysis.get(s.catalogId) ?? null),
       },
     }))
@@ -36,7 +38,7 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, multiCatalog, activity, stats } = Astro.props;
+const { software, catalogName, multiCatalog, activity, badges, stats } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -49,6 +51,61 @@ const features = desc.features ?? [];
 const langNames = new Intl.DisplayNames([locale], { type: 'language' });
 const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
 const platforms = pc.platforms ?? [];
+
+const medalEmoji = { gold: '\u{1F947}', silver: '\u{1F948}', bronze: '\u{1F949}' };
+const levels = ['gold', 'silver', 'bronze'];
+const badgeUrls = {
+  'open-source': 'https://badges.opencode.de/explanation/official-badges/open-source-badge',
+  maintained: 'https://badges.opencode.de/explanation/official-badges/active-maintained-badge',
+  reused: 'https://badges.opencode.de/explanation/official-badges/reuse-badge',
+  security: 'https://badges.opencode.de/explanation/official-badges/security-badge',
+  'supply-chain': 'https://badges.opencode.de/explanation/official-badges/supply-chain-badge',
+};
+const badgeDefs = [
+  { key: 'open-source', icon: 'scale-balanced' },
+  { key: 'maintained', icon: 'heart-pulse' },
+  { key: 'reused', icon: 'arrows-rotate' },
+  { key: 'security', icon: 'shield-halved' },
+  { key: 'supply-chain', icon: 'link' },
+].map((badge) => ({
+  ...badge,
+  url: badgeUrls[badge.key],
+  label: t(locale, `badge_${badge.key.replace('-', '_')}`),
+  description: t(locale, `badge_${badge.key.replace('-', '_')}_desc`),
+  levels: levels
+    .filter((level) => t(locale, `badge_${badge.key.replace('-', '_')}_${level}`) !== `badge_${badge.key.replace('-', '_')}_${level}`)
+    .map((level) => ({ level, medal: medalEmoji[level], criteria: t(locale, `badge_${badge.key.replace('-', '_')}_${level}`) })),
+}));
+const allBadges = badges
+  ? badgeDefs.map((badge) => {
+      const level = badges[badge.key];
+      const earned = level && level !== 'no';
+      return { ...badge, earned: earned ? level : null, medal: earned ? medalEmoji[level] : null };
+    })
+  : [];
+
+const levelValue = { no: 0, bronze: 1, silver: 2, gold: 3 };
+const radarLevels = 4;
+const radarSize = 300;
+const radarCenter = radarSize / 2;
+const radarRadius = 90;
+const radarAxes = badgeDefs.map((badge, index) => {
+  const angle = (Math.PI * 2 * index) / badgeDefs.length - Math.PI / 2;
+  const value = badges ? (levelValue[badges[badge.key]] ?? 0) + 1 : 1;
+  return { label: badge.label, angle, value };
+});
+const radarPoint = (angle: number, radius: number) =>
+  `${radarCenter + radius * Math.cos(angle)},${radarCenter + radius * Math.sin(angle)}`;
+const radarXY = (angle: number, radius: number) => ({
+  x: radarCenter + radius * Math.cos(angle),
+  y: radarCenter + radius * Math.sin(angle),
+});
+const radarGrid = [1, 2, 3, 4, 5].map((level) =>
+  radarAxes.map((axis) => radarPoint(axis.angle, (radarRadius * level) / (radarLevels + 1))).join(' ')
+);
+const radarData = radarAxes
+  .map((axis) => radarPoint(axis.angle, (radarRadius * axis.value) / (radarLevels + 1)))
+  .join(' ');
 ---
 
 <Layout title={pc.name} description={desc.shortDescription} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software'), href: base + "/software" }, { label: pc.name }]}>
@@ -87,6 +144,51 @@ const platforms = pc.platforms ?? [];
       {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
       {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
+
+    {allBadges.length > 0 && (
+      <section class="software-badges opencode-badges" aria-label={t(locale, 'badges')}>
+        <div class="opencode-badge-list">
+          {allBadges.map((badge) => (
+            <Fragment>
+              <button class={`badge ${badge.earned ? '' : 'badge-unearned'}`} type="button" popovertarget={`badge-${badge.key}`} style={`anchor-name: --badge-${badge.key}`}>
+                <span class={`badge-medal ${badge.medal ? '' : 'badge-medal-locked'}`}>{badge.medal ?? '\u{1F3C5}'}</span>
+                {badge.label}
+              </button>
+              <div id={`badge-${badge.key}`} popover style={`position-anchor: --badge-${badge.key}`}>
+                <h3>{badge.label} {t(locale, 'badge_label')}</h3>
+                <p>{badge.description}</p>
+                <dl class="badge-levels">
+                  {badge.levels.map((level) => (
+                    <Fragment>
+                      <dt class={level.level === badge.earned ? 'current' : ''}>{level.medal} {t(locale, `badge_${level.level}`)}</dt>
+                      <dd class={level.level === badge.earned ? 'current' : ''}>{level.criteria}</dd>
+                    </Fragment>
+                  ))}
+                </dl>
+                <a class="badge-link" href={badge.url} target="_blank" rel="noopener">{t(locale, 'badge_learn_more')} <Fragment set:html={faIcon('arrow-up-right-from-square')} /></a>
+              </div>
+            </Fragment>
+          ))}
+        </div>
+        <button class="badge badge-chart" type="button" popovertarget="radar-popover" style="anchor-name: --radar-button" aria-label={t(locale, 'badges')}>
+          <Fragment set:html={faIcon('chart-pie')} />
+        </button>
+        <div id="radar-popover" popover style="position-anchor: --radar-button">
+          <svg class="radar-chart" viewBox={`0 0 ${radarSize} ${radarSize}`} role="img" aria-label={t(locale, 'badges')}>
+            {radarGrid.map((points) => <polygon points={points} class="radar-ring" />)}
+            {radarAxes.map((axis) => {
+              const to = radarXY(axis.angle, radarRadius);
+              return <line x1={radarCenter} y1={radarCenter} x2={to.x} y2={to.y} class="radar-axis" />;
+            })}
+            <polygon points={radarData} class="radar-fill" />
+            {radarAxes.map((axis) => {
+              const position = radarXY(axis.angle, radarRadius + 24);
+              return <text x={position.x} y={position.y} class="radar-label" text-anchor="middle" dominant-baseline="central">{axis.label}</text>;
+            })}
+          </svg>
+        </div>
+      </section>
+    )}
 
     {activity && <SoftwareMetrics client:visible softwareId={software.id} activity={activity} stats={stats} locale={locale} />}
 

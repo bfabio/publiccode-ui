@@ -11,6 +11,7 @@ let logsCache = null;
 let softwareAnalysisCache = null;
 let catalogAnalysisCache = null;
 let rootCatalogAnalysisCache = undefined;
+const rawSoftwareAnalysisCache = new Map();
 
 async function mapLimit(items, limit, fn) {
   let cursor = 0;
@@ -111,6 +112,28 @@ async function fetchActivity(path, extract) {
   }
 }
 
+async function fetchRawSoftwareAnalysis(id) {
+  if (!API_URL) return null;
+  if (!rawSoftwareAnalysisCache.has(id)) {
+    rawSoftwareAnalysisCache.set(id, (async () => {
+      try {
+        const res = await fetch(`${API_URL}/software/${id}/analysis`);
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json?.data ?? json;
+      } catch {
+        return null;
+      }
+    })());
+  }
+  return rawSoftwareAnalysisCache.get(id);
+}
+
+function parseOpenCodeBadges(analysis) {
+  const badges = analysis?.['opencode-badges']?.results;
+  return badges && typeof badges === 'object' && !Array.isArray(badges) ? badges : null;
+}
+
 export async function fetchAllSoftwareAnalysis() {
   if (!API_URL) return new Map();
   if (softwareAnalysisCache) return softwareAnalysisCache;
@@ -118,10 +141,21 @@ export async function fetchAllSoftwareAnalysis() {
   const software = await fetchAllSoftware();
   const map = new Map();
   await mapLimit(software, 8, async (s) => {
-    map.set(s.id, await fetchActivity(`/software/${s.id}/analysis`, parseSoftwareActivity));
+    map.set(s.id, parseSoftwareActivity(await fetchRawSoftwareAnalysis(s.id)));
   });
 
   softwareAnalysisCache = map;
+  return map;
+}
+
+export async function fetchAllOpenCodeBadges() {
+  if (!API_URL) return new Map();
+
+  const software = await fetchAllSoftware();
+  const map = new Map();
+  await mapLimit(software, 8, async (s) => {
+    map.set(s.id, parseOpenCodeBadges(await fetchRawSoftwareAnalysis(s.id)));
+  });
   return map;
 }
 

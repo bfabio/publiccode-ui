@@ -59,13 +59,15 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
         i.closest('.image-shell').classList.remove('image-loading');
       }, true);
     </script>
-    <script is:inline define:vars={{ base, defaultTheme }}>
-      const saved = localStorage.getItem('theme') || defaultTheme;
-      document.write(`<link rel="stylesheet" id="theme-css" href="${base}/themes/${saved}/index.css" />`);
+    <link rel="stylesheet" id="theme-css" href={`${base}/themes/${defaultTheme}/index.css`} />
+    <script is:inline define:vars={{ base, defaultTheme, themes }}>
+      const saved = localStorage.getItem('theme');
+      const activeTheme = themes.includes(saved) ? saved : defaultTheme;
+      document.getElementById('theme-css').href = `${base}/themes/${activeTheme}/index.css`;
+      if (localStorage.getItem('publiccode-ui:opencode-badges') === '0') {
+        document.documentElement.setAttribute('data-opencode-badges-hidden', '');
+      }
     </script>
-    <noscript>
-      <link rel="stylesheet" href={`${base}/themes/${defaultTheme}/index.css`} />
-    </noscript>
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
     <link rel="alternate" hreflang="x-default" href={enUrl} />
@@ -101,7 +103,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   </body>
 </html>
 
-<script is:inline define:vars={{ base }}>
+<script is:inline define:vars={{ base, defaultTheme, themes }}>
   const btn = document.getElementById('theme-btn');
   const menu = document.getElementById('theme-menu');
   const link = document.getElementById('theme-css');
@@ -114,7 +116,8 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
 
   btn.addEventListener('click', () => {
     if (menu.hidden) {
-      markActive(localStorage.getItem('theme') || defaultTheme);
+      const saved = localStorage.getItem('theme');
+      markActive(themes.includes(saved) ? saved : defaultTheme);
     }
     menu.hidden = !menu.hidden;
   });
@@ -209,5 +212,140 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   }
   #theme-menu button[aria-current="true"]::after {
     content: ' *';
+  }
+</style>
+
+<style is:global>
+  :root[data-opencode-badges-hidden] .opencode-badges {
+    display: none !important;
+  }
+  .opencode-badges {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.25rem 0;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .opencode-badge-list {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    align-items: center;
+  }
+  .opencode-badges .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 510;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .opencode-badges .badge:hover,
+  .opencode-badges .badge:focus-visible { color: var(--accent-bright); }
+  .opencode-badges .badge-unearned {
+    color: var(--text-quaternary);
+    opacity: 0.6;
+  }
+  .opencode-badges .badge-unearned:hover,
+  .opencode-badges .badge-unearned:focus-visible { opacity: 1; }
+  .opencode-badges .badge svg { width: 1em; opacity: 0.65; }
+  .opencode-badges .badge-medal {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+  .opencode-badges .badge-medal-locked { filter: grayscale(1) opacity(0.35); }
+  .opencode-badges .badge-chart {
+    flex: 0 0 auto;
+    padding: 5px;
+    color: var(--text-quaternary);
+    font-size: 1rem;
+  }
+  .opencode-badges [popover] {
+    position-area: block-end span-inline-end;
+    box-sizing: border-box;
+    max-width: min(360px, calc(100vw - 2rem));
+    margin: 12px 0 0;
+    padding: 1rem;
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-standard);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-dropdown);
+    overflow: visible;
+  }
+  .opencode-badges [popover]::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-standard);
+    border-left: 1px solid var(--border-standard);
+    transform: rotate(45deg);
+  }
+  .opencode-badges [popover] h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+  .opencode-badges [popover] p {
+    margin: 0.5rem 0 0;
+    font-size: 13px;
+  }
+  .badge-levels { margin: 0.8rem 0 0; }
+  .badge-levels dt {
+    margin-top: 0.5rem;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    font-weight: 510;
+  }
+  .badge-levels dt.current { color: var(--text-primary); }
+  .badge-levels dd {
+    margin: 2px 0 0 1.75rem;
+    color: var(--text-quaternary);
+    font-size: 12px;
+  }
+  .badge-levels dd.current { color: var(--text-secondary); }
+  .badge-link {
+    display: inline-flex;
+    gap: 0.35em;
+    align-items: center;
+    margin-top: 0.8rem;
+    font-size: 12px;
+  }
+  .badge-link svg { width: 0.8em; }
+  #radar-popover { padding: 0.6rem; }
+  .radar-chart {
+    display: block;
+    width: min(300px, calc(100vw - 4rem));
+    height: auto;
+  }
+  .radar-ring { fill: none; stroke: var(--border-subtle); stroke-width: 1; }
+  .radar-axis { stroke: var(--border-subtle); stroke-width: 1; }
+  .radar-fill {
+    fill: var(--accent);
+    fill-opacity: 0.15;
+    stroke: var(--accent-bright);
+    stroke-width: 1.5;
+  }
+  .radar-label {
+    fill: var(--text-tertiary);
+    font-size: 13px;
+    font-weight: 510;
+  }
+  @media (max-width: 600px) {
+    .opencode-badges { align-items: flex-start; }
+    .opencode-badge-list { gap: 0.65rem; }
+    .opencode-badges .badge { font-size: 12px; }
   }
 </style>
