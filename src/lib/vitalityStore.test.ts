@@ -5,6 +5,7 @@ import {
   clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore,
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   CAP_WARNING_VISIBILITY_KEY, readCapWarningVisibility, writeCapWarningVisibility,
+  LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, readListWeightDistributionVisibility, writeListWeightDistributionVisibility,
   withActivityConfig,
 } from './vitalityStore.ts';
 import { DEFAULT_CONFIG, type VitalityConfig } from './vitality.ts';
@@ -123,10 +124,11 @@ describe('subscribeStore', () => {
     fire(softwareKey('abc'));
     fire(OPENCODE_BADGES_VISIBILITY_KEY);
     fire(CAP_WARNING_VISIBILITY_KEY);
+    fire(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY);
     fire('unrelated-key');
     fire('publiccode-ui:vitalityBackup');
     fire(null);
-    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, null]);
+    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, null]);
   });
 });
 
@@ -152,6 +154,19 @@ describe('cap warning visibility', () => {
     writeCapWarningVisibility(true);
     expect(readCapWarningVisibility()).toBe(true);
     expect(storage.getItem(CAP_WARNING_VISIBILITY_KEY)).toBeNull();
+  });
+});
+
+describe('list weight distribution visibility', () => {
+  it('is disabled by default and persists only the enabled state', () => {
+    const { storage } = stubWindow();
+    expect(readListWeightDistributionVisibility()).toBe(false);
+    writeListWeightDistributionVisibility(true);
+    expect(readListWeightDistributionVisibility()).toBe(true);
+    expect(storage.getItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY)).toBe('1');
+    writeListWeightDistributionVisibility(false);
+    expect(readListWeightDistributionVisibility()).toBe(false);
+    expect(storage.getItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY)).toBeNull();
   });
 });
 

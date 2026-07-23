@@ -362,6 +362,39 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     text-align: center;
   }
   .activity-radar.is-loading { visibility: hidden; }
+  .vitality-weight-distribution {
+    margin: 0 0 0.85rem;
+  }
+  .vitality-weight-bar {
+    display: flex;
+    height: 10px;
+    overflow: hidden;
+    background: var(--bg-elevated, #f4f4f4);
+    border: 1px solid var(--border-standard, #ccc);
+    border-radius: var(--radius-pill, 0);
+  }
+  .vitality-weight-segment {
+    min-width: 0;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .vitality-weight-segment:hover { filter: brightness(1.12); }
+  .vitality-weight-segment.is-contributors { background: #6d7ed5; }
+  .vitality-weight-segment.is-history { background: #4da6a0; }
+  .vitality-weight-segment.is-activity { background: #d69a58; }
+  .vitality-weight-segment.is-stars { background: #a77ac8; }
+  .vitality-weight-segment.is-issues { background: #cf7370; }
+  .vitality-weight-segment.is-forks { background: #7fa265; }
+  .catalog-results .software-tags {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+  .catalog-results .software-tags .vitality-weight-distribution {
+    width: min(180px, 100%);
+    margin: 0;
+  }
+  .catalog-results .software-tags .vitality-weight-bar { height: 6px; }
   .radar-chart {
     display: block;
     width: min(300px, calc(100vw - 4rem));

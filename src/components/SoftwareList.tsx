@@ -4,11 +4,11 @@ import { faGavel, faRotateLeft, faSliders, faTriangleExclamation, faXmark } from
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 import { computeVitality } from "../lib/vitality";
-import { useActivityConfigs, useCapWarningVisibility } from "../lib/useVitalityConfig";
+import { useActivityConfigs, useCapWarningVisibility, useListWeightDistributionVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
-import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
+import { VitalityWeightDistribution, VitalityWeightsWidget } from "./VitalityWeightsWidget";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -114,6 +114,7 @@ const INITIAL_VISIBLE_ITEMS = 80;
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats }) => {
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
+  const { enabled: listWeightDistributionEnabled, ready: listWeightDistributionReady } = useListWeightDistributionVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
@@ -257,6 +258,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       <section className="catalog-results">
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {visibleItems.map((item) => {
+          const itemActivityConfig = configFor(item.id);
           const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
           const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
           return (
@@ -275,9 +277,14 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               <p>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
-              <ul className="categories" aria-label="Categories">
-                {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
-              </ul>
+              <div className="software-tags">
+                <ul className="categories" aria-label="Categories">
+                  {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
+                </ul>
+                {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
+                  <VitalityWeightDistribution config={itemActivityConfig} labels={weightLabels} />
+                )}
+              </div>
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
                 return d ? <span className="card-date"><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time></span> : null;
@@ -289,7 +296,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               )}
             </footer>
             {item.activity && (() => {
-              const activityConfig = configFor(item.id);
+              const activityConfig = itemActivityConfig;
               const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
               if (!activityConfigReady) {
                 return (
