@@ -356,11 +356,17 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   </div>
                 </div>
               ) : null;
+              const capWarning = showCapWarning ? (
+                <span className="activity-cap-warning" title={l.activityCapUnknown ?? "Capped because some metrics are unknown"}>
+                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                </span>
+              ) : null;
               if (v.score100 === null) {
                 return (
                   <div className="activity-index">
                     <div className="activity-index-label">
-                      {l.activityScore ?? "Activity score"}
+                      <span className="activity-cap-warning-slot" aria-hidden="true" />
+                      <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
                     <span className={`activity-badge is-na${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>n/a</span>
@@ -381,8 +387,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               return (
                   <div className={`activity-index${showCapWarning ? " is-capped-unknown" : ""}`}>
                     <div className="activity-index-label">
-                      {showCapWarning && <span className="activity-cap-warning" title={l.activityCapUnknown ?? "Capped because some metrics are unknown"}><FontAwesomeIcon icon={faTriangleExclamation} /></span>}
-                      {l.activityScore ?? "Activity score"}
+                      <span className="activity-cap-warning-slot">{capWarning}</span>
+                      <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
                   <span className={`activity-badge${custom ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
