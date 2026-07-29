@@ -943,6 +943,11 @@ nav[aria-label="Breadcrumb"] li + li::before {
   letter-spacing: 0.3px;
 }
 .catalog-results .categories li + li::before { content: none; }
+.catalog-results .categories li:hover {
+  color: var(--text-primary);
+  background: var(--surface-btn-hover);
+  border-color: var(--text-quaternary);
+}
 .catalog-results .license { color: var(--accent-bright); }
 .catalog-results .card-date {
   display: inline-flex;

@@ -281,7 +281,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             </header>
             <footer>
               <ul className="categories" aria-label="Categories">
-                {item.categories.slice(0, 3).map((cat) => <li key={cat}>{cat}</li>)}
+                {item.categories.slice(0, 3).map((cat) => (
+                  <li key={cat}>
+                    <button type="button" onClick={() => setCategory(cat)}>{cat}</button>
+                  </li>
+                ))}
               </ul>
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
@@ -289,7 +293,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               })()}
               {item.license && (
                 item.license.url
-                  ? <a href={item.license.url} className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
+                  ? <a href={item.license.url} className="license" target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
                   : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
               )}
               {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
