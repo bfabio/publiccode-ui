@@ -807,6 +807,11 @@ nav[aria-label="Breadcrumb"] li + li::before {
   padding: 2px 10px;
 }
 .catalog-results .categories li + li::before { content: none; }
+.catalog-results .categories li:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: var(--text-quaternary);
+}
 .catalog-results .card-meta {
   display: flex;
   align-items: center;

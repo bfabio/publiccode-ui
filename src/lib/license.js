@@ -1,19 +1,21 @@
 const SPDX_LIST_URL = 'https://raw.githubusercontent.com/spdx/license-list-data/main/json/licenses.json';
 
-let cache = null;
+let cachePromise = null;
 
-async function fetchLicenseMap() {
-  if (cache) return cache;
-
-  try {
-    const res = await fetch(SPDX_LIST_URL);
-    const json = await res.json();
-    cache = new Map(json.licenses.map((l) => [l.licenseId, l.name]));
-  } catch {
-    cache = new Map();
+function fetchLicenseMap() {
+  if (!cachePromise) {
+    cachePromise = (async () => {
+      const res = await fetch(SPDX_LIST_URL);
+      const json = await res.json();
+      return new Map(json.licenses.map((l) => [l.licenseId, l.name]));
+    })().catch(() => {
+      // Clear so the next render retries: caching a failed fetch would
+      // strip every license URL for the process lifetime.
+      cachePromise = null;
+      return new Map();
+    });
   }
-
-  return cache;
+  return cachePromise;
 }
 
 export async function resolveLicense(spdxId) {
