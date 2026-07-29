@@ -1,10 +1,26 @@
 export type SortBy = "name_asc" | "name_desc" | "release_date_desc" | "release_date_asc" | "activity_desc" | "activity_asc";
 
+export type SortDirection = "asc" | "desc";
+
 export interface SortableSoftware {
   id: string;
   name: string;
   releaseDate: string;
 }
+
+export const sortByScores = <T extends SortableSoftware>(items: T[], scores: Map<string, number | null>, direction: SortDirection): T[] => {
+  const sorted = [...items];
+  sorted.sort((a, b) => {
+    const sa = scores.get(a.id) ?? null;
+    const sb = scores.get(b.id) ?? null;
+    if (sa === null && sb === null) return a.name.localeCompare(b.name);
+    if (sa === null) return 1;
+    if (sb === null) return -1;
+    const byScore = direction === "asc" ? sa - sb : sb - sa;
+    return byScore || a.name.localeCompare(b.name);
+  });
+  return sorted;
+};
 
 export const sortItems = <T extends SortableSoftware>(items: T[], sortBy: SortBy, scores?: Map<string, number | null>): T[] => {
   const sorted = [...items];
@@ -31,16 +47,7 @@ export const sortItems = <T extends SortableSoftware>(items: T[], sortBy: SortBy
       break;
     case "activity_desc":
     case "activity_asc":
-      sorted.sort((a, b) => {
-        const sa = scores?.get(a.id) ?? null;
-        const sb = scores?.get(b.id) ?? null;
-        if (sa === null && sb === null) return a.name.localeCompare(b.name);
-        if (sa === null) return 1;
-        if (sb === null) return -1;
-        const byScore = sortBy === "activity_asc" ? sa - sb : sb - sa;
-        return byScore || a.name.localeCompare(b.name);
-      });
-      break;
+      return sortByScores(items, scores ?? new Map(), sortBy === "activity_asc" ? "asc" : "desc");
   }
   return sorted;
 };

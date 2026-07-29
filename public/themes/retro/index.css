@@ -29,15 +29,10 @@ nav[aria-label="Breadcrumb"] li + li::before {
 
 /* catalog */
 .catalog-data-completeness {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  margin-bottom: 4px;
-  color: #828282;
-  font-size: 11px;
-  cursor: help;
+  width: 0.9em;
+  margin-left: 0.35rem;
+  vertical-align: -0.08em;
 }
-.catalog-data-completeness svg { width: 0.9em; }
 .catalog-search {
   position: relative;
   margin-bottom: 4px;
@@ -97,11 +92,12 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-filters {
   margin-bottom: 8px;
 }
-.catalog-filters select {
+.catalog-filters select,
+.catalog-toolbar select {
   font: inherit;
   margin-right: 4px;
 }
-.catalog-filters output {
+.catalog-toolbar output {
   color: #828282;
 }
 .catalog-more {

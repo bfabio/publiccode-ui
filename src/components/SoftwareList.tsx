@@ -1,10 +1,11 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faGavel, faRotateLeft, faSliders, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faDownload, faFilter, faGavel, faList, faRotateLeft, faSliders, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
-import { computeVitality } from "../lib/vitality";
-import { sortItems, type SortBy } from "../lib/sortSoftware";
+import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
+import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
+import { toCsv } from "../lib/csv";
 import { useActivityConfigs, useCapWarningVisibility, useListWeightDistributionVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
@@ -82,12 +83,24 @@ interface Labels {
   activityCapUnknown?: string;
   activityCustomWeights?: string;
   activityDataCompleteness?: string;
-  activityDataCompletenessLabel?: string;
+  viewList?: string;
+  viewTable?: string;
+  colName?: string;
+  exportCsv?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
 
-export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats }) => {
+type ListSortBy = SortBy | `dim_${DimensionKey}_${SortDirection}`;
+type TableColumn = "name" | "total" | DimensionKey;
+
+const tableSortsFor = (col: TableColumn): [ListSortBy, ListSortBy] => {
+  if (col === "name") return ["name_asc", "name_desc"];
+  if (col === "total") return ["activity_desc", "activity_asc"];
+  return [`dim_${col}_desc`, `dim_${col}_asc`];
+};
+
+export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null; title?: string }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats, title }) => {
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const { enabled: listWeightDistributionEnabled, ready: listWeightDistributionReady } = useListWeightDistributionVisibility();
@@ -95,15 +108,20 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(() => readParam("q"));
-  const [sortBy, setSortBy] = useState<SortBy>(() => (readParam("sort_by") as SortBy) || "release_date_desc");
+  const [sortBy, setSortBy] = useState<ListSortBy>(() =>
+    (readParam("sort_by") as ListSortBy) || (readParam("view") === "table" ? "activity_desc" : "release_date_desc"));
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
   const [audience, setAudience] = useState(() => readParam("audience"));
   const [catalog, setCatalog] = useState(() => readParam("catalog"));
   const [onlyActivity, setOnlyActivity] = useState(() => readParam("activity") === "1");
+  const [view, setView] = useState<"list" | "table">(() => readParam("view") === "table" ? "table" : "list");
+  const [filtersOpen, setFiltersOpen] = useState(() =>
+    Boolean(readParam("category") || readParam("status") || readParam("type") || readParam("audience") || readParam("catalog") || readParam("activity") === "1"));
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
   const [openScoreId, setOpenScoreId] = useState<string | null>(null);
+  const [dataInfoOpen, setDataInfoOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
 
   useEffect(() => {
@@ -112,8 +130,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy === "release_date_desc" ? "" : sortBy });
-  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy]);
+    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy === "release_date_desc" ? "" : sortBy, view: view === "table" ? "table" : "" });
+  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy, view]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
@@ -136,6 +154,29 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [openScoreId]);
+
+  useEffect(() => {
+    document.documentElement.dataset.catalogView = view;
+    document.documentElement.dataset.catalogHydrated = "1";
+  }, [view]);
+
+  useEffect(() => {
+    if (!dataInfoOpen) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      if (!target.closest(".catalog-data-completeness-panel, .catalog-data-completeness-toggle")) setDataInfoOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDataInfoOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [dataInfoOpen]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
@@ -180,6 +221,20 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     return scores;
   }, [sortBy, items, statsByCatalog, globalStats, configFor]);
 
+  const dimensionScores = useMemo(() => {
+    if (!sortBy.startsWith("dim_")) return undefined;
+    const key = sortBy.slice(4, sortBy.lastIndexOf("_")) as DimensionKey;
+    const scores = new Map<string, number | null>();
+    for (const i of items) {
+      if (i.activity) {
+        const dim = computeVitality(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id))
+          .dimensions.find((d) => d.key === key);
+        scores.set(i.id, dim && dim.present && dim.normalized !== null ? dim.contribution : null);
+      }
+    }
+    return scores;
+  }, [sortBy, items, statsByCatalog, globalStats, configFor]);
+
   const sorted = useMemo(() => {
     if (deferredQuery) {
       const q = deferredQuery.toLowerCase();
@@ -191,17 +246,86 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       };
       return [...filtered].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
     }
-    return sortItems(filtered, sortBy, activityScores);
-  }, [filtered, sortBy, deferredQuery, activityScores]);
+    if (sortBy.startsWith("dim_")) {
+      return dimensionScores ? sortByScores(filtered, dimensionScores, sortBy.endsWith("_asc") ? "asc" : "desc") : filtered;
+    }
+    return sortItems(filtered, sortBy as SortBy, activityScores);
+  }, [filtered, sortBy, deferredQuery, activityScores, dimensionScores]);
 
   const visibleItems = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
 
+  const tableSortDirection = (col: TableColumn): "ascending" | "descending" | undefined => {
+    const [primary, secondary] = tableSortsFor(col);
+    if (sortBy !== primary && sortBy !== secondary) return undefined;
+    return sortBy.endsWith("_asc") ? "ascending" : "descending";
+  };
+  const toggleTableSort = (col: TableColumn) => {
+    const [primary, secondary] = tableSortsFor(col);
+    setSortBy((current) => current === primary ? secondary : primary);
+  };
+  const switchView = (next: "list" | "table") => {
+    if (next === "list" && sortBy.startsWith("dim_")) {
+      setSortBy("release_date_desc");
+    }
+    if (next === "table" && sortBy.startsWith("release_date")) {
+      setSortBy("activity_desc");
+    }
+    setView(next);
+  };
+  const activeFilterCount =
+    [category, status, softwareType, audience, catalog].filter(Boolean).length + (onlyActivity ? 1 : 0);
+  const exportTableCsv = () => {
+    const header = [l.colName ?? "Name", l.activityScore ?? "Activity score", ...DIMENSION_ORDER.map((key) => weightLabels.dim[key])];
+    const rows = sorted.map((item) => {
+      const v = item.activity
+        ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
+        : null;
+      return [
+        item.name,
+        v && v.score100 !== null ? Math.round(v.score100) : null,
+        ...DIMENSION_ORDER.map((key) => {
+          const dim = v?.dimensions.find((d) => d.key === key);
+          return dim && dim.present && dim.normalized !== null ? Math.round(dim.contribution) : null;
+        }),
+      ];
+    });
+    const blob = new Blob([toCsv([header, ...rows])], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "software-catalog.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+  const sortableHeader = (col: TableColumn, label: string) => {
+    const direction = tableSortDirection(col);
+    return (
+      <th aria-sort={direction} className={col === "name" ? undefined : "catalog-table-score"}>
+        <button type="button" onClick={() => toggleTableSort(col)}>
+          {label}
+          <FontAwesomeIcon icon={direction === "ascending" ? faSortUp : direction === "descending" ? faSortDown : faSort} aria-hidden="true" />
+        </button>
+      </th>
+    );
+  };
+
+  const viewToggle = (
+    <div className="view-toggle" role="group" aria-label={`${l.viewList ?? "List view"} / ${l.viewTable ?? "Table view"}`}>
+      <button type="button" className={view === "list" ? "is-active" : undefined} onClick={() => switchView("list")} aria-pressed={view === "list"} aria-label={l.viewList ?? "List view"} title={l.viewList ?? "List view"}>
+        <FontAwesomeIcon icon={faList} />
+      </button>
+      <button type="button" className={view === "table" ? "is-active" : undefined} onClick={() => switchView("table")} aria-pressed={view === "table"} aria-label={l.viewTable ?? "Table view"} title={l.viewTable ?? "Table view"}>
+        <FontAwesomeIcon icon={faTable} />
+      </button>
+    </div>
+  );
+
   return (
     <>
-      <span className="catalog-data-completeness" title={incompleteDataSummary} aria-label={incompleteDataSummary}>
-        <FontAwesomeIcon icon={faCircleInfo} aria-hidden="true" />
-        {l.activityDataCompletenessLabel ?? "Activity data completeness"}
-      </span>
+      <div className="catalog-header">
+        {title && <h1>{title}</h1>}
+        {viewToggle}
+      </div>
       <div className="catalog-search">
         <input
           type="search"
@@ -213,7 +337,52 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         />
       </div>
 
-      <div className="catalog-filters" role="group" aria-label={l.filters}>
+      <div className="catalog-toolbar">
+        {view === "list" && (
+          <label className="sort-control">
+            <span>{l.sortBy}</span>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+              <option value="release_date_desc">{l.sortReleaseDesc}</option>
+              <option value="release_date_asc">{l.sortReleaseAsc}</option>
+              <option value="name_asc">{l.sortNameAsc}</option>
+              <option value="name_desc">{l.sortNameDesc}</option>
+              {anyActivity && <option value="activity_desc">{l.sortActivityDesc ?? "Highest activity score"}</option>}
+              {anyActivity && <option value="activity_asc">{l.sortActivityAsc ?? "Lowest activity score"}</option>}
+            </select>
+          </label>
+        )}
+        <button
+          type="button"
+          className="filters-toggle"
+          onClick={() => setFiltersOpen((open) => !open)}
+          aria-expanded={filtersOpen}
+          aria-controls="catalog-filters"
+        >
+          <FontAwesomeIcon icon={faFilter} aria-hidden="true" /> {l.filters}
+          {activeFilterCount > 0 && <span className="filters-active-count">{activeFilterCount}</span>}
+        </button>
+        <output className="catalog-result-count" aria-label={`${sorted.length} ${l.results}`}>
+          {sorted.length} {l.results}
+          <button
+            type="button"
+            className="catalog-data-completeness-toggle"
+            onClick={() => setDataInfoOpen((open) => !open)}
+            aria-expanded={dataInfoOpen}
+            aria-controls="catalog-data-completeness-panel"
+            aria-label={incompleteDataSummary}
+          >
+            <FontAwesomeIcon className="catalog-data-completeness" icon={faCircleInfo} aria-hidden="true" />
+          </button>
+          {dataInfoOpen && (
+            <span className="catalog-data-completeness-panel" id="catalog-data-completeness-panel">
+              {incompleteDataSummary}
+            </span>
+          )}
+        </output>
+      </div>
+
+      {filtersOpen && (
+      <div className="catalog-filters" id="catalog-filters" role="group" aria-label={l.filters}>
         {catalogs && (
           <select aria-label={l.allCatalogs ?? "All catalogs"} value={catalog} onChange={(e) => setCatalog(e.target.value)}>
             <option value="">{l.allCatalogs ?? "All catalogs"}</option>
@@ -236,28 +405,91 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
-        <select aria-label={l.sortBy} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
-          <option value="release_date_desc">{l.sortReleaseDesc}</option>
-          <option value="release_date_asc">{l.sortReleaseAsc}</option>
-          <option value="name_asc">{l.sortNameAsc}</option>
-          <option value="name_desc">{l.sortNameDesc}</option>
-          {anyActivity && <option value="activity_desc">{l.sortActivityDesc ?? "Highest activity score"}</option>}
-          {anyActivity && <option value="activity_asc">{l.sortActivityAsc ?? "Lowest activity score"}</option>}
-        </select>
         {anyActivity && (
           <label className="filter-check">
             <input type="checkbox" checked={onlyActivity} onChange={(e) => setOnlyActivity(e.target.checked)} />
             {l.hasActivityData ?? "With vitality data"}
           </label>
         )}
-        <output>{sorted.length} {l.results}</output>
         {(query || category || status || softwareType || audience || catalog || onlyActivity) && (
           <button type="button" className="clear-filters" onClick={() => {
             setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog(""); setOnlyActivity(false);
           }}>{l.clearFilters}</button>
         )}
       </div>
+      )}
 
+      {view === "table" ? (
+        <div className="catalog-table-wrap">
+          {sorted.length === 0 ? <p className="no-results">{l.noResults}</p> : (
+            <>
+            <div className="catalog-table-toolbar">
+              <button type="button" className="catalog-table-export" onClick={exportTableCsv}>
+                <FontAwesomeIcon icon={faDownload} aria-hidden="true" /> {l.exportCsv ?? "Export CSV"}
+              </button>
+            </div>
+            <table className="catalog-table">
+              <thead>
+                <tr>
+                  {sortableHeader("name", l.colName ?? "Name")}
+                  {sortableHeader("total", l.activityScore ?? "Activity score")}
+                  {DIMENSION_ORDER.map((key) => (
+                    <React.Fragment key={key}>
+                      {sortableHeader(key, weightLabels.dim[key])}
+                    </React.Fragment>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visibleItems.map((item) => {
+                  const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
+                  const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
+                  const v = item.activity
+                    ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
+                    : null;
+                  return (
+                    <tr
+                      key={item.id}
+                      onClick={(e) => {
+                        if ((e.target as Element).closest("a")) return;
+                        window.location.assign(detailHref);
+                      }}
+                    >
+                      <td><a href={detailHref}>{highlight(item.name, query)}</a></td>
+                      <td className="catalog-table-score">
+                        {v && (
+                          v.overAllocated
+                            ? <span className="activity-badge is-over-allocated" title={weightLabels.overAllocatedTitle}>?</span>
+                            : v.score100 === null
+                              ? <span className="activity-badge is-na">n/a</span>
+                              : <span className="activity-badge">{Math.round(v.score100)}</span>
+                        )}
+                      </td>
+                      {DIMENSION_ORDER.map((key) => {
+                        const dim = v?.dimensions.find((d) => d.key === key);
+                        const points = dim && dim.present && dim.normalized !== null ? Math.round(dim.contribution) : null;
+                        const state = dim?.state ?? "unknown";
+                        const token = state === "failed" ? weightLabels.stateFailed
+                          : state === "disabled" ? weightLabels.stateDisabled
+                          : weightLabels.stateUnknown;
+                        const stateTitle = state === "failed" ? weightLabels.stateFailedTitle
+                          : state === "disabled" ? weightLabels.stateDisabledTitle
+                          : weightLabels.stateUnknownTitle;
+                        return (
+                          <td key={key} className={`catalog-table-score${points === null ? " is-na" : ""}`} title={points === null ? stateTitle : undefined}>
+                            {points !== null ? points : (v ? token : "-")}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            </>
+          )}
+        </div>
+      ) : (
       <section className="catalog-results">
         {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
         {visibleItems.map((item) => {
@@ -296,15 +528,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   ? <a href={item.license.url} className="license" target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
                   : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
               )}
-              {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
-                <div className="software-weight-distribution">
-                  <VitalityWeightDistribution
-                    config={itemActivityConfig}
-                    labels={weightLabels}
-                    result={computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, itemActivityConfig)}
-                  />
-                </div>
-              )}
             </footer>
             {item.activity && (() => {
               const activityConfig = itemActivityConfig;
@@ -314,6 +537,20 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <div className="activity-index is-loading" aria-busy="true" aria-label={l.activityScore ?? "Activity score"}>
                     <span className="activity-index-skeleton-label" aria-hidden="true" />
                     <span className="activity-index-skeleton-value" aria-hidden="true" />
+                    <div className="software-weight-distribution activity-index-skeleton-distribution" aria-hidden="true">
+                      <div className="vitality-weight-distribution">
+                        <div className="vitality-weight-bar" />
+                        <div className="vitality-weight-legend">
+                          {DIMENSION_ORDER.map((key) => (
+                            <span key={key} className="vitality-weight-legend-item">
+                              <span className="vitality-weight-legend-swatch" />
+                              <span className="vitality-weight-legend-label">&nbsp;</span>
+                              <span className="vitality-weight-legend-value">&nbsp;</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 );
               }
@@ -374,6 +611,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   </div>
                 </div>
               ) : null;
+              const weightDistribution = listWeightDistributionReady && listWeightDistributionEnabled ? (
+                <div className="software-weight-distribution">
+                  <VitalityWeightDistribution config={activityConfig} labels={weightLabels} result={v} />
+                </div>
+              ) : null;
               if (v.score100 === null) {
                 return (
                   <div className="activity-index">
@@ -384,6 +626,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                     <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>
                       {v.overAllocated ? "?" : "n/a"}
                     </span>
+                    {weightDistribution}
                     {scorePanel}
                   </div>
                 );
@@ -407,6 +650,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <span className={`activity-badge${custom ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
                     {Math.round(v.score100)}
                   </span>
+                    {weightDistribution}
                     {scorePanel}
                   </div>
               );
@@ -415,6 +659,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           );
         })}
       </section>
+      )}
       {visibleCount < sorted.length && (
         <div className="catalog-more">
           <button type="button" onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_ITEMS)}>
