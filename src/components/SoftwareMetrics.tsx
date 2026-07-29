@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartColumn, faAngleDown, faRotateLeft, faTriangleExclamation } from "@fortawesome/free-solid-svg-icons";
+import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { computeVitality } from "../lib/vitality";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
@@ -129,7 +129,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
           )}
           {result.score100 !== null && result.cap && result.score100 === result.cap.limit && (
             <p className={`vitality-scope${showCapWarning ? " vitality-cap-warning" : ""}`}>
-              {showCapWarning && <FontAwesomeIcon icon={faTriangleExclamation} aria-hidden="true" />}
               {result.cap.reason === "disabled" ? L.capDisabled : L.capUnknown}
             </p>
           )}

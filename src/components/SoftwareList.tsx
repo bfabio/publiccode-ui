@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel, faRotateLeft, faSliders, faTriangleExclamation, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faGavel, faRotateLeft, faSliders, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 import { computeVitality } from "../lib/vitality";
@@ -81,6 +81,8 @@ interface Labels {
   activityCapDisabled?: string;
   activityCapUnknown?: string;
   activityCustomWeights?: string;
+  activityDataCompleteness?: string;
+  activityDataCompletenessLabel?: string;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
@@ -139,6 +141,16 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
   const allTypes = useMemo(() => [...new Set(items.map((i) => i.softwareType).filter(Boolean))].sort(), [items]);
   const allAudiences = useMemo(() => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(), [items]);
+  const incompleteDataCount = useMemo(() => items.filter((item) => {
+    if (!item.activity) return true;
+    const result = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id));
+    return result.score100 === null || result.cap?.reason === "unknown";
+  }).length, [items, globalStats, statsByCatalog, configFor]);
+  const incompleteDataPercentage = items.length === 0 ? 0 : Math.round((incompleteDataCount / items.length) * 100);
+  const incompleteDataSummary = (l.activityDataCompleteness ?? "{total} total - {missing} have missing data = {percentage}%")
+    .replace("{total}", items.length.toLocaleString(locale))
+    .replace("{missing}", incompleteDataCount.toLocaleString(locale))
+    .replace("{percentage}", String(incompleteDataPercentage));
 
   const filtered = useMemo(() => {
     let result = items;
@@ -186,6 +198,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   return (
     <>
+      <span className="catalog-data-completeness" title={incompleteDataSummary} aria-label={incompleteDataSummary}>
+        <FontAwesomeIcon icon={faCircleInfo} aria-hidden="true" />
+        {l.activityDataCompletenessLabel ?? "Activity data completeness"}
+      </span>
       <div className="catalog-search">
         <input
           type="search"
@@ -350,16 +366,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   </div>
                 </div>
               ) : null;
-              const capWarning = showCapWarning ? (
-                <span className="activity-cap-warning" title={l.activityCapUnknown ?? "Capped because some metrics are unknown"}>
-                  <FontAwesomeIcon icon={faTriangleExclamation} />
-                </span>
-              ) : null;
               if (v.score100 === null) {
                 return (
                   <div className="activity-index">
                     <div className="activity-index-label">
-                      <span className="activity-cap-warning-slot" aria-hidden="true" />
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
@@ -381,7 +391,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               return (
                   <div className={`activity-index${showCapWarning ? " is-capped-unknown" : ""}`}>
                     <div className="activity-index-label">
-                      <span className="activity-cap-warning-slot">{capWarning}</span>
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>

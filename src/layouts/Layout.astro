@@ -372,19 +372,49 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     background: var(--bg-elevated, #f4f4f4);
     border: 1px solid var(--border-standard, #ccc);
     border-radius: var(--radius-pill, 0);
-    transition: transform 0.15s ease;
+    transition: height 0.15s ease;
   }
-  .vitality-weight-bar:hover {
-    transform: scaleY(2.4);
+  .vitality-weight-distribution:hover .vitality-weight-bar {
+    height: 14px;
   }
   .vitality-weight-segment {
     min-width: 0;
-    transition: filter 0.15s ease, transform 0.15s ease;
+    transition: filter 0.15s ease;
   }
   .vitality-weight-segment:hover { filter: brightness(1.12); }
+  .vitality-weight-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.65rem;
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    line-height: 1.25;
+    opacity: 0;
+    transform: translateY(-0.2rem);
+    transition: max-height 0.15s ease, margin-top 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+  }
+  .vitality-weight-distribution:hover .vitality-weight-legend {
+    max-height: 8rem;
+    margin-top: 0.4rem;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .vitality-weight-legend-item {
+    display: inline-flex;
+    gap: 0.3rem;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .vitality-weight-legend-swatch {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+  }
   .vitality-weight-segment,
   .activity-badge,
-  .activity-cap-warning,
   time[title] {
     cursor: help;
   }
@@ -394,6 +424,12 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   .vitality-weight-segment.is-stars { background: #a77ac8; }
   .vitality-weight-segment.is-issues { background: #cf7370; }
   .vitality-weight-segment.is-forks { background: #7fa265; }
+  .vitality-weight-legend-swatch.is-contributors { background: #6d7ed5; }
+  .vitality-weight-legend-swatch.is-history { background: #4da6a0; }
+  .vitality-weight-legend-swatch.is-activity { background: #d69a58; }
+  .vitality-weight-legend-swatch.is-stars { background: #a77ac8; }
+  .vitality-weight-legend-swatch.is-issues { background: #cf7370; }
+  .vitality-weight-legend-swatch.is-forks { background: #7fa265; }
   .activity-settings .activity-preferences {
     display: grid;
     gap: 0.75rem;
@@ -410,6 +446,9 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     box-sizing: border-box;
     width: 100%;
     height: 6px;
+  }
+  .catalog-results .software-weight-distribution:hover .vitality-weight-bar {
+    height: 10px;
   }
   .radar-chart {
     display: block;

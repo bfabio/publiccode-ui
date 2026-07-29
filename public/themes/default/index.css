@@ -221,6 +221,17 @@ nav[aria-label="Breadcrumb"] li + li::before {
 
 /* ── catalog: search ── */
 
+.catalog-data-completeness {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 1rem;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 510;
+  cursor: help;
+}
+.catalog-data-completeness svg { width: 0.9em; }
 .catalog-search {
   position: relative;
   margin: 1.5rem 0 1rem;
@@ -555,7 +566,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .activity-index-label {
   display: grid;
   position: relative;
-  grid-template-columns: 18px max-content 18px;
+  grid-template-columns: max-content 18px;
   align-items: center;
   column-gap: 4px;
   font-size: 10px;
@@ -566,13 +577,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   white-space: nowrap;
 }
 .activity-index-label-text { white-space: nowrap; }
-.activity-cap-warning-slot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-}
 .activity-cap-warning {
   display: inline-flex;
   align-items: center;

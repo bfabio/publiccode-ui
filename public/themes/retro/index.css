@@ -28,6 +28,16 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 
 /* catalog */
+.catalog-data-completeness {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 4px;
+  color: #828282;
+  font-size: 11px;
+  cursor: help;
+}
+.catalog-data-completeness svg { width: 0.9em; }
 .catalog-search {
   position: relative;
   margin-bottom: 4px;
@@ -179,19 +189,12 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 .catalog-results .activity-index-label {
   display: inline-grid;
-  grid-template-columns: 18px max-content 18px;
+  grid-template-columns: max-content 18px;
   align-items: center;
   column-gap: 4px;
   white-space: nowrap;
 }
 .catalog-results .activity-index-label-text { white-space: nowrap; }
-.catalog-results .activity-cap-warning-slot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-}
 .catalog-results .activity-custom-toggle,
 .catalog-results .activity-custom-toggle-placeholder {
   display: inline-flex;

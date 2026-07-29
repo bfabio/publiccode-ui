@@ -36,9 +36,19 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
             className={`vitality-weight-segment is-${key}`}
             style={{ flexGrow: percentage, flexBasis: 0 }}
             role="listitem"
-            title={label}
             aria-label={label}
           />
+        );
+      })}
+    </div>
+    <div className="vitality-weight-legend" aria-hidden="true">
+      {DIMENSION_ORDER.map((key) => {
+        const percentage = Math.round(config.weights[key] * 100);
+        return (
+          <span key={key} className="vitality-weight-legend-item">
+            <span className={`vitality-weight-legend-swatch is-${key}`} />
+            {L.dim[key]}: {percentage}%
+          </span>
         );
       })}
     </div>
