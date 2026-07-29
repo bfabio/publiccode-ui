@@ -382,6 +382,12 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     transition: filter 0.15s ease, transform 0.15s ease;
   }
   .vitality-weight-segment:hover { filter: brightness(1.12); }
+  .vitality-weight-segment,
+  .activity-badge,
+  .activity-cap-warning,
+  time[title] {
+    cursor: help;
+  }
   .vitality-weight-segment.is-contributors { background: #6d7ed5; }
   .vitality-weight-segment.is-history { background: #4da6a0; }
   .vitality-weight-segment.is-activity { background: #d69a58; }
