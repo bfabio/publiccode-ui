@@ -4,6 +4,7 @@ import { faGavel, faRotateLeft, faSliders, faTriangleExclamation, faXmark } from
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate } from "../lib/date.js";
 import { computeVitality } from "../lib/vitality";
+import { sortItems, type SortBy } from "../lib/sortSoftware";
 import { useActivityConfigs, useCapWarningVisibility, useListWeightDistributionVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
@@ -54,35 +55,6 @@ interface CatalogInfo {
   slug: string;
 }
 
-type SortBy = "name_asc" | "name_desc" | "release_date_desc" | "release_date_asc";
-
-const sortItems = (items: SoftwareItem[], sortBy: SortBy): SoftwareItem[] => {
-  const sorted = [...items];
-  switch (sortBy) {
-    case "name_asc":
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case "name_desc":
-      sorted.sort((a, b) => b.name.localeCompare(a.name));
-      break;
-    case "release_date_desc":
-      sorted.sort((a, b) => {
-        if (!a.releaseDate) return 1;
-        if (!b.releaseDate) return -1;
-        return b.releaseDate.localeCompare(a.releaseDate);
-      });
-      break;
-    case "release_date_asc":
-      sorted.sort((a, b) => {
-        if (!a.releaseDate) return 1;
-        if (!b.releaseDate) return -1;
-        return a.releaseDate.localeCompare(b.releaseDate);
-      });
-      break;
-  }
-  return sorted;
-};
-
 interface Labels {
   allCategories: string;
   allStatuses: string;
@@ -92,6 +64,8 @@ interface Labels {
   sortNameDesc: string;
   sortReleaseDesc: string;
   sortReleaseAsc: string;
+  sortActivityDesc?: string;
+  sortActivityAsc?: string;
   results: string;
   noResults: string;
   clearFilters: string;
@@ -183,6 +157,17 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
 
   const anyActivity = useMemo(() => items.some((i) => i.activity != null), [items]);
 
+  const activityScores = useMemo(() => {
+    if (sortBy !== "activity_desc" && sortBy !== "activity_asc") return undefined;
+    const scores = new Map<string, number | null>();
+    for (const i of items) {
+      if (i.activity) {
+        scores.set(i.id, computeVitality(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id)).score100);
+      }
+    }
+    return scores;
+  }, [sortBy, items, statsByCatalog, globalStats, configFor]);
+
   const sorted = useMemo(() => {
     if (deferredQuery) {
       const q = deferredQuery.toLowerCase();
@@ -194,8 +179,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       };
       return [...filtered].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
     }
-    return sortItems(filtered, sortBy);
-  }, [filtered, sortBy, deferredQuery]);
+    return sortItems(filtered, sortBy, activityScores);
+  }, [filtered, sortBy, deferredQuery, activityScores]);
 
   const visibleItems = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
 
@@ -240,6 +225,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <option value="release_date_asc">{l.sortReleaseAsc}</option>
           <option value="name_asc">{l.sortNameAsc}</option>
           <option value="name_desc">{l.sortNameDesc}</option>
+          {anyActivity && <option value="activity_desc">{l.sortActivityDesc ?? "Highest activity score"}</option>}
+          {anyActivity && <option value="activity_asc">{l.sortActivityAsc ?? "Lowest activity score"}</option>}
         </select>
         {anyActivity && (
           <label className="filter-check">

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   readGlobalConfig,
   writeGlobalConfig,
@@ -148,9 +148,12 @@ export function useActivityConfigs() {
     setOverrides((current) => new Map(current).set(id, next));
   };
 
+  const configFor = useCallback((id: string) => overrides.get(id) ?? global, [overrides, global]);
+  const hasOverride = useCallback((id: string) => overrides.has(id), [overrides]);
+
   return {
-    configFor: (id: string) => overrides.get(id) ?? global,
-    hasOverride: (id: string) => overrides.has(id),
+    configFor,
+    hasOverride,
     ready,
     setWeightFor: (id: string, key: DimensionKey, value: number) => {
       const next = applyWeight(overrides.get(id) ?? global, key, value);
