@@ -298,7 +298,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               )}
               {item.activity && activityConfigReady && listWeightDistributionReady && listWeightDistributionEnabled && (
                 <div className="software-weight-distribution">
-                  <VitalityWeightDistribution config={itemActivityConfig} labels={weightLabels} />
+                  <VitalityWeightDistribution
+                    config={itemActivityConfig}
+                    labels={weightLabels}
+                    result={computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, itemActivityConfig)}
+                  />
                 </div>
               )}
             </footer>

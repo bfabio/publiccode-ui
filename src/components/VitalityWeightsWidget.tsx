@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { DIMENSION_ORDER, type DimensionKey, type VitalityConfig, type VitalityResult } from "../lib/vitality";
+import { DIMENSION_ORDER, type DimensionKey, type DimensionState, type VitalityConfig, type VitalityResult } from "../lib/vitality";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -24,36 +24,54 @@ interface Props {
   onXmaxMode: (mode: VitalityConfig["xmaxMode"]) => void;
 }
 
-export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels">> = ({ config, labels: L }) => (
+export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels"> & { result?: VitalityResult }> = ({ config, labels: L, result }) => {
+  const points = result ? new Map(result.dimensions.map((d) => [d.key, d])) : null;
+  const dimOf = (key: DimensionKey) => points?.get(key);
+  const valueOf = (key: DimensionKey): number | null => {
+    if (!points) return config.weights[key];
+    const dim = dimOf(key);
+    return dim && dim.present && dim.normalized !== null ? dim.contribution : null;
+  };
+  const orderedKeys = [...DIMENSION_ORDER].sort((a, b) => (valueOf(b) ?? -1) - (valueOf(a) ?? -1));
+  const stateToken = (state: DimensionState) =>
+    state === "failed" ? L.stateFailed : state === "disabled" ? L.stateDisabled : L.stateUnknown;
+  const stateTitle = (state: DimensionState) =>
+    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.stateDisabledTitle : L.stateUnknownTitle;
+  const display = (key: DimensionKey) => {
+    const value = valueOf(key);
+    if (value !== null) return points ? String(Math.round(value)) : `${Math.round(value * 100)}%`;
+    const dim = dimOf(key);
+    return dim ? stateToken(dim.state) : "n/a";
+  };
+  const titleOf = (key: DimensionKey) => {
+    const dim = dimOf(key);
+    return dim && dim.state !== "ok" ? stateTitle(dim.state) : undefined;
+  };
+  return (
   <div className="vitality-weight-distribution">
     <div className="vitality-weight-bar" role="list" aria-label={L.weights}>
-      {DIMENSION_ORDER.map((key) => {
-        const percentage = Math.round(config.weights[key] * 100);
-        const label = `${L.dim[key]}: ${percentage}%`;
-        return (
-          <span
-            key={key}
-            className={`vitality-weight-segment is-${key}`}
-            style={{ flexGrow: percentage, flexBasis: 0 }}
-            role="listitem"
-            aria-label={label}
-          />
-        );
-      })}
+      {orderedKeys.map((key) => (
+        <span
+          key={key}
+          className={`vitality-weight-segment is-${key}`}
+          style={{ flexGrow: points ? valueOf(key) ?? 0 : Math.round((valueOf(key) ?? 0) * 100), flexBasis: 0 }}
+          role="listitem"
+          aria-label={`${L.dim[key]}: ${display(key)}`}
+        />
+      ))}
     </div>
     <div className="vitality-weight-legend" aria-hidden="true">
-      {DIMENSION_ORDER.map((key) => {
-        const percentage = Math.round(config.weights[key] * 100);
-        return (
-          <span key={key} className="vitality-weight-legend-item">
-            <span className={`vitality-weight-legend-swatch is-${key}`} />
-            {L.dim[key]}: {percentage}%
-          </span>
-        );
-      })}
+      {orderedKeys.map((key) => (
+        <span key={key} className={`vitality-weight-legend-item is-${key}`} title={titleOf(key)}>
+          <span className={`vitality-weight-legend-swatch is-${key}`} />
+          <span className="vitality-weight-legend-label">{L.dim[key]}</span>
+          <span className="vitality-weight-legend-value">{display(key)}</span>
+        </span>
+      ))}
     </div>
   </div>
-);
+  );
+};
 
 export const VitalityWeightsWidget: React.FC<Props> = ({
   result,
@@ -67,10 +85,12 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
 }) => {
   const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
   const toggleSplit = (key: DimensionKey) => setOpenSplits((current) => ({ ...current, [key]: !current[key] }));
+  const stateTitleOf = (state: DimensionState) =>
+    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.stateDisabledTitle : L.stateUnknownTitle;
 
   return (
     <>
-      <VitalityWeightDistribution config={config} labels={L} />
+      <VitalityWeightDistribution config={config} labels={L} result={result} />
 
       <table className="vitality-debug">
         <thead>
@@ -99,7 +119,11 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
                   </td>
                   {dimension.present ? (
                     <>
-                      <td>{(dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}</td>
+                      <td>
+                        {dimension.rawParts
+                          ? `${dimension.rawParts.open.toLocaleString(locale)}/${dimension.rawParts.closed.toLocaleString(locale)}`
+                          : (dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}
+                      </td>
                       <td>
                         <span className="bar-track"><span className="bar-fill" style={{ width: `${(dimension.normalized as number) * 100}%` }} /></span>
                         {(dimension.normalized as number).toFixed(2)}
@@ -114,7 +138,11 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
                       </td>
                       <td>{dimension.contribution.toFixed(1)}</td>
                     </>
-                  ) : <td colSpan={4} className="is-na">{L.excluded}</td>}
+                  ) : (
+                    <td colSpan={4} className="is-na">
+                      {L.excluded} ({stateTitleOf(dimension.state)})
+                    </td>
+                  )}
                 </tr>
                 {open && split && (
                   <tr className="vitality-split-row">
