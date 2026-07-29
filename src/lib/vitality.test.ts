@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeVitality, DEFAULT_CONFIG } from './vitality.ts';
+import { allocateWeight, computeVitality, DEFAULT_CONFIG, freeWeightPoints } from './vitality.ts';
 import type { SoftwareActivity, CatalogStats } from '../types/analysis';
 
 const stats: CatalogStats = {
@@ -163,6 +163,34 @@ describe('computeVitality caps on incomplete evidence', () => {
   });
 });
 
+describe('points-pool weight editing', () => {
+  it('default config has no free points', () => {
+    expect(freeWeightPoints(DEFAULT_CONFIG.weights)).toBe(0);
+  });
+
+  it('lowering a weight frees points without touching the others', () => {
+    const next = allocateWeight(DEFAULT_CONFIG.weights, 'stars', DEFAULT_CONFIG.weights.stars - 0.05);
+    expect(Math.round(next.stars * 100)).toBe(Math.round(DEFAULT_CONFIG.weights.stars * 100) - 5);
+    for (const key of ['contributors', 'history', 'activity', 'issues', 'forks'] as const) {
+      expect(next[key]).toBe(DEFAULT_CONFIG.weights[key]);
+    }
+    expect(freeWeightPoints(next)).toBe(5);
+  });
+
+  it('allows over-allocation and reports a negative pool', () => {
+    const over = allocateWeight(DEFAULT_CONFIG.weights, 'stars', 0.8);
+    expect(over.stars).toBe(0.8);
+    expect(freeWeightPoints(over)).toBe(-65);
+  });
+
+  it('clamps a single weight to the 0..100 range', () => {
+    const high = allocateWeight(DEFAULT_CONFIG.weights, 'forks', 1.7);
+    expect(high.forks).toBe(1);
+    const low = allocateWeight(DEFAULT_CONFIG.weights, 'forks', -0.3);
+    expect(low.forks).toBe(0);
+  });
+});
+
 describe('issues raw display parts', () => {
   const activity = {
     v: 1, tags: 74, recentDays: 180, contributors: 30,
@@ -181,5 +209,25 @@ describe('issues raw display parts', () => {
     const issues = r.dimensions.find((d) => d.key === 'issues')!;
     expect(issues.raw).toBe(1);
     expect(issues.rawParts).toBeUndefined();
+  });
+});
+
+describe('over-allocated weights refuse the score', () => {
+  const activity = {
+    v: 1, tags: 74, recentDays: 180, contributors: 30,
+    commitsAllTime: 4194, commitsRecent: 485,
+  } as SoftwareActivity;
+
+  it('reports overAllocated and a null score past 100', () => {
+    const weights = { ...DEFAULT_CONFIG.weights, stars: 0.8 };
+    const r = computeVitality(activity, stats, { ...DEFAULT_CONFIG, weights });
+    expect(r.overAllocated).toBe(true);
+    expect(r.score100).toBeNull();
+  });
+
+  it('stays computable at or under 100', () => {
+    const r = computeVitality(activity, stats, DEFAULT_CONFIG);
+    expect(r.overAllocated).toBe(false);
+    expect(r.score100).not.toBeNull();
   });
 });

@@ -57,40 +57,26 @@ export interface VitalityCap {
 }
 
 /**
- * Set one dimension weight and rescale the other five so the six always
- * sum to exactly 1. Works in integer hundredths with the largest-remainder
- * method, so results stay non-negative, clean to two decimals, and exact.
+ * Weight editing follows a points-pool model: lowering a dimension frees
+ * points instead of rescaling the other five. Any weight can be set up
+ * to 100 on its own, so the pool can go NEGATIVE (over-allocation is
+ * allowed on purpose: type 80 first, lower something else after) and
+ * the UI warns until it is back to zero. While the pool is negative
+ * the score is withheld rather than renormalized. Works in integer
+ * hundredths so values stay clean to two decimals.
  */
-export function rebalanceWeights(
+export function freeWeightPoints(weights: Record<DimensionKey, number>): number {
+  const used = DIMENSION_ORDER.reduce((acc, k) => acc + Math.round(weights[k] * 100), 0);
+  return 100 - used;
+}
+
+export function allocateWeight(
   weights: Record<DimensionKey, number>,
   key: DimensionKey,
   value: number,
 ): Record<DimensionKey, number> {
-  const editedBp = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  const others = DIMENSION_ORDER.filter((k) => k !== key);
-  const remaining = 100 - editedBp;
-  const currentSum = others.reduce((acc, k) => acc + weights[k], 0);
-
-  const ideal = others.map((k) =>
-    currentSum > 0 ? (weights[k] / currentSum) * remaining : remaining / others.length,
-  );
-  const bp = ideal.map((x) => Math.floor(x));
-  let leftover = remaining - bp.reduce((acc, x) => acc + x, 0);
-
-  const byFraction = ideal
-    .map((x, i) => ({ i, frac: x - Math.floor(x) }))
-    .sort((a, b) => b.frac - a.frac);
-  for (const { i } of byFraction) {
-    if (leftover <= 0) break;
-    bp[i] += 1;
-    leftover -= 1;
-  }
-
-  const next = { ...weights, [key]: editedBp / 100 };
-  others.forEach((k, i) => {
-    next[k] = bp[i] / 100;
-  });
-  return next;
+  const next = Math.max(0, Math.min(100, Math.round(value * 100)));
+  return { ...weights, [key]: next / 100 };
 }
 
 export function normalize(x: number, xmax: number): number {
@@ -138,6 +124,9 @@ export interface VitalityResult {
   covered: number;
   total: number;
   cap: VitalityCap | null;
+  /** Weights sum past 100: the config is mid-edit, so the score is
+      refused (score100 null) rather than silently renormalized. */
+  overAllocated: boolean;
 }
 
 const isPresent = (v: number | null | undefined): v is number => typeof v === 'number';
@@ -302,8 +291,9 @@ export function computeVitality(
     : hasDisabled ? { limit: 89, reason: 'disabled' }
     : null;
 
+  const overAllocated = freeWeightPoints(weights) < 0;
   const score100 =
-    failed.length > 0
+    failed.length > 0 || overAllocated
       ? null
       : Math.min(
           presentDims.reduce((acc, d) => acc + d.contribution, 0),
@@ -321,5 +311,6 @@ export function computeVitality(
     covered: presentDims.length,
     total: DIMENSION_ORDER.length,
     cap,
+    overAllocated,
   };
 }

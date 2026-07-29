@@ -7,26 +7,28 @@ interface Props {
   onChange: (pct: number) => void;
   decLabel: string;
   incLabel: string;
+  max?: number;
 }
 
-const clamp = (n: number) => Math.max(0, Math.min(100, n));
-
-export const WeightStepper: React.FC<Props> = ({ value, onChange, decLabel, incLabel }) => (
-  <span className="weight-stepper">
-    <button type="button" aria-label={decLabel} onClick={() => onChange(clamp(value - 1))}>
-      <FontAwesomeIcon icon={faMinus} />
-    </button>
-    <input
-      type="number"
-      className="weight-input"
-      min={0}
-      max={100}
-      step={1}
-      value={value}
-      onChange={(e) => onChange(clamp(Number(e.target.value)))}
-    />
-    <button type="button" aria-label={incLabel} onClick={() => onChange(clamp(value + 1))}>
-      <FontAwesomeIcon icon={faPlus} />
-    </button>
-  </span>
-);
+export const WeightStepper: React.FC<Props> = ({ value, onChange, decLabel, incLabel, max = 100 }) => {
+  const clamp = (n: number) => Math.max(0, Math.min(max, n));
+  return (
+    <span className="weight-stepper">
+      <button type="button" aria-label={decLabel} disabled={value <= 0} onClick={() => onChange(clamp(value - 1))}>
+        <FontAwesomeIcon icon={faMinus} />
+      </button>
+      <input
+        type="number"
+        className="weight-input"
+        min={0}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(clamp(Number(e.target.value)))}
+      />
+      <button type="button" aria-label={incLabel} disabled={value >= max} onClick={() => onChange(clamp(value + 1))}>
+        <FontAwesomeIcon icon={faPlus} />
+      </button>
+    </span>
+  );
+};

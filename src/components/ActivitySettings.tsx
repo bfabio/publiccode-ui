@@ -1,7 +1,7 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
-import { DIMENSION_ORDER, type VitalityConfig, type DimensionKey } from "../lib/vitality";
+import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import {
   useCapWarningVisibility,
   useGlobalActivityConfig,
@@ -74,6 +74,7 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
   const confirmReset = () => {
     if (window.confirm(L.resetConfirmation)) reset();
   };
+  const freePool = freeWeightPoints(config.weights);
   const ready = configReady && capWarningsReady && listWeightDistributionReady && openCodeBadgesReady;
 
   return (
@@ -154,6 +155,16 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
               );
             })}
           </tbody>
+          <tfoot>
+            <tr>
+              <td></td>
+              <td>
+                <span className={`vitality-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
+                  {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
         </table>
 
         <div className="vitality-config">

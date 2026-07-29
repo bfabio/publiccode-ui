@@ -110,7 +110,12 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
       </p>
 
       <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${showCapWarning ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
-        {result.score100 === null ? (
+        {result.overAllocated ? (
+          <div className="vitality-score" title={L.overAllocatedTitle}>
+            <span className="vitality-value is-over-allocated">?</span>
+            <span className="vitality-max">/ 100</span>
+          </div>
+        ) : result.score100 === null ? (
           <p className="vitality-unavailable">{L.scoreUnavailable}</p>
         ) : (
           <div className="vitality-score">

@@ -358,7 +358,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       </button>
                     </div>
                   </div>
-                  {v.score100 === null && <p>{weightLabels.scoreUnavailable}</p>}
+                  {v.score100 === null && !v.overAllocated && <p>{weightLabels.scoreUnavailable}</p>}
                   <VitalityWeightsWidget
                     result={v}
                     config={activityConfig}
@@ -381,7 +381,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
-                    <span className={`activity-badge is-na${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>n/a</span>
+                    <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>
+                      {v.overAllocated ? "?" : "n/a"}
+                    </span>
                     {scorePanel}
                   </div>
                 );

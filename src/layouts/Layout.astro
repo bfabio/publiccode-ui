@@ -445,9 +445,21 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     white-space: nowrap;
   }
   .vitality-free-points.has-free {
-    color: #dc4c3f;
-    color: light-dark(#c03428, #ef6a5e);
-    font-weight: 590;
+    color: var(--text-primary, #111);
+    font-weight: 650;
+  }
+  .vitality-free-points.is-over {
+    padding: 2px 8px;
+    color: #fff;
+    font-weight: 650;
+    background: #c03428;
+    background: light-dark(#c03428, #a32e24);
+    border-radius: var(--radius-sm, 4px);
+  }
+  .activity-badge.is-over-allocated,
+  .vitality-value.is-over-allocated {
+    color: #dc4c3f !important;
+    color: light-dark(#c03428, #ef6a5e) !important;
   }
   .vitality-free-points.is-empty,
   .vitality-weight-legend-item.is-free.is-empty > * {
