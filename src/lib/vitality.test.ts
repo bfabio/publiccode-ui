@@ -162,3 +162,24 @@ describe('computeVitality caps on incomplete evidence', () => {
     expect(r.failed).toEqual(['stars']);
   });
 });
+
+describe('issues raw display parts', () => {
+  const activity = {
+    v: 1, tags: 74, recentDays: 180, contributors: 30,
+    commitsAllTime: 4194, commitsRecent: 485,
+    issuesOpen: 1, issuesClosed: 0,
+  } as SoftwareActivity;
+
+  it('ratio mode exposes the real open/closed counts', () => {
+    const r = computeVitality(activity, stats, DEFAULT_CONFIG);
+    const issues = r.dimensions.find((d) => d.key === 'issues')!;
+    expect(issues.rawParts).toEqual({ open: 1, closed: 0 });
+  });
+
+  it('open mode keeps the plain count without parts', () => {
+    const r = computeVitality(activity, stats, { ...DEFAULT_CONFIG, issueMode: 'open' });
+    const issues = r.dimensions.find((d) => d.key === 'issues')!;
+    expect(issues.raw).toBe(1);
+    expect(issues.rawParts).toBeUndefined();
+  });
+});

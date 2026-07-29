@@ -111,6 +111,8 @@ function refMax(stats: CatalogStats | null, metric: StatMetric, mode: XmaxMode):
   return statValue(stats, metric, mode === 'p95' ? 'p95' : 'max');
 }
 
+export type DimensionState = 'ok' | 'failed' | 'unknown' | 'disabled';
+
 export interface DimensionResult {
   key: DimensionKey;
   present: boolean;
@@ -119,6 +121,12 @@ export interface DimensionResult {
   weight: number;
   contribution: number;
   approximated: boolean;
+  /** Why a dimension has no value: collector error (failed), forge not
+      inspected (unknown), or feature turned off on the forge (disabled). */
+  state: DimensionState;
+  /** Real counts behind a derived raw, so the UI can show "open/closed"
+      instead of the ratio (or its worst-case sentinel). */
+  rawParts?: { open: number; closed: number };
 }
 
 export interface VitalityResult {
@@ -185,7 +193,7 @@ export function computeVitality(
     normalized: number | null,
     approximated: boolean,
   ) => {
-    dims.push({ key, present, raw, normalized, weight: weights[key], contribution: 0, approximated });
+    dims.push({ key, present, raw, normalized, weight: weights[key], contribution: 0, approximated, state: 'ok' });
   };
 
   push(
@@ -235,6 +243,7 @@ export function computeVitality(
     const ratio = closed === 0 ? (open > 0 ? xmaxRatio : 0) : open / closed;
     const score = present ? 1 - normalize(ratio, xmaxRatio) : null;
     push('issues', present, present ? ratio : null, score, true);
+    if (present) dims[dims.length - 1].rawParts = { open, closed };
   }
 
   push(
@@ -272,6 +281,18 @@ export function computeVitality(
   const missing = FORGE_METRICS.filter((m) => !(m in activity));
   const hasUnknown = missing.some((m) => !disabledFeatures.includes(FEATURE_OF[m]));
   const hasDisabled = missing.some((m) => disabledFeatures.includes(FEATURE_OF[m]));
+
+  const FEATURE_OF_DIM: Partial<Record<DimensionKey, string>> = {
+    stars: 'stars', forks: 'forks', issues: 'issues', history: 'pullRequests', activity: 'pullRequests',
+  };
+  for (const d of ordered) {
+    if (failed.includes(d.key)) d.state = 'failed';
+    else if (d.present) d.state = 'ok';
+    else {
+      const feature = FEATURE_OF_DIM[d.key];
+      d.state = feature && disabledFeatures.includes(feature as (typeof disabledFeatures)[number]) ? 'disabled' : 'unknown';
+    }
+  }
 
   // The SSL Labs model: the sub-score stays renormalized, incomplete
   // evidence only bounds the claim.
