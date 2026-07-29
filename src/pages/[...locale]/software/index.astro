@@ -65,8 +65,8 @@ const items = await Promise.all(allSoftware.map(async (s) => {
 
 {apiConfigured ? (
 <Layout title={t(locale, 'catalog')} description={t(locale, 'catalog_description')} breadcrumbs={[{ label: t(locale, 'home'), href: base + "/" }, { label: t(locale, 'software') }]}>
-  <h1>{t(locale, 'catalog')}</h1>
   <SoftwareList client:visible items={items} base={base} locale={locale}
+    title={t(locale, 'catalog')}
     catalogs={multiCatalog ? catalogs : undefined}
     statsByCatalog={statsByCatalog}
     globalStats={rootAnalysis?.stats ?? null}
@@ -97,7 +97,10 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       activityCapUnknown: t(locale, 'activity_cap_unknown'),
       activityCustomWeights: t(locale, 'activity_custom_weights'),
       activityDataCompleteness: t(locale, 'activity_data_completeness'),
-      activityDataCompletenessLabel: t(locale, 'activity_data_completeness_label'),
+      viewList: t(locale, 'view_list'),
+      viewTable: t(locale, 'view_table'),
+      colName: t(locale, 'name'),
+      exportCsv: t(locale, 'export_csv'),
     }} />
 </Layout>
 ) : (

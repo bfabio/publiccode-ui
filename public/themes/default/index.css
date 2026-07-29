@@ -222,16 +222,10 @@ nav[aria-label="Breadcrumb"] li + li::before {
 /* ── catalog: search ── */
 
 .catalog-data-completeness {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  margin-top: 1rem;
-  color: var(--text-tertiary);
-  font-size: 12px;
-  font-weight: 510;
-  cursor: help;
+  width: 0.9em;
+  margin-left: 0.35rem;
+  vertical-align: -0.08em;
 }
-.catalog-data-completeness svg { width: 0.9em; }
 .catalog-search {
   position: relative;
   margin: 1.5rem 0 1rem;
@@ -335,10 +329,12 @@ nav[aria-label="Breadcrumb"] li + li::before {
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
-.catalog-filters select {
+.catalog-filters select,
+.catalog-toolbar select {
   font: inherit;
   font-size: 13px;
   font-weight: 510;
+  width: 200px;
   color: var(--text-secondary);
   background: var(--surface-btn);
   border: 1px solid var(--border-solid);
@@ -347,7 +343,8 @@ nav[aria-label="Breadcrumb"] li + li::before {
   outline: none;
   cursor: pointer;
 }
-.catalog-filters select:focus {
+.catalog-filters select:focus,
+.catalog-toolbar select:focus {
   border-color: var(--accent);
 }
 .catalog-filters .filter-check {
@@ -363,7 +360,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   accent-color: var(--accent);
   cursor: pointer;
 }
-.catalog-filters output {
+.catalog-toolbar output {
   color: var(--text-quaternary);
   font-size: 13px;
   font-weight: 510;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sortItems } from "./sortSoftware";
+import { sortByScores, sortItems } from "./sortSoftware";
 
 const item = (id: string, name = id, releaseDate = "") => ({ id, name, releaseDate });
 
@@ -49,5 +49,27 @@ describe("sortItems activity_desc", () => {
     ]);
     const out = sortItems([item("b", "Beta"), item("a", "Alpha")], "activity_desc", scores);
     expect(out.map((i) => i.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("sortByScores", () => {
+  it("orders by the given map, missing and null last", () => {
+    const scores = new Map<string, number | null>([
+      ["low", 2],
+      ["high", 20],
+      ["na", null],
+    ]);
+    const out = sortByScores([item("na"), item("low"), item("missing"), item("high")], scores, "desc");
+    expect(out.map((i) => i.id)).toEqual(["high", "low", "missing", "na"]);
+  });
+
+  it("ascending keeps unscored last and breaks ties by name", () => {
+    const scores = new Map<string, number | null>([
+      ["b", 5],
+      ["a", 5],
+      ["top", 9],
+    ]);
+    const out = sortByScores([item("top"), item("b", "Beta"), item("none"), item("a", "Alpha")], scores, "asc");
+    expect(out.map((i) => i.id)).toEqual(["a", "b", "top", "none"]);
   });
 });

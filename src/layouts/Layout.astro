@@ -67,6 +67,11 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       if (localStorage.getItem('publiccode-ui:opencode-badges') !== '1') {
         document.documentElement.setAttribute('data-opencode-badges-hidden', '');
       }
+      document.documentElement.dataset.catalogView =
+        new URLSearchParams(location.search).get('view') === 'table' ? 'table' : 'list';
+      if (localStorage.getItem('publiccode-ui:list-weight-distribution') === '1') {
+        document.documentElement.dataset.listWeightDistribution = '1';
+      }
     </script>
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
@@ -415,16 +420,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   time[title] {
     cursor: help;
   }
-  .categories li button {
-    padding: 0;
-    font: inherit;
-    color: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
-    background: none;
-    border: 0;
-    cursor: pointer;
-  }
   .vitality-weight-distribution .is-contributors { --dim-color: #6d7ed5; }
   .vitality-weight-distribution .is-history { --dim-color: #4da6a0; }
   .vitality-weight-distribution .is-activity { --dim-color: #d69a58; }
@@ -575,6 +570,215 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     box-sizing: border-box;
     width: 100%;
     height: 6px;
+  }
+  .activity-index-skeleton-distribution {
+    display: none;
+  }
+  html[data-list-weight-distribution="1"] .activity-index-skeleton-distribution {
+    display: block;
+  }
+  .activity-index-skeleton-distribution .vitality-weight-legend-swatch {
+    background: var(--skeleton-shimmer, rgb(0 0 0 / 8%));
+  }
+  output.catalog-result-count {
+    position: relative;
+  }
+  .catalog-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0 0 1rem;
+  }
+  .filters-toggle {
+    display: inline-flex;
+    gap: 0.45rem;
+    align-items: center;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text-secondary, inherit);
+    background: var(--surface-btn, transparent);
+    border: 1px solid var(--border-solid, #ccc);
+    border-radius: var(--radius-md, 4px);
+    cursor: pointer;
+  }
+  .filters-toggle[aria-expanded="true"] {
+    color: var(--text-primary, inherit);
+  }
+  .catalog-toolbar .sort-control {
+    display: inline-flex;
+    gap: 0.45rem;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-tertiary, #666);
+    white-space: nowrap;
+  }
+  /* SSG always emits the list view; hide it pre-hydration when the URL
+     asks for the table, so back-navigation shows no list flash. */
+  html[data-catalog-view="table"] :is(.catalog-results, .catalog-more, .sort-control) {
+    display: none;
+  }
+  html[data-catalog-view="table"]:not([data-catalog-hydrated]) main::after {
+    content: "";
+    display: block;
+    height: 55vh;
+    margin-top: 0.5rem;
+    background: var(--bg-elevated, #f0f0f2);
+    border-radius: var(--radius-lg, 8px);
+    animation: catalog-skeleton-pulse 1.1s ease-in-out infinite alternate;
+  }
+  @keyframes catalog-skeleton-pulse {
+    from { opacity: 0.45; }
+    to { opacity: 1; }
+  }
+  html[data-catalog-view="table"] .view-toggle button:first-child {
+    color: var(--text-tertiary, #666);
+    background: transparent;
+  }
+  html[data-catalog-view="table"] .view-toggle button:last-child {
+    color: var(--text-primary, inherit);
+    background: var(--surface-btn-hover, rgb(0 0 0 / 6%));
+  }
+  .categories li button {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .filters-active-count {
+    min-width: 1.2rem;
+    padding: 0 0.3rem;
+    font-size: 11px;
+    line-height: 1.2rem;
+    text-align: center;
+    color: #fff;
+    background: var(--accent, #4c5fd5);
+    border-radius: var(--radius-pill, 999px);
+  }
+  .catalog-data-completeness-toggle {
+    padding: 0;
+    font-size: inherit;
+    line-height: 1;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .catalog-data-completeness-panel {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    right: 0;
+    z-index: 20;
+    padding: 0.45rem 0.7rem;
+    color: var(--text-secondary, inherit);
+    font-size: 12px;
+    white-space: nowrap;
+    background: var(--bg-surface, #fff);
+    border: 1px solid var(--border-standard, #ccc);
+    border-radius: var(--radius-md, 4px);
+    box-shadow: var(--shadow-dropdown, 0 4px 14px rgb(0 0 0 / 15%));
+  }
+  .catalog-header {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .catalog-header h1 {
+    min-width: 0;
+  }
+  .view-toggle {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid var(--border-solid, #ccc);
+    border-radius: var(--radius-md, 4px);
+  }
+  .view-toggle button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--text-tertiary, #666);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .view-toggle button + button {
+    border-left: 1px solid var(--border-solid, #ccc);
+  }
+  .view-toggle button.is-active {
+    color: var(--text-primary, inherit);
+    background: var(--surface-btn-hover, rgb(0 0 0 / 6%));
+  }
+  .catalog-table-wrap {
+    overflow-x: auto;
+  }
+  .catalog-table-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 0.5rem;
+  }
+  .catalog-table-export {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 4px 12px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--text-tertiary, #666);
+    background: transparent;
+    border: 1px solid var(--border-solid, #ccc);
+    border-radius: var(--radius-pill, 4px);
+    cursor: pointer;
+  }
+  .catalog-table-export:hover {
+    color: var(--text-primary, inherit);
+    border-color: var(--text-quaternary, #999);
+  }
+  .catalog-table {
+    width: 100%;
+    font-size: 14px;
+    border-collapse: collapse;
+  }
+  .catalog-table th,
+  .catalog-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-standard, #ddd);
+  }
+  .catalog-table th button {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0;
+    font: inherit;
+    font-weight: 590;
+    color: var(--text-secondary, inherit);
+    white-space: nowrap;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .catalog-table th[aria-sort] button {
+    color: var(--text-primary, inherit);
+  }
+  .catalog-table th button svg {
+    width: 0.7em;
+  }
+  .catalog-table tbody tr {
+    cursor: pointer;
+  }
+  .catalog-table tbody tr:hover td {
+    background: var(--surface-btn-hover, rgb(0 0 0 / 4%));
+  }
+  .catalog-table th.catalog-table-score,
+  .catalog-table td.catalog-table-score {
+    text-align: right;
   }
   .radar-chart {
     display: block;
