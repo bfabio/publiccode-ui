@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { DIMENSION_ORDER, type DimensionKey, type DimensionState, type VitalityConfig, type VitalityResult } from "../lib/vitality";
+import { DIMENSION_ORDER, freeWeightPoints, type DimensionKey, type DimensionState, type VitalityConfig, type VitalityResult } from "../lib/vitality";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -33,6 +33,8 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
     return dim && dim.present && dim.normalized !== null ? dim.contribution : null;
   };
   const orderedKeys = [...DIMENSION_ORDER].sort((a, b) => (valueOf(b) ?? -1) - (valueOf(a) ?? -1));
+  const free = points ? 0 : freeWeightPoints(config.weights);
+  const freeLabel = (free < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(free)));
   const stateToken = (state: DimensionState) =>
     state === "failed" ? L.stateFailed : state === "disabled" ? L.stateDisabled : L.stateUnknown;
   const stateTitle = (state: DimensionState) =>
@@ -59,6 +61,14 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
           aria-label={`${L.dim[key]}: ${display(key)}`}
         />
       ))}
+      {!points && (
+        <span
+          className="vitality-weight-segment is-free"
+          style={{ flexGrow: Math.max(0, free), flexBasis: 0 }}
+          role="listitem"
+          aria-label={freeLabel}
+        />
+      )}
     </div>
     <div className="vitality-weight-legend" aria-hidden="true">
       {orderedKeys.map((key) => (
@@ -68,6 +78,13 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
           <span className="vitality-weight-legend-value">{display(key)}</span>
         </span>
       ))}
+      {!points && (
+        <span className={`vitality-weight-legend-item is-free${free === 0 ? " is-empty" : ""}`}>
+          <span className="vitality-weight-legend-swatch is-free" />
+          <span className="vitality-weight-legend-label">{freeLabel}</span>
+          <span className="vitality-weight-legend-value" />
+        </span>
+      )}
     </div>
   </div>
   );
@@ -85,6 +102,7 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
 }) => {
   const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
   const toggleSplit = (key: DimensionKey) => setOpenSplits((current) => ({ ...current, [key]: !current[key] }));
+  const freePool = freeWeightPoints(config.weights);
   const stateTitleOf = (state: DimensionState) =>
     state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.stateDisabledTitle : L.stateUnknownTitle;
 
@@ -167,8 +185,16 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
         <tfoot>
           <tr>
             <td colSpan={3}></td>
-            <td></td>
-            <td>{result.score100 === null ? L.na : result.score100.toFixed(1)}</td>
+            <td>
+              <span className={`vitality-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
+                {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
+              </span>
+            </td>
+            <td>
+              {result.overAllocated
+                ? <span title={L.overAllocatedTitle}>?</span>
+                : result.score100 === null ? L.na : result.score100.toFixed(1)}
+            </td>
           </tr>
         </tfoot>
       </table>

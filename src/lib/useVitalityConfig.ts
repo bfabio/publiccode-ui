@@ -24,7 +24,7 @@ import {
   LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY,
 } from './vitalityStore';
 import {
-  rebalanceWeights,
+  allocateWeight,
   DEFAULT_CONFIG,
   type VitalityConfig,
   type DimensionKey,
@@ -35,7 +35,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 function applyWeight(c: VitalityConfig, key: DimensionKey, value: number): VitalityConfig {
-  return { ...c, weights: rebalanceWeights(c.weights, key, value) };
+  return { ...c, weights: allocateWeight(c.weights, key, value) };
 }
 
 function applySplit(c: VitalityConfig, edited: SubKey, other: SubKey, value: number): VitalityConfig {
