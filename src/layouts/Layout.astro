@@ -372,6 +372,10 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     background: var(--bg-elevated, #f4f4f4);
     border: 1px solid var(--border-standard, #ccc);
     border-radius: var(--radius-pill, 0);
+    transition: transform 0.15s ease;
+  }
+  .vitality-weight-bar:hover {
+    transform: scaleY(2.4);
   }
   .vitality-weight-segment {
     min-width: 0;
