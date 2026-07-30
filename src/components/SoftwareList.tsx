@@ -442,7 +442,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 </tr>
               </thead>
               <tbody>
-                {visibleItems.map((item) => {
+                {sorted.map((item) => {
                   const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
                   const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
           const flag = catalogFlag(item.catalogSlug);
@@ -663,7 +663,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         })}
       </section>
       )}
-      {visibleCount < sorted.length && (
+      {view !== "table" && visibleCount < sorted.length && (
         <div className="catalog-more">
           <button type="button" onClick={() => setVisibleCount((count) => count + INITIAL_VISIBLE_ITEMS)}>
             {l.showMore}
