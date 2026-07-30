@@ -1,5 +1,13 @@
+import { createRequire } from "node:module";
+import path from "node:path";
 import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
+import { searchForWorkspaceRoot } from "vite";
+
+// Git worktrees share the root checkout's node_modules, which sits
+// outside vite's default fs.allow (the project root only).
+const require = createRequire(import.meta.url);
+const hoistedNodeModules = path.join(path.dirname(require.resolve("@astrojs/react/package.json")), "..", "..");
 
 export default defineConfig({
   site: "https://bfabio.github.io",
@@ -11,6 +19,11 @@ export default defineConfig({
     locales: ["en", "it"],
   },
   vite: {
+    server: {
+      fs: {
+        allow: [searchForWorkspaceRoot(process.cwd()), hoistedNodeModules],
+      },
+    },
     build: {
       rollupOptions: {
         output: {
