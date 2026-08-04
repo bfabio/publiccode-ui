@@ -7,6 +7,7 @@ import { base } from '../lib/url.js';
 import { faIcon } from '../lib/icons.js';
 import { t } from '../lib/i18n.js';
 import { ActivityWeightsMenu } from '../components/ActivityWeightsMenu';
+import { LABELS } from '../lib/vitalityLabels';
 import '@fontsource-variable/inter';
 
 config.autoAddCss = false;
@@ -28,6 +29,7 @@ const routePath = Astro.url.pathname.replace(/^\/it/, '') || '/';
 const enUrl = getAbsoluteLocaleUrl('en', routePath);
 const itUrl = getAbsoluteLocaleUrl('it', routePath);
 const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings`;
+const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
 ---
 
 <html lang={locale}>
@@ -89,21 +91,20 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
           </ol>
         </nav>
       )}
-      <div class="header-actions">
-      <ActivityWeightsMenu client:load locale={locale} />
       <div class="settings-menu">
         <button type="button" id="settings-btn" aria-label={t(locale, 'settings')} title={t(locale, 'settings')} aria-haspopup="menu" aria-expanded="false">
           <Fragment set:html={faIcon('gear')} />
         </button>
         <ul id="settings-menu" role="menu" hidden>
           <li role="none"><a href={settingsHref} role="menuitem">{t(locale, 'settings')}</a></li>
+          <li role="none"><button type="button" role="menuitemcheckbox" id="weights-menu-item">{weightsLabel}</button></li>
           <li class="settings-menu-label" role="presentation">{t(locale, 'theme')}</li>
           {themes.map((t) => (
             <li role="none"><button type="button" role="menuitemradio" data-theme={t}>{t}</button></li>
           ))}
         </ul>
       </div>
-      </div>
+      <ActivityWeightsMenu client:load locale={locale} />
     </header>
     <main>
       <slot />
@@ -126,9 +127,18 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     if (menu.hidden) {
       const saved = localStorage.getItem('theme');
       markActive(themes.includes(saved) ? saved : defaultTheme);
+      weightsItem.setAttribute('aria-checked',
+        String(document.documentElement.hasAttribute('data-activity-drawer')));
     }
     menu.hidden = !menu.hidden;
     btn.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+
+  const weightsItem = document.getElementById('weights-menu-item');
+  weightsItem.addEventListener('click', () => {
+    document.dispatchEvent(new Event('activity-weights-toggle'));
+    menu.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
   });
 
   menu.addEventListener('click', (e) => {
@@ -160,14 +170,10 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     flex: 1;
     padding: 0;
   }
-  .header-actions {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
   .settings-menu {
+    margin-left: auto;
     position: relative;
+    flex-shrink: 0;
   }
   #settings-btn {
     background: none;
@@ -236,23 +242,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
 </style>
 
 <style is:global>
-  .activity-weights-menu {
-    position: relative;
-  }
-  .activity-weights-btn {
-    padding: 8px;
-    font-size: 16px;
-    color: inherit;
-    background: none;
-    border: none;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.15s;
-  }
-  .activity-weights-btn:hover,
-  .activity-weights-btn[aria-expanded="true"] {
-    opacity: 1;
-  }
   :root {
     --activity-drawer-width: 340px;
   }
