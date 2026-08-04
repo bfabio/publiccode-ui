@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   mergeConfig, parseConfig, isDefaultConfig, pickConfig,
   softwareKey, readSoftwareConfig, writeSoftwareConfig,
-  clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore,
+  clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore, writeGlobalConfig,
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   CAP_WARNING_VISIBILITY_KEY, readCapWarningVisibility, writeCapWarningVisibility,
   LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, readListWeightDistributionVisibility, writeListWeightDistributionVisibility,
@@ -129,6 +129,20 @@ describe('subscribeStore', () => {
     fire('publiccode-ui:vitalityBackup');
     fire(null);
     expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, null]);
+  });
+
+  it('fires for same-tab writes, where no storage event exists', () => {
+    stubWindow();
+    const seen: (string | null)[] = [];
+    const unsubscribe = subscribeStore((k) => seen.push(k));
+    writeGlobalConfig({ ...DEFAULT_CONFIG, issueMode: 'open' });
+    writeSoftwareConfig('abc', DEFAULT_CONFIG);
+    clearSoftwareConfig('abc');
+    writeOpenCodeBadgeVisibility(true);
+    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY]);
+    unsubscribe();
+    writeGlobalConfig(DEFAULT_CONFIG);
+    expect(seen).toHaveLength(4);
   });
 });
 

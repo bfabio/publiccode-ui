@@ -6,6 +6,7 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import { base } from '../lib/url.js';
 import { faIcon } from '../lib/icons.js';
 import { t } from '../lib/i18n.js';
+import { ActivityWeightsMenu } from '../components/ActivityWeightsMenu';
 import '@fontsource-variable/inter';
 
 config.autoAddCss = false;
@@ -88,6 +89,8 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
           </ol>
         </nav>
       )}
+      <div class="header-actions">
+      <ActivityWeightsMenu client:load locale={locale} />
       <div class="settings-menu">
         <button type="button" id="settings-btn" aria-label={t(locale, 'settings')} title={t(locale, 'settings')} aria-haspopup="menu" aria-expanded="false">
           <Fragment set:html={faIcon('gear')} />
@@ -99,6 +102,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
             <li role="none"><button type="button" role="menuitemradio" data-theme={t}>{t}</button></li>
           ))}
         </ul>
+      </div>
       </div>
     </header>
     <main>
@@ -156,10 +160,14 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     flex: 1;
     padding: 0;
   }
-  .settings-menu {
+  .header-actions {
+    display: flex;
+    align-items: center;
     margin-left: auto;
-    position: relative;
     flex-shrink: 0;
+  }
+  .settings-menu {
+    position: relative;
   }
   #settings-btn {
     background: none;
@@ -228,6 +236,86 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
 </style>
 
 <style is:global>
+  .activity-weights-menu {
+    position: relative;
+  }
+  .activity-weights-btn {
+    padding: 8px;
+    font-size: 16px;
+    color: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+  .activity-weights-btn:hover,
+  .activity-weights-btn[aria-expanded="true"] {
+    opacity: 1;
+  }
+  :root {
+    --activity-drawer-width: 340px;
+  }
+  html[data-activity-drawer] body {
+    margin-right: var(--activity-drawer-width);
+  }
+  .activity-weights-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    box-sizing: border-box;
+    width: min(var(--activity-drawer-width), 100vw);
+    overflow-y: auto;
+    padding: 0.9rem 1rem 1rem;
+    text-align: left;
+    background: var(--bg-surface, #fff);
+    border-left: 1px solid var(--border-standard, #ddd);
+    box-shadow: var(--shadow-dropdown, 0 4px 12px rgba(0,0,0,0.1));
+  }
+  @media (max-width: 900px) {
+    html[data-activity-drawer] body {
+      margin-right: 0;
+    }
+  }
+  .activity-weights-drawer.is-loading {
+    opacity: 0.4;
+  }
+  .activity-weights-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .activity-weights-drawer h3 {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-primary, inherit);
+  }
+  .activity-weights-close {
+    padding: 4px 6px;
+    font-size: 14px;
+    color: var(--text-tertiary, #666);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .activity-weights-close:hover {
+    color: var(--text-primary, inherit);
+  }
+  .activity-weights-drawer .settings-intro {
+    margin: 0.35rem 0 0.75rem;
+    font-size: 12px;
+    color: var(--text-tertiary, #666);
+  }
+  .activity-weights-drawer .vitality-debug {
+    width: 100%;
+  }
+  .activity-weights-drawer .vitality-split {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-left: 12px;
+  }
   :root[data-opencode-badges-hidden] .opencode-badges {
     display: none !important;
   }
@@ -556,7 +644,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     margin: 0 0 2rem;
   }
   .activity-settings .activity-preferences .settings-preference { margin: 0; }
-  .activity-settings .activity-settings-controls > h2 { margin-top: 0; }
   .catalog-results .activity-index .software-weight-distribution {
     align-self: stretch;
     width: 100%;
