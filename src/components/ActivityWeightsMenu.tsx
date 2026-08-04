@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartColumn, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import { useGlobalActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
@@ -27,6 +27,12 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   } = useGlobalActivityConfig();
 
   useEffect(() => {
+    const onToggle = () => setOpen((o) => !o);
+    document.addEventListener("activity-weights-toggle", onToggle);
+    return () => document.removeEventListener("activity-weights-toggle", onToggle);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.toggleAttribute("data-activity-drawer", open);
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -45,18 +51,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   const freePool = freeWeightPoints(config.weights);
 
   return (
-    <div className="activity-weights-menu">
-      <button
-        type="button"
-        className="activity-weights-btn"
-        aria-label={L.globalWeights}
-        title={L.globalWeights}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <FontAwesomeIcon icon={faChartColumn} />
-      </button>
+    <>
       {open && (
         <div className={`activity-weights-drawer${ready ? "" : " is-loading"}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
@@ -154,6 +149,6 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
