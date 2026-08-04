@@ -11,10 +11,20 @@ export function readOpenCodeBadgeVisibility(): boolean {
   return window.localStorage.getItem(OPENCODE_BADGES_VISIBILITY_KEY) === '1';
 }
 
+// "storage" events fire only in other tabs, so islands on the same page
+// (e.g. the header weights popover and the software list) need this
+// explicit channel to follow each other's writes.
+const tabListeners = new Set<(key: string | null) => void>();
+
+function emitStoreChange(key: string): void {
+  tabListeners.forEach((listener) => listener(key));
+}
+
 export function writeOpenCodeBadgeVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   if (enabled) window.localStorage.setItem(OPENCODE_BADGES_VISIBILITY_KEY, '1');
   else window.localStorage.removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
+  emitStoreChange(OPENCODE_BADGES_VISIBILITY_KEY);
 }
 
 export function readCapWarningVisibility(): boolean {
@@ -26,6 +36,7 @@ export function writeCapWarningVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   if (enabled) window.localStorage.removeItem(CAP_WARNING_VISIBILITY_KEY);
   else window.localStorage.setItem(CAP_WARNING_VISIBILITY_KEY, '0');
+  emitStoreChange(CAP_WARNING_VISIBILITY_KEY);
 }
 
 export function readListWeightDistributionVisibility(): boolean {
@@ -37,6 +48,7 @@ export function writeListWeightDistributionVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
   if (enabled) window.localStorage.setItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY, '1');
   else window.localStorage.removeItem(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY);
+  emitStoreChange(LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY);
 }
 
 export function mergeConfig(c: Partial<VitalityConfig> | null): VitalityConfig {
@@ -78,6 +90,7 @@ export function writeGlobalConfig(config: VitalityConfig): void {
   if (typeof window === 'undefined') return;
   if (isDefaultConfig(config)) window.localStorage.removeItem(STORAGE_KEY);
   else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  emitStoreChange(STORAGE_KEY);
 }
 
 export const SOFTWARE_PREFIX = `${STORAGE_KEY}:`;
@@ -94,11 +107,13 @@ export function readSoftwareConfig(id: string): VitalityConfig | null {
 export function writeSoftwareConfig(id: string, config: VitalityConfig): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(softwareKey(id), JSON.stringify(config));
+  emitStoreChange(softwareKey(id));
 }
 
 export function clearSoftwareConfig(id: string): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(softwareKey(id));
+  emitStoreChange(softwareKey(id));
 }
 
 export function readAllSoftwareConfigs(): Map<string, VitalityConfig> {
@@ -120,7 +135,11 @@ export function subscribeStore(callback: (key: string | null) => void): () => vo
     if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key === LIST_WEIGHT_DISTRIBUTION_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
   };
   window.addEventListener('storage', handler);
-  return () => window.removeEventListener('storage', handler);
+  tabListeners.add(callback);
+  return () => {
+    window.removeEventListener('storage', handler);
+    tabListeners.delete(callback);
+  };
 }
 
 export function readUrlConfig(): VitalityConfig | null {
