@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import { useGlobalActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
@@ -15,7 +13,9 @@ const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
 
 export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => {
+    try { return sessionStorage.getItem("activity-drawer") === "1"; } catch { return false; }
+  });
   const {
     config,
     ready,
@@ -34,6 +34,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
 
   useEffect(() => {
     document.documentElement.toggleAttribute("data-activity-drawer", open);
+    try { sessionStorage.setItem("activity-drawer", open ? "1" : "0"); } catch {}
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
@@ -56,9 +57,6 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
         <div className={`activity-weights-drawer${ready ? "" : " is-loading"}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
             <h3>{L.globalWeights}</h3>
-            <button type="button" className="activity-weights-close" aria-label={L.popoverClose} title={L.popoverClose} onClick={() => setOpen(false)}>
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
           </div>
           <p className="settings-intro">{L.settingsIntro}</p>
 
