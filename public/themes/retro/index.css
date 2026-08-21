@@ -609,3 +609,15 @@ dialog nav button,
 .catalog-flag {
   margin-right: 0.35em;
 }
+
+.software-meta .platform-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+.software-meta .platform svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  margin-right: 4px;
+}
