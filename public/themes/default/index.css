@@ -1748,3 +1748,7 @@ dialog nav button:hover {
   -webkit-appearance: none;
   margin: 0;
 }
+
+.catalog-flag {
+  margin-right: 0.35em;
+}

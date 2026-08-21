@@ -11,6 +11,7 @@ import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
 import { VitalityWeightDistribution, VitalityWeightsWidget } from "./VitalityWeightsWidget";
+import { catalogFlag } from "../lib/catalogFlags";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -386,7 +387,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {catalogs && (
           <select aria-label={l.allCatalogs ?? "All catalogs"} value={catalog} onChange={(e) => setCatalog(e.target.value)}>
             <option value="">{l.allCatalogs ?? "All catalogs"}</option>
-            {catalogs.map((c) => <option key={c.id} value={c.slug}>{c.name}</option>)}
+            {catalogs.map((c) => <option key={c.id} value={c.slug}>{[catalogFlag(c.slug), c.name].filter(Boolean).join(" ")}</option>)}
           </select>
         )}
         <select aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -444,6 +445,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 {visibleItems.map((item) => {
                   const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
                   const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
+          const flag = catalogFlag(item.catalogSlug);
                   const v = item.activity
                     ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
                     : null;
@@ -496,10 +498,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           const itemActivityConfig = configFor(item.id);
           const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
           const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
+          const flag = catalogFlag(item.catalogSlug);
           return (
           <article key={item.id} className={openScoreId === item.id ? "is-score-open" : undefined}>
             {catalogs && item.catalogName && (
-              <span className="catalog-badge">{item.catalogName}</span>
+              <span className="catalog-badge">{flag && <span className="catalog-flag" aria-hidden="true">{flag}</span>}{item.catalogName}</span>
             )}
             <figure className={`software-thumb image-shell ${item.logo ? 'image-loading' : ''}`} suppressHydrationWarning>
               <span className="logo-placeholder" aria-hidden="true" suppressHydrationWarning>{item.name.charAt(0).toUpperCase()}</span>

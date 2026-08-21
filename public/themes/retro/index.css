@@ -605,3 +605,7 @@ dialog nav button,
   from { background-position: 0 0; }
   to { background-position: 20px 0; }
 }
+
+.catalog-flag {
+  margin-right: 0.35em;
+}
