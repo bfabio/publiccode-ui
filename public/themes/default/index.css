@@ -1752,3 +1752,20 @@ dialog nav button:hover {
 .catalog-flag {
   margin-right: 0.35em;
 }
+
+.software-meta .platform-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em 1em;
+}
+.software-meta .platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  white-space: nowrap;
+}
+.software-meta .platform svg {
+  width: 1em;
+  height: 1em;
+  opacity: 0.7;
+}

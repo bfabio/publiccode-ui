@@ -10,6 +10,7 @@ import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { usableStats } from '../../../lib/activity.ts';
 import { catalogFlag } from '../../../lib/catalogFlags.ts';
+import { describePlatform } from '../../../lib/platforms.ts';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
@@ -54,7 +55,7 @@ const license = await resolveLicense(pc.legal?.license);
 const features = desc.features ?? [];
 const langNames = new Intl.DisplayNames([locale], { type: 'language' });
 const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
-const platforms = pc.platforms ?? [];
+const platforms = (pc.platforms ?? []).map(describePlatform);
 const repoUrl = forgeRepoUrl(software.url, pc.url);
 
 const medalEmoji = { gold: '\u{1F947}', silver: '\u{1F948}', bronze: '\u{1F949}' };
@@ -154,7 +155,7 @@ const badgeRadar = makeRadar(
       {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
       {pc.softwareType && <><dt><Fragment set:html={faIcon('cube')} /> {t(locale, 'software_type')}</dt><dd>{t(locale, 'type_' + pc.softwareType)}</dd></>}
       {pc.maintenance?.type && <><dt><Fragment set:html={faIcon('wrench')} /> {t(locale, 'maintenance_type')}</dt><dd>{t(locale, 'maintenance_' + pc.maintenance.type)}</dd></>}
-      {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd>{platforms.join(', ')}</dd></>}
+      {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd class="platform-list">{platforms.map((p) => <span class="platform">{p.icon && <Fragment set:html={faIcon(p.icon.name, p.icon.prefix)} />}{p.label}</span>)}</dd></>}
       {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
