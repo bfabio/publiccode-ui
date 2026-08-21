@@ -9,6 +9,7 @@ import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, localizeDescription } from '../../../lib/i18n.js';
 import { usableStats } from '../../../lib/activity.ts';
+import { catalogFlag } from '../../../lib/catalogFlags.ts';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
@@ -30,6 +31,7 @@ export async function getStaticPaths() {
       props: {
         software: s,
         catalogName: catalogMap[s.catalogId]?.name ?? null,
+        catalogFlag: catalogFlag(catalogMap[s.catalogId]?.slug),
         multiCatalog,
         activity: softwareAnalysis.get(s.id) ?? null,
         badges: openCodeBadges.get(s.id) ?? null,
@@ -40,7 +42,7 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, multiCatalog, activity, badges, stats } = Astro.props;
+const { software, catalogName, catalogFlag: flag, multiCatalog, activity, badges, stats } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -146,7 +148,7 @@ const badgeRadar = makeRadar(
     </header>
 
     <dl class="software-meta">
-      {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{catalogName}</dd></>}
+      {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{flag && <span class="catalog-flag" aria-hidden="true">{flag}</span>}{catalogName}</dd></>}
       {license && <><dt><Fragment set:html={faIcon('gavel')} /> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url} target="_blank" rel="noopener noreferrer">{license.name}</a> : license.name}</dd></>}
       {release && <><dt><Fragment set:html={faIcon('calendar', 'far')} /> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
       {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
