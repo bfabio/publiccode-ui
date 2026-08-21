@@ -1360,6 +1360,17 @@ dialog nav button:hover {
   color: var(--text-quaternary);
   font-weight: 400;
 }
+.metrics-group dd a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--text-quaternary);
+  text-underline-offset: 2px;
+}
+.metrics-group dd a:hover,
+.metrics-group dd a:focus-visible {
+  color: var(--accent-bright);
+  text-decoration-color: currentColor;
+}
 .metrics-info {
   font-size: 13px;
   color: var(--text-tertiary);

@@ -44,7 +44,7 @@ export async function fetchAllSoftware() {
         console.warn(`Skipping ${item.id}: invalid YAML:`, e.message);
         continue;
       }
-      items.push({ id: item.id, catalogId: item.catalogId ?? null, publiccode });
+      items.push({ id: item.id, catalogId: item.catalogId ?? null, url: item.url ?? null, publiccode });
     }
 
     next = json.links?.next

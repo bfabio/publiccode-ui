@@ -4,6 +4,7 @@ import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-soli
 import { computeVitality } from "../lib/vitality";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
+import { forgeMetricUrl } from "../lib/forgeLinks";
 import { useCapWarningVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
@@ -20,9 +21,10 @@ interface Props {
   activity: SoftwareActivity;
   stats: CatalogStats | null;
   locale?: string;
+  repoUrl?: string | null;
 }
 
-export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en" }) => {
+export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en", repoUrl = null }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
@@ -50,6 +52,11 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
     [L.issuesOpen, "issuesOpen"],
     [L.issuesClosed, "issuesClosed"],
   ];
+  const forgeValue = (key: ForgeMetric, value: number) => {
+    const href = forgeMetricUrl(repoUrl, key);
+    const text = fmt(value, locale);
+    return href ? <a href={href} target="_blank" rel="noopener noreferrer">{text}</a> : text;
+  };
 
   return (
     <section className="software-metrics">
@@ -66,7 +73,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
                   <React.Fragment key={row.label}>
                     <dt>{row.label}</dt>
                     <dd className={fs.state === "value" ? undefined : "is-na"}>
-                      {fs.state === "value" ? fmt(fs.value, locale)
+                      {fs.state === "value" ? forgeValue(row.key, fs.value)
                         : fs.state === "unavailable" ? L.unavailable
                         : fs.state === "disabled" ? L.rowDisabled
                         : L.rowUnknown}
@@ -92,7 +99,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
                 <React.Fragment key={label}>
                   <dt>{label}</dt>
                   <dd className={fs.state === "value" ? undefined : "is-na"}>
-                    {fs.state === "value" ? fmt(fs.value, locale)
+                    {fs.state === "value" ? forgeValue(key, fs.value)
                       : fs.state === "unavailable" ? L.unavailable
                       : fs.state === "disabled" ? L.rowDisabled
                       : L.rowUnknown}
