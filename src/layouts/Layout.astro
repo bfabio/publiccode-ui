@@ -105,6 +105,9 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
           {themes.map((t) => (
             <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}</button></li>
           ))}
+          <li class="settings-menu-label" role="presentation">{t(locale, 'language')}</li>
+          <li role="none"><a href={enUrl} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English</a></li>
+          <li role="none"><a href={itUrl} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano</a></li>
         </ul>
       </div>
       <ActivityWeightsMenu client:load locale={locale} />
@@ -135,6 +138,12 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     }
     menu.hidden = !menu.hidden;
     btn.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+
+  menu.querySelectorAll('a[hreflang]').forEach((a) => {
+    a.addEventListener('click', () => {
+      a.href = a.href.split('?')[0] + location.search;
+    });
   });
 
   const weightsItem = document.getElementById('weights-menu-item');
@@ -221,15 +230,16 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     color: inherit;
     text-transform: capitalize;
     text-decoration: none;
+    white-space: nowrap;
   }
   #settings-menu button:hover,
   #settings-menu a:hover {
     background: var(--surface-btn-hover, rgba(0,0,0,0.05));
   }
-  #settings-menu button[aria-checked="true"] {
+  #settings-menu [aria-checked="true"] {
     font-weight: 600;
   }
-  #settings-menu button[aria-checked="true"]::after {
+  #settings-menu [aria-checked="true"]::after {
     content: ' *';
   }
   .settings-menu-label {
