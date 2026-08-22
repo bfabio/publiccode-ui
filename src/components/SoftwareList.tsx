@@ -331,6 +331,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         <input
           type="search"
           value={inputValue}
+          // eslint-disable-next-line jsx-a11y/no-autofocus -- the catalog page exists to be searched, so the field takes focus on load
           autoFocus
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={l.searchPlaceholder}
@@ -445,7 +446,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 {sorted.map((item) => {
                   const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
                   const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
-          const flag = catalogFlag(item.catalogSlug);
                   const v = item.activity
                     ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
                     : null;
