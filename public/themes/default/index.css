@@ -1129,6 +1129,28 @@ nav[aria-label="Breadcrumb"] li + li::before {
   margin-right: 0.4em;
   opacity: 0.5;
 }
+.software-metrics-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.software-detail section .software-metrics-head h2 {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.software-metrics-overview {
+  font-size: 13px;
+  font-weight: 510;
+  color: var(--accent-bright);
+  white-space: nowrap;
+}
 .software-detail section ul {
   margin: 0.5rem 0;
   padding-left: 20px;
@@ -1405,6 +1427,14 @@ dialog nav button:hover {
 }
 .vitality-badge.is-expanded {
   row-gap: 0;
+}
+.vitality-label {
+  grid-column: 1 / -1;
+  font-size: 10px;
+  font-weight: 510;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--text-quaternary);
 }
 .vitality-score {
   display: flex;

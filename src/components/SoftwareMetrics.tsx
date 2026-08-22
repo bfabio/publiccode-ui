@@ -22,9 +22,10 @@ interface Props {
   stats: CatalogStats | null;
   locale?: string;
   repoUrl?: string | null;
+  overview?: { href: string; label: string } | null;
 }
 
-export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en", repoUrl = null }) => {
+export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en", repoUrl = null, overview = null }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
@@ -60,7 +61,10 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
 
   return (
     <section className="software-metrics">
-      <h2><FontAwesomeIcon icon={faChartColumn} /> {L.section}</h2>
+      <div className="software-metrics-head">
+        <h2><FontAwesomeIcon icon={faChartColumn} /> {L.section}</h2>
+        {overview && <a className="software-metrics-overview" href={overview.href}>{overview.label}</a>}
+      </div>
 
       <div className="metrics-grid">
         <div className="metrics-group">
@@ -117,6 +121,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
       </p>
 
       <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${showCapWarning ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
+        <span className="vitality-label">{L.scoreLabel}</span>
         {result.overAllocated ? (
           <div className="vitality-score" title={L.overAllocatedTitle}>
             <span className="vitality-value is-over-allocated">?</span>

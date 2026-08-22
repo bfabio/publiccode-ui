@@ -57,6 +57,7 @@ const langNames = new Intl.DisplayNames([locale], { type: 'language' });
 const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
 const platforms = (pc.platforms ?? []).map(describePlatform);
 const repoUrl = forgeRepoUrl(software.url, pc.url);
+const activityOverview = { href: `${base}${locale === 'it' ? '/it' : ''}/software/activity/`, label: t(locale, 'activity_overview') };
 
 const medalEmoji = { gold: '\u{1F947}', silver: '\u{1F948}', bronze: '\u{1F949}' };
 const levels = ['gold', 'silver', 'bronze'];
@@ -215,7 +216,7 @@ const badgeRadar = makeRadar(
       </section>
     )}
 
-    {activity && <SoftwareMetrics client:visible softwareId={software.id} activity={activity} stats={stats} locale={locale} repoUrl={repoUrl} />}
+    {activity && <SoftwareMetrics client:visible softwareId={software.id} activity={activity} stats={stats} locale={locale} repoUrl={repoUrl} overview={activityOverview} />}
 
     {features.length > 0 && (
       <section class="software-features">
