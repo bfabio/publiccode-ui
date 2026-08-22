@@ -3,6 +3,7 @@ import type { DimensionKey } from './vitality';
 export const LABELS = {
   en: {
     section: "Activity",
+    scoreLabel: "Activity score",
     debugShow: "Show weight distribution",
     debugHide: "Hide weight distribution",
     groupCode: "Code",
@@ -81,6 +82,7 @@ export const LABELS = {
   },
   it: {
     section: "Attività",
+    scoreLabel: "Punteggio attività",
     debugShow: "Mostra distribuzione dei pesi",
     debugHide: "Nascondi distribuzione dei pesi",
     groupCode: "Codice",
