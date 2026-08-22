@@ -1169,3 +1169,28 @@ dialog nav button:hover {
   from { background-position: 120% 0, 0 0; }
   to { background-position: -120% 0, 0 0; }
 }
+
+@media (max-width: 640px) {
+  .catalog-results article,
+  .catalog-results article:not(:has(figure)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .catalog-results article .activity-index {
+    grid-column: 1;
+    grid-row: 2;
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    margin-left: 0;
+    padding: 0.5rem 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border-standard);
+    text-align: left;
+  }
+  .catalog-results article footer {
+    grid-row: 3;
+  }
+}

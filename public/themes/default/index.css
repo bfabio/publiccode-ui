@@ -1769,3 +1769,34 @@ dialog nav button:hover {
   height: 1em;
   opacity: 0.7;
 }
+
+@media (max-width: 640px) {
+  .catalog-results article {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .catalog-results article:not(:has(figure)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .catalog-results article .activity-index,
+  .catalog-results article:not(:has(figure)) .activity-index {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    padding: 0.5rem 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border-subtle);
+    text-align: left;
+  }
+  .catalog-results article footer {
+    grid-row: 3;
+  }
+  .catalog-toolbar select {
+    width: auto;
+    max-width: 100%;
+  }
+}
