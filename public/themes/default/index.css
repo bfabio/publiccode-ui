@@ -366,7 +366,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-weight: 510;
   margin-left: auto;
 }
-.catalog-filters .clear-filters {
+.clear-filters {
   font: inherit;
   font-size: 12px;
   font-weight: 510;
@@ -377,7 +377,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   padding: 4px 12px;
   cursor: pointer;
 }
-.catalog-filters .clear-filters:hover {
+.clear-filters:hover {
   color: var(--text-primary);
   border-color: var(--text-quaternary);
 }
@@ -404,9 +404,27 @@ nav[aria-label="Breadcrumb"] li + li::before {
 
 /* ── catalog: results ── */
 
-.catalog-results .no-results {
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: var(--text-tertiary);
   padding: 2rem 0;
+  text-align: center;
+}
+.no-results .clear-filters {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #fff;
+  background: var(--accent);
+  border-color: transparent;
+  border-radius: var(--radius-md);
+}
+.no-results .clear-filters:hover {
+  color: #fff;
+  background: var(--accent-hover);
+  border-color: transparent;
 }
 
 .catalog-results article {

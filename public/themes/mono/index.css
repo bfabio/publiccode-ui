@@ -299,7 +299,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-weight: 500;
   margin-left: auto;
 }
-.catalog-filters .clear-filters {
+.clear-filters {
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -311,7 +311,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   cursor: pointer;
   transition: all 0.15s;
 }
-.catalog-filters .clear-filters:hover {
+.clear-filters:hover {
   background: var(--accent);
   color: #fff;
 }
@@ -337,9 +337,23 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: #fff;
 }
 
-.catalog-results .no-results {
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   color: var(--text-tertiary);
   padding: 2rem 0;
+  text-align: center;
+}
+.no-results .clear-filters {
+  padding: 7px 16px;
+  color: #fff;
+  background: var(--text-primary);
+  border-color: transparent;
+}
+.no-results .clear-filters:hover {
+  background: var(--accent);
 }
 
 .catalog-results article {

@@ -262,6 +262,16 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   };
   const activeFilterCount =
     [category, status, softwareType, audience, catalog].filter(Boolean).length + (onlyActivity ? 1 : 0);
+  const hasActiveCriteria = Boolean(query) || activeFilterCount > 0;
+  const clearAll = () => {
+    setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog(""); setOnlyActivity(false);
+  };
+  const noResults = (
+    <p className="no-results">
+      {l.noResults}
+      {hasActiveCriteria && <button type="button" className="clear-filters" onClick={clearAll}>{l.clearFilters}</button>}
+    </p>
+  );
   const exportTableCsv = () => {
     const header = [l.colName ?? "Name", l.activityScore ?? "Activity score", ...DIMENSION_ORDER.map((key) => weightLabels.dim[key])];
     const rows = sorted.map((item) => {
@@ -331,7 +341,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {view === "list" && (
           <label className="sort-control">
             <span>{l.sortBy}</span>
-            <select value={effectiveSort} onChange={(e) => setSortBy(e.target.value as ListSortBy)}>
+            <select name="sort_by" value={effectiveSort} onChange={(e) => setSortBy(e.target.value as ListSortBy)}>
               <option value="release_date_desc">{l.sortReleaseDesc}</option>
               <option value="release_date_asc">{l.sortReleaseAsc}</option>
               <option value="name_asc">{l.sortNameAsc}</option>
@@ -374,44 +384,42 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       {filtersOpen && (
       <div className="catalog-filters" id="catalog-filters" role="group" aria-label={l.filters}>
         {catalogs && (
-          <select aria-label={l.allCatalogs ?? "All catalogs"} value={catalog} onChange={(e) => setCatalog(e.target.value)}>
+          <select name="catalog" aria-label={l.allCatalogs ?? "All catalogs"} value={catalog} onChange={(e) => setCatalog(e.target.value)}>
             <option value="">{l.allCatalogs ?? "All catalogs"}</option>
             {catalogs.map((c) => <option key={c.id} value={c.slug}>{[catalogFlag(c.slug), c.name].filter(Boolean).join(" ")}</option>)}
           </select>
         )}
-        <select aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select name="category" aria-label={l.allCategories} value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">{l.allCategories}</option>
           {allCategories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select aria-label={l.allStatuses} value={status} onChange={(e) => setStatus(e.target.value)}>
+        <select name="status" aria-label={l.allStatuses} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">{l.allStatuses}</option>
           {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select aria-label={l.allTypes} value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
+        <select name="type" aria-label={l.allTypes} value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
           <option value="">{l.allTypes}</option>
           {allTypes.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
-        <select aria-label={l.allAudiences} value={audience} onChange={(e) => setAudience(e.target.value)}>
+        <select name="audience" aria-label={l.allAudiences} value={audience} onChange={(e) => setAudience(e.target.value)}>
           <option value="">{l.allAudiences}</option>
           {allAudiences.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         {anyActivity && (
           <label className="filter-check">
-            <input type="checkbox" checked={onlyActivity} onChange={(e) => setOnlyActivity(e.target.checked)} />
+            <input type="checkbox" name="activity" checked={onlyActivity} onChange={(e) => setOnlyActivity(e.target.checked)} />
             {l.hasActivityData ?? "With vitality data"}
           </label>
         )}
-        {(query || category || status || softwareType || audience || catalog || onlyActivity) && (
-          <button type="button" className="clear-filters" onClick={() => {
-            setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog(""); setOnlyActivity(false);
-          }}>{l.clearFilters}</button>
+        {hasActiveCriteria && (
+          <button type="button" className="clear-filters" onClick={clearAll}>{l.clearFilters}</button>
         )}
       </div>
       )}
 
       {view === "table" ? (
         <div className="catalog-table-wrap">
-          {sorted.length === 0 ? <p className="no-results">{l.noResults}</p> : (
+          {sorted.length === 0 ? noResults : (
             <>
             <div className="catalog-table-toolbar">
               <button type="button" className="catalog-table-export" onClick={exportTableCsv}>
@@ -481,7 +489,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         </div>
       ) : (
       <section className="catalog-results">
-        {sorted.length === 0 && <p className="no-results">{l.noResults}</p>}
+        {sorted.length === 0 && noResults}
         {visibleItems.map((item) => {
           const itemActivityConfig = configFor(item.id);
           const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
