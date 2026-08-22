@@ -1121,13 +1121,13 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-weight: 590;
   letter-spacing: -0.165px;
   color: var(--text-primary);
+  margin-top: 2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 .software-detail section h2 svg {
   margin-right: 0.4em;
   opacity: 0.5;
-  margin-top: 2rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
 }
 .software-detail section ul {
   margin: 0.5rem 0;
