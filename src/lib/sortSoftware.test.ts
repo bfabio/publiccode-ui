@@ -73,3 +73,45 @@ describe("sortByScores", () => {
     expect(out.map((i) => i.id)).toEqual(["a", "b", "top", "none"]);
   });
 });
+
+describe("query tiebreak", () => {
+  it("orders same-date items by match rank, then name", () => {
+    const items = [
+      item("c", "Zeta open", "2026-01-01"),
+      item("a", "Open", "2026-01-01"),
+      item("b", "Openbao", "2026-01-01"),
+      item("d", "Alpha open", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open");
+    expect(out.map((i) => i.id)).toEqual(["a", "b", "d", "c"]);
+  });
+
+  it("never overrides the picked order", () => {
+    const items = [
+      item("old", "Open", "2020-01-01"),
+      item("new", "Zeta open", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open");
+    expect(out.map((i) => i.id)).toEqual(["new", "old"]);
+  });
+
+  it("orders equal and missing scores by match rank", () => {
+    const scores = new Map<string, number | null>([
+      ["b", 50],
+      ["a", 50],
+    ]);
+    const out = sortByScores(
+      [item("b", "Open"), item("a", "Zeta open"), item("y", "Alpha open"), item("x", "Openbao")],
+      scores,
+      "desc",
+      "open",
+    );
+    expect(out.map((i) => i.id)).toEqual(["b", "a", "x", "y"]);
+  });
+
+  it("without a query ties fall back to name", () => {
+    const items = [item("b", "Beta", "2026-01-01"), item("a", "Alpha", "2026-01-01")];
+    const out = sortItems(items, "release_date_desc");
+    expect(out.map((i) => i.id)).toEqual(["a", "b"]);
+  });
+});

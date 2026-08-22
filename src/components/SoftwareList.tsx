@@ -109,8 +109,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const [query, setQuery] = useState(() => readParam("q"));
-  const [sortBy, setSortBy] = useState<ListSortBy>(() =>
-    (readParam("sort_by") as ListSortBy) || (readParam("view") === "table" ? "activity_desc" : "release_date_desc"));
+  const [sortBy, setSortBy] = useState<ListSortBy | "">(() => readParam("sort_by") as ListSortBy | "");
   const [category, setCategory] = useState(() => readParam("category"));
   const [status, setStatus] = useState(() => readParam("status"));
   const [softwareType, setSoftwareType] = useState(() => readParam("type"));
@@ -124,6 +123,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [openScoreId, setOpenScoreId] = useState<string | null>(null);
   const [dataInfoOpen, setDataInfoOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
+  const defaultSort: ListSortBy = view === "table" ? "activity_desc" : "release_date_desc";
+  const effectiveSort: ListSortBy = sortBy || defaultSort;
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
@@ -131,12 +132,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy === "release_date_desc" ? "" : sortBy, view: view === "table" ? "table" : "" });
-  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy, view]);
+    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy && sortBy !== defaultSort ? sortBy : "", view: view === "table" ? "table" : "" });
+  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy, defaultSort, view]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
-  }, [deferredQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy]);
+  }, [deferredQuery, category, status, softwareType, audience, catalog, onlyActivity, effectiveSort]);
 
   useEffect(() => {
     if (!openScoreId) return;
@@ -212,7 +213,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const anyActivity = useMemo(() => items.some((i) => i.activity != null), [items]);
 
   const activityScores = useMemo(() => {
-    if (sortBy !== "activity_desc" && sortBy !== "activity_asc") return undefined;
+    if (effectiveSort !== "activity_desc" && effectiveSort !== "activity_asc") return undefined;
     const scores = new Map<string, number | null>();
     for (const i of items) {
       if (i.activity) {
@@ -220,11 +221,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       }
     }
     return scores;
-  }, [sortBy, items, statsByCatalog, globalStats, configFor]);
+  }, [effectiveSort, items, statsByCatalog, globalStats, configFor]);
 
   const dimensionScores = useMemo(() => {
-    if (!sortBy.startsWith("dim_")) return undefined;
-    const key = sortBy.slice(4, sortBy.lastIndexOf("_")) as DimensionKey;
+    if (!effectiveSort.startsWith("dim_")) return undefined;
+    const key = effectiveSort.slice(4, effectiveSort.lastIndexOf("_")) as DimensionKey;
     const scores = new Map<string, number | null>();
     for (const i of items) {
       if (i.activity) {
@@ -234,43 +235,29 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       }
     }
     return scores;
-  }, [sortBy, items, statsByCatalog, globalStats, configFor]);
+  }, [effectiveSort, items, statsByCatalog, globalStats, configFor]);
 
   const sorted = useMemo(() => {
-    if (deferredQuery) {
-      const q = deferredQuery.toLowerCase();
-      const rank = (i: SoftwareItem) => {
-        const n = i.nameLower;
-        if (n === q) return 0;
-        if (n.startsWith(q)) return 1;
-        return 2;
-      };
-      return [...filtered].sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+    if (effectiveSort.startsWith("dim_")) {
+      return dimensionScores ? sortByScores(filtered, dimensionScores, effectiveSort.endsWith("_asc") ? "asc" : "desc", deferredQuery) : filtered;
     }
-    if (sortBy.startsWith("dim_")) {
-      return dimensionScores ? sortByScores(filtered, dimensionScores, sortBy.endsWith("_asc") ? "asc" : "desc") : filtered;
-    }
-    return sortItems(filtered, sortBy as SortBy, activityScores);
-  }, [filtered, sortBy, deferredQuery, activityScores, dimensionScores]);
+    return sortItems(filtered, effectiveSort as SortBy, activityScores, deferredQuery);
+  }, [filtered, effectiveSort, deferredQuery, activityScores, dimensionScores]);
 
   const visibleItems = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
 
   const tableSortDirection = (col: TableColumn): "ascending" | "descending" | undefined => {
     const [primary, secondary] = tableSortsFor(col);
-    if (sortBy !== primary && sortBy !== secondary) return undefined;
-    return sortBy.endsWith("_asc") ? "ascending" : "descending";
+    if (effectiveSort !== primary && effectiveSort !== secondary) return undefined;
+    return effectiveSort.endsWith("_asc") ? "ascending" : "descending";
   };
   const toggleTableSort = (col: TableColumn) => {
     const [primary, secondary] = tableSortsFor(col);
-    setSortBy((current) => current === primary ? secondary : primary);
+    setSortBy(effectiveSort === primary ? secondary : primary);
   };
   const switchView = (next: "list" | "table") => {
-    if (next === "list" && sortBy.startsWith("dim_")) {
-      setSortBy("release_date_desc");
-    }
-    if (next === "table" && sortBy.startsWith("release_date")) {
-      setSortBy("activity_desc");
-    }
+    if (next === "list" && sortBy.startsWith("dim_")) setSortBy("");
+    if (next === "table" && sortBy.startsWith("release_date")) setSortBy("");
     setView(next);
   };
   const activeFilterCount =
@@ -343,7 +330,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {view === "list" && (
           <label className="sort-control">
             <span>{l.sortBy}</span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)}>
+            <select value={effectiveSort} onChange={(e) => setSortBy(e.target.value as ListSortBy)}>
               <option value="release_date_desc">{l.sortReleaseDesc}</option>
               <option value="release_date_asc">{l.sortReleaseAsc}</option>
               <option value="name_asc">{l.sortNameAsc}</option>
