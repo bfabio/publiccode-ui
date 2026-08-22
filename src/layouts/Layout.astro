@@ -44,23 +44,23 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     </script>
     <script is:inline>
       document.addEventListener('load', function(e) {
-        var i = e.target;
+        const i = e.target;
         if (!i.classList || !i.classList.contains('image-fallback')) return;
         i.style.visibility = 'visible';
-        var p = i.previousElementSibling;
+        const p = i.previousElementSibling;
         if (p) { p.style.display = 'none'; p.style.visibility = 'hidden'; }
-        var s = i.closest('.image-shell');
+        const s = i.closest('.image-shell');
         s.classList.remove('image-loading');
         s.classList.add('image-loaded');
         i.classList.add('image-loaded');
       }, true);
       document.addEventListener('error', function(e) {
-        var i = e.target;
+        const i = e.target;
         if (!i.classList || !i.classList.contains('image-fallback')) return;
-        var f = i.dataset.fallback;
+        const f = i.dataset.fallback;
         if (f && i.src !== f) { i.src = f; i.dataset.fallback = ''; return; }
         i.style.display = 'none';
-        var p = i.previousElementSibling;
+        const p = i.previousElementSibling;
         if (p) p.style.display = 'none';
         i.closest('.image-shell').classList.remove('image-loading');
       }, true);
@@ -100,10 +100,10 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
         </button>
         <ul id="settings-menu" role="menu" hidden>
           <li role="none"><a href={settingsHref} role="menuitem">{t(locale, 'settings')}</a></li>
-          <li role="none"><button type="button" role="menuitemcheckbox" id="weights-menu-item">{weightsLabel}</button></li>
+          <li role="none"><button type="button" role="menuitemcheckbox" aria-checked="false" id="weights-menu-item">{weightsLabel}</button></li>
           <li class="settings-menu-label" role="presentation">{t(locale, 'theme')}</li>
           {themes.map((t) => (
-            <li role="none"><button type="button" role="menuitemradio" data-theme={t}>{t}</button></li>
+            <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}</button></li>
           ))}
         </ul>
       </div>

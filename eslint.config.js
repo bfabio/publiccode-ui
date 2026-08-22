@@ -21,6 +21,12 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["dist/", ".astro/"],
+    rules: {
+      "no-empty": ["error", { allowEmptyCatch: true }],
+      "@typescript-eslint/no-unused-vars": ["error", { ignoreRestSiblings: true }],
+    },
+  },
+  {
+    ignores: ["dist/", ".astro/", ".worktrees/", ".wolf/"],
   },
 );

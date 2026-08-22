@@ -107,6 +107,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         type="search"
         value={inputValue}
         disabled={navigating}
+        // eslint-disable-next-line jsx-a11y/no-autofocus -- the home page exists to be searched, so the field takes focus on load
         autoFocus
         onChange={(e) => { update(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
         onKeyDown={handleKeyDown}

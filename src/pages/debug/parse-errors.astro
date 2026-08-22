@@ -83,6 +83,7 @@ for (const [entity, log] of latestByEntity) {
   const softwareId = entity.replace('/software/', '');
   entries.push({
     ...parsed,
+    repoUrl: parsed.repoUrl ?? softwareById.get(softwareId) ?? null,
     softwareId,
     createdAt: log.createdAt,
   });
