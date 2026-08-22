@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { base } from '../lib/url.js';
 ---
 
-<Layout title="Page not found">
+<Layout title="Page not found" breadcrumbs={[{ label: 'Home', href: base + '/' }, { label: 'Page not found' }]}>
   <h1>404</h1>
   <p>Page not found.</p>
+  <p><a href={`${base}/software/`}>Browse the software catalog</a></p>
 </Layout>
