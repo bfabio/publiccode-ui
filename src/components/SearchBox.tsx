@@ -105,6 +105,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
       <input
         ref={inputRef}
         type="search"
+        name="q"
         value={inputValue}
         disabled={navigating}
         // eslint-disable-next-line jsx-a11y/no-autofocus -- the home page exists to be searched, so the field takes focus on load

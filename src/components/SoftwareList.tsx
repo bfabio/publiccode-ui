@@ -317,6 +317,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       <div className="catalog-search">
         <input
           type="search"
+          name="q"
           value={inputValue}
           // eslint-disable-next-line jsx-a11y/no-autofocus -- the catalog page exists to be searched, so the field takes focus on load
           autoFocus
