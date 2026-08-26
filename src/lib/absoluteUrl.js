@@ -4,18 +4,17 @@ export function absoluteUrl(url, repoUrl) {
   if (!url) return null;
   if (/^https?:\/\//i.test(url)) return url;
 
-  try {
-    const repo = new URL(repoUrl.replace(/\.git$/, ''));
-    switch (repo.host.toLowerCase()) {
-      case 'github.com':
-        return 'https://raw.githubusercontent.com' + path.join(repo.pathname, 'HEAD', url);
-      case 'bitbucket.org':
-        return 'https://bitbucket.org' + path.join(repo.pathname, 'raw/HEAD', url);
-      default:
-        return `${repo.protocol}//${repo.hostname}` + path.join(repo.pathname, '-/raw/HEAD', url);
-    }
-  } catch {
-    return null;
+  const repoTarget = (repoUrl ?? '').replace(/\.git$/, '');
+  if (!URL.canParse(repoTarget)) return null;
+
+  const repo = new URL(repoTarget);
+  switch (repo.host.toLowerCase()) {
+    case 'github.com':
+      return 'https://raw.githubusercontent.com' + path.join(repo.pathname, 'HEAD', url);
+    case 'bitbucket.org':
+      return 'https://bitbucket.org' + path.join(repo.pathname, 'raw/HEAD', url);
+    default:
+      return `${repo.protocol}//${repo.hostname}` + path.join(repo.pathname, '-/raw/HEAD', url);
   }
 }
 
