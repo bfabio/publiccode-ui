@@ -564,68 +564,66 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
       color 0.2s ease,
       transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .vitality-weight-distribution:has(.vitality-weight-segment:hover, .vitality-weight-legend-item:hover)
-    :is(.vitality-weight-segment, .vitality-weight-legend-item > *) {
-    opacity: 0.3;
-    filter: saturate(0.4);
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors,
-  .vitality-weight-distribution:has(.is-history:hover) .vitality-weight-legend-item.is-history,
-  .vitality-weight-distribution:has(.is-activity:hover) .vitality-weight-legend-item.is-activity,
-  .vitality-weight-distribution:has(.is-stars:hover) .vitality-weight-legend-item.is-stars,
-  .vitality-weight-distribution:has(.is-forks:hover) .vitality-weight-legend-item.is-forks,
-  .vitality-weight-distribution:has(.is-issues:hover) .vitality-weight-legend-item.is-issues,
-  .vitality-weight-distribution:has(.is-free:hover) .vitality-weight-legend-item.is-free {
-    background: color-mix(in srgb, var(--dim-color) 18%, transparent);
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) :is(.is-contributors, .is-contributors > *),
-  .vitality-weight-distribution:has(.is-history:hover) :is(.is-history, .is-history > *),
-  .vitality-weight-distribution:has(.is-activity:hover) :is(.is-activity, .is-activity > *),
-  .vitality-weight-distribution:has(.is-stars:hover) :is(.is-stars, .is-stars > *),
-  .vitality-weight-distribution:has(.is-forks:hover) :is(.is-forks, .is-forks > *),
-  .vitality-weight-distribution:has(.is-issues:hover) :is(.is-issues, .is-issues > *),
-  .vitality-weight-distribution:has(.is-free:hover) :is(.is-free, .is-free > *) {
-    opacity: 1;
-    filter: none;
-    color: var(--text-primary, inherit);
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) .vitality-weight-segment.is-contributors,
-  .vitality-weight-distribution:has(.is-history:hover) .vitality-weight-segment.is-history,
-  .vitality-weight-distribution:has(.is-activity:hover) .vitality-weight-segment.is-activity,
-  .vitality-weight-distribution:has(.is-stars:hover) .vitality-weight-segment.is-stars,
-  .vitality-weight-distribution:has(.is-forks:hover) .vitality-weight-segment.is-forks,
-  .vitality-weight-distribution:has(.is-issues:hover) .vitality-weight-segment.is-issues {
-    filter: brightness(1.1) saturate(1.2);
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) .vitality-weight-segment.is-contributors::after,
-  .vitality-weight-distribution:has(.is-history:hover) .vitality-weight-segment.is-history::after,
-  .vitality-weight-distribution:has(.is-activity:hover) .vitality-weight-segment.is-activity::after,
-  .vitality-weight-distribution:has(.is-stars:hover) .vitality-weight-segment.is-stars::after,
-  .vitality-weight-distribution:has(.is-forks:hover) .vitality-weight-segment.is-forks::after,
-  .vitality-weight-distribution:has(.is-issues:hover) .vitality-weight-segment.is-issues::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 25%, rgb(255 255 255 / 55%) 50%, transparent 75%);
-    animation: weight-shimmer 1.1s ease infinite;
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) .vitality-weight-legend-swatch.is-contributors,
-  .vitality-weight-distribution:has(.is-history:hover) .vitality-weight-legend-swatch.is-history,
-  .vitality-weight-distribution:has(.is-activity:hover) .vitality-weight-legend-swatch.is-activity,
-  .vitality-weight-distribution:has(.is-stars:hover) .vitality-weight-legend-swatch.is-stars,
-  .vitality-weight-distribution:has(.is-forks:hover) .vitality-weight-legend-swatch.is-forks,
-  .vitality-weight-distribution:has(.is-issues:hover) .vitality-weight-legend-swatch.is-issues {
-    box-shadow: 0 0 6px var(--dim-color);
-    transform: scale(1.4);
-  }
-  .vitality-weight-distribution:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors > .vitality-weight-legend-value,
-  .vitality-weight-distribution:has(.is-history:hover) .vitality-weight-legend-item.is-history > .vitality-weight-legend-value,
-  .vitality-weight-distribution:has(.is-activity:hover) .vitality-weight-legend-item.is-activity > .vitality-weight-legend-value,
-  .vitality-weight-distribution:has(.is-stars:hover) .vitality-weight-legend-item.is-stars > .vitality-weight-legend-value,
-  .vitality-weight-distribution:has(.is-forks:hover) .vitality-weight-legend-item.is-forks > .vitality-weight-legend-value,
-  .vitality-weight-distribution:has(.is-issues:hover) .vitality-weight-legend-item.is-issues > .vitality-weight-legend-value {
-    transform: scale(1.25);
-    transform-origin: right center;
+  .vitality-weight-distribution {
+    &:has(.vitality-weight-segment:hover, .vitality-weight-legend-item:hover)
+      :is(.vitality-weight-segment, .vitality-weight-legend-item > *) {
+      opacity: 0.3;
+      filter: saturate(0.4);
+    }
+    &:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors,
+    &:has(.is-history:hover) .vitality-weight-legend-item.is-history,
+    &:has(.is-activity:hover) .vitality-weight-legend-item.is-activity,
+    &:has(.is-stars:hover) .vitality-weight-legend-item.is-stars,
+    &:has(.is-forks:hover) .vitality-weight-legend-item.is-forks,
+    &:has(.is-issues:hover) .vitality-weight-legend-item.is-issues,
+    &:has(.is-free:hover) .vitality-weight-legend-item.is-free {
+      background: color-mix(in srgb, var(--dim-color) 18%, transparent);
+    }
+    &:has(.is-contributors:hover) :is(.is-contributors, .is-contributors > *),
+    &:has(.is-history:hover) :is(.is-history, .is-history > *),
+    &:has(.is-activity:hover) :is(.is-activity, .is-activity > *),
+    &:has(.is-stars:hover) :is(.is-stars, .is-stars > *),
+    &:has(.is-forks:hover) :is(.is-forks, .is-forks > *),
+    &:has(.is-issues:hover) :is(.is-issues, .is-issues > *),
+    &:has(.is-free:hover) :is(.is-free, .is-free > *) {
+      opacity: 1;
+      filter: none;
+      color: var(--text-primary, inherit);
+    }
+    &:has(.is-contributors:hover) .vitality-weight-segment.is-contributors,
+    &:has(.is-history:hover) .vitality-weight-segment.is-history,
+    &:has(.is-activity:hover) .vitality-weight-segment.is-activity,
+    &:has(.is-stars:hover) .vitality-weight-segment.is-stars,
+    &:has(.is-forks:hover) .vitality-weight-segment.is-forks,
+    &:has(.is-issues:hover) .vitality-weight-segment.is-issues {
+      filter: brightness(1.1) saturate(1.2);
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(105deg, transparent 25%, rgb(255 255 255 / 55%) 50%, transparent 75%);
+        animation: weight-shimmer 1.1s ease infinite;
+      }
+    }
+    &:has(.is-contributors:hover) .vitality-weight-legend-swatch.is-contributors,
+    &:has(.is-history:hover) .vitality-weight-legend-swatch.is-history,
+    &:has(.is-activity:hover) .vitality-weight-legend-swatch.is-activity,
+    &:has(.is-stars:hover) .vitality-weight-legend-swatch.is-stars,
+    &:has(.is-forks:hover) .vitality-weight-legend-swatch.is-forks,
+    &:has(.is-issues:hover) .vitality-weight-legend-swatch.is-issues {
+      box-shadow: 0 0 6px var(--dim-color);
+      transform: scale(1.4);
+    }
+    &:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors > .vitality-weight-legend-value,
+    &:has(.is-history:hover) .vitality-weight-legend-item.is-history > .vitality-weight-legend-value,
+    &:has(.is-activity:hover) .vitality-weight-legend-item.is-activity > .vitality-weight-legend-value,
+    &:has(.is-stars:hover) .vitality-weight-legend-item.is-stars > .vitality-weight-legend-value,
+    &:has(.is-forks:hover) .vitality-weight-legend-item.is-forks > .vitality-weight-legend-value,
+    &:has(.is-issues:hover) .vitality-weight-legend-item.is-issues > .vitality-weight-legend-value {
+      transform: scale(1.25);
+      transform-origin: right center;
+    }
   }
   @keyframes weight-shimmer {
     from { transform: translateX(-100%); }
