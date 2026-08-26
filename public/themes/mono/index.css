@@ -421,7 +421,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   margin: 4px 0 6px;
   color: var(--text-tertiary);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.5;  hyphens: auto;
 }
 .catalog-results article footer {
   position: relative;
