@@ -701,6 +701,15 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     color: var(--text-tertiary, #666);
     white-space: nowrap;
   }
+  /* The SSG list renders without JS, but search, filters, sorting and
+     load-more only work after hydration: hide the dead controls. */
+  @media (scripting: none) {
+    .catalog-toolbar,
+    .view-toggle,
+    .catalog-more {
+      display: none;
+    }
+  }
   /* SSG always emits the list view; hide it pre-hydration when the URL
      asks for the table, so back-navigation shows no list flash. */
   html[data-catalog-view="table"] :is(.catalog-results, .catalog-more, .sort-control) {
