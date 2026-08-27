@@ -1110,7 +1110,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .software-meta dt {
   font-size: 12px;
   font-weight: 510;
-  text-transform: uppercase;
   color: var(--text-quaternary);
   letter-spacing: 0.3px;
   white-space: nowrap;
