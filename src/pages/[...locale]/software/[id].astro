@@ -160,8 +160,9 @@ const badgeRadar = makeRadar(
       {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
-    {allBadges.length > 0 && (
-      <section class="software-badges opencode-badges" aria-label={t(locale, 'badges')}>
+    {(allBadges.length > 0 || activity) && (
+      <section class="software-badges opencode-badges" aria-label={allBadges.length > 0 ? t(locale, 'badges') : t(locale, 'activity_score')}>
+        {allBadges.length > 0 && (
         <div class="opencode-badge-list">
           {allBadges.map((badge) => (
             <Fragment>
@@ -185,14 +186,18 @@ const badgeRadar = makeRadar(
             </Fragment>
           ))}
         </div>
-        <button class="badge badge-chart" type="button" popovertarget="radar-popover" style="anchor-name: --radar-button" aria-label={t(locale, 'badges')}>
+        )}
+        <button class="badge badge-chart" type="button" popovertarget="radar-popover" style="anchor-name: --radar-button" aria-label={allBadges.length > 0 ? t(locale, 'badges') : t(locale, 'activity_score')}>
           <Fragment set:html={faIcon('chart-pie')} />
         </button>
         <div id="radar-popover" popover style="position-anchor: --radar-button" data-radar-tabs>
-          <div class="radar-tabs" role="tablist" aria-label={t(locale, 'badges')}>
+          <div class="radar-tabs" role="tablist" aria-label={allBadges.length > 0 ? t(locale, 'badges') : t(locale, 'activity_score')}>
+            {allBadges.length > 0 && (
             <button id="radar-tab-badges" class="radar-tab" type="button" role="tab" aria-selected="true" aria-controls="radar-panel-badges" data-radar-tab="badges">{t(locale, 'badges')}</button>
-            <button id="radar-tab-activity" class="radar-tab" type="button" role="tab" aria-selected="false" aria-controls="radar-panel-activity" data-radar-tab="activity">{t(locale, 'activity_score')}</button>
+            )}
+            <button id="radar-tab-activity" class="radar-tab" type="button" role="tab" aria-selected={allBadges.length > 0 ? 'false' : 'true'} aria-controls="radar-panel-activity" data-radar-tab="activity">{t(locale, 'activity_score')}</button>
           </div>
+          {allBadges.length > 0 && (
           <div id="radar-panel-badges" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-badges" data-radar-panel="badges">
             <svg class="radar-chart" viewBox={`0 0 ${radarSize} ${radarSize}`} role="img" aria-label={t(locale, 'badges')}>
               {badgeRadar.grid.map((points) => <polygon points={points} class="radar-ring" />)}
@@ -207,7 +212,8 @@ const badgeRadar = makeRadar(
               })}
             </svg>
           </div>
-          <div id="radar-panel-activity" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-activity" data-radar-panel="activity" hidden>
+          )}
+          <div id="radar-panel-activity" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-activity" data-radar-panel="activity" hidden={allBadges.length > 0}>
             {activity
               ? <ActivityRadar client:load softwareId={software.id} activity={activity} stats={stats} locale={locale} />
               : <p class="radar-empty">{t(locale, 'no_activity_data')}</p>}
@@ -286,6 +292,12 @@ const badgeRadar = makeRadar(
           panel.hidden = panel.dataset.radarPanel !== active;
         }
       });
+    }
+    // The badges preference can hide the tab the page selected at
+    // build time, leaving the popover empty until a click.
+    const selected = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+    if (selected && getComputedStyle(selected).display === 'none') {
+      tabs.find((tab) => getComputedStyle(tab).display !== 'none')?.click();
     }
   });
 </script>
