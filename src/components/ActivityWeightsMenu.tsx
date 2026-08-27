@@ -16,6 +16,9 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   const [open, setOpen] = useState(() => {
     try { return sessionStorage.getItem("activity-drawer") === "1"; } catch { return false; }
   });
+  // A drawer restored at page load must not replay its entrance, so the
+  // slide-in only arms once the user toggles it in this page view.
+  const [animated, setAnimated] = useState(false);
   const {
     config,
     ready,
@@ -29,13 +32,14 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   const shown = open && debugEnabled;
 
   useEffect(() => {
-    const onToggle = () => setOpen((o) => !o);
+    const onToggle = () => { setAnimated(true); setOpen((o) => !o); };
     document.addEventListener("activity-weights-toggle", onToggle);
     return () => document.removeEventListener("activity-weights-toggle", onToggle);
   }, []);
 
   useEffect(() => {
     document.documentElement.toggleAttribute("data-activity-drawer", shown);
+    document.documentElement.toggleAttribute("data-activity-drawer-anim", shown && animated);
     try { sessionStorage.setItem("activity-drawer", open ? "1" : "0"); } catch {}
     if (!shown) return;
     const onKey = (e: KeyboardEvent) => {
@@ -44,9 +48,10 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
     document.addEventListener("keydown", onKey);
     return () => {
       document.documentElement.removeAttribute("data-activity-drawer");
+      document.documentElement.removeAttribute("data-activity-drawer-anim");
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, shown]);
+  }, [open, shown, animated]);
 
   const confirmReset = () => {
     if (window.confirm(L.resetConfirmation)) reset();
@@ -56,7 +61,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   return (
     <>
       {shown && (
-        <div className={`activity-weights-drawer${ready ? "" : " is-loading"}`} role="dialog" aria-label={L.globalWeights}>
+        <div className={`activity-weights-drawer${ready ? "" : " is-loading"}${animated ? " is-anim" : ""}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
             <h3>{L.globalWeights}</h3>
           </div>

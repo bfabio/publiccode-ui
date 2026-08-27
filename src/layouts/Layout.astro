@@ -273,9 +273,35 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
 <style is:global>
   :root {
     --activity-drawer-width: 340px;
+    --activity-drawer-spring: linear(
+      0, 0.019 2.9%, 0.076 5.9%, 0.191 10%, 0.358 15%, 0.547 20%,
+      0.726 25%, 0.879 30.7%, 0.984 36.4%, 1.046 42.4%, 1.072 48.6%,
+      1.071 55%, 1.05 62%, 1.019 70.4%, 0.999 79.5%, 0.995 88.7%, 1
+    );
+  }
+  @keyframes activity-drawer-in {
+    from { transform: translateX(100%); }
+  }
+  body {
+    transition: margin-right 250ms ease;
   }
   html[data-activity-drawer] body {
     margin-right: var(--activity-drawer-width);
+    transition: margin-right 550ms ease-out;
+  }
+  html[data-activity-drawer-anim]::after,
+  .activity-weights-drawer.is-anim {
+    animation: activity-drawer-in 550ms var(--activity-drawer-spring);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body,
+    html[data-activity-drawer] body {
+      transition: none;
+    }
+    html[data-activity-drawer-anim]::after,
+    .activity-weights-drawer.is-anim {
+      animation: none;
+    }
   }
   html[data-activity-drawer]::after {
     content: '';
