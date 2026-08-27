@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
@@ -32,12 +34,6 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   const shown = open && debugEnabled;
 
   useEffect(() => {
-    const onToggle = () => { setAnimated(true); setOpen((o) => !o); };
-    document.addEventListener("activity-weights-toggle", onToggle);
-    return () => document.removeEventListener("activity-weights-toggle", onToggle);
-  }, []);
-
-  useEffect(() => {
     document.documentElement.toggleAttribute("data-activity-drawer", shown);
     document.documentElement.toggleAttribute("data-activity-drawer-anim", shown && animated);
     try { sessionStorage.setItem("activity-drawer", open ? "1" : "0"); } catch {}
@@ -60,6 +56,17 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
 
   return (
     <>
+      <button
+        type="button"
+        className="activity-weights-btn"
+        aria-label={L.globalWeights}
+        title={L.globalWeights}
+        aria-haspopup="dialog"
+        aria-expanded={shown}
+        onClick={() => { setAnimated(true); setOpen((o) => !o); }}
+      >
+        <FontAwesomeIcon icon={faSliders} />
+      </button>
       {shown && (
         <div className={`activity-weights-drawer${ready ? "" : " is-loading"}${animated ? " is-anim" : ""}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
