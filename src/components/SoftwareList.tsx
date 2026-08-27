@@ -6,11 +6,11 @@ import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
 import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
 import { toCsv } from "../lib/csv";
-import { useActivityConfigs, useCapWarningVisibility, useListWeightDistributionVisibility } from "../lib/useVitalityConfig";
+import { useActivityConfigs, useCapWarningVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
-import { VitalityWeightDistribution, VitalityWeightsWidget } from "./VitalityWeightsWidget";
+import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
 import { catalogFlag } from "../lib/catalogFlags";
 
 function highlight(text: string, query: string) {
@@ -104,7 +104,6 @@ const tableSortsFor = (col: TableColumn): [ListSortBy, ListSortBy] => {
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null; title?: string }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats, title }) => {
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
-  const { enabled: listWeightDistributionEnabled, ready: listWeightDistributionReady } = useListWeightDistributionVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
@@ -541,20 +540,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <div className="activity-index is-loading" aria-busy="true" aria-label={l.activityScore ?? "Activity score"}>
                     <span className="activity-index-skeleton-label" aria-hidden="true" />
                     <span className="activity-index-skeleton-value" aria-hidden="true" />
-                    <div className="software-weight-distribution activity-index-skeleton-distribution" aria-hidden="true">
-                      <div className="vitality-weight-distribution">
-                        <div className="vitality-weight-bar" />
-                        <div className="vitality-weight-legend">
-                          {DIMENSION_ORDER.map((key) => (
-                            <span key={key} className="vitality-weight-legend-item">
-                              <span className="vitality-weight-legend-swatch" />
-                              <span className="vitality-weight-legend-label">&nbsp;</span>
-                              <span className="vitality-weight-legend-value">&nbsp;</span>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 );
               }
@@ -615,11 +600,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   </div>
                 </div>
               ) : null;
-              const weightDistribution = listWeightDistributionReady && listWeightDistributionEnabled ? (
-                <div className="software-weight-distribution">
-                  <VitalityWeightDistribution config={activityConfig} labels={weightLabels} result={v} />
-                </div>
-              ) : null;
               if (v.score100 === null) {
                 return (
                   <div className="activity-index">
@@ -630,7 +610,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                     <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>
                       {v.overAllocated ? "?" : "n/a"}
                     </span>
-                    {weightDistribution}
                     {scorePanel}
                   </div>
                 );
@@ -654,7 +633,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <span className={`activity-badge${custom ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
                     {Math.round(v.score100)}
                   </span>
-                    {weightDistribution}
                     {scorePanel}
                   </div>
               );
