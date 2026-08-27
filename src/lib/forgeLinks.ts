@@ -44,17 +44,20 @@ function forgeKind(host: string): ForgeKind | null {
   return "gitlab";
 }
 
+// Star lists (stargazers, starrers) sit behind a login on some hosts,
+// so stars point at the repo home with a text fragment on the count.
+// The github forks page hides inactive forks unless asked not to.
 const PATHS: Record<ForgeKind, Record<ForgeMetric, string>> = {
   github: {
-    stars: "/stargazers",
-    forks: "/forks",
+    stars: "#:~:text=stars",
+    forks: "/forks?include=active%2Cinactive&page=1&period=&sort_by=stargazer_counts",
     issuesOpen: "/issues?q=is%3Aissue+is%3Aopen",
     issuesClosed: "/issues?q=is%3Aissue+is%3Aclosed",
     pullRequestsAllTime: "/pulls?q=is%3Apr",
     pullRequestsRecent: "/pulls?q=is%3Apr+sort%3Acreated-desc",
   },
   gitlab: {
-    stars: "/-/starrers",
+    stars: "#:~:text=stars",
     forks: "/-/forks",
     issuesOpen: "/-/issues/?state=opened",
     issuesClosed: "/-/issues/?state=closed",
@@ -62,7 +65,7 @@ const PATHS: Record<ForgeKind, Record<ForgeMetric, string>> = {
     pullRequestsRecent: "/-/merge_requests?state=all&sort=created_date",
   },
   gitea: {
-    stars: "/stars",
+    stars: "#:~:text=stars",
     forks: "/forks",
     issuesOpen: "/issues?state=open",
     issuesClosed: "/issues?state=closed",
