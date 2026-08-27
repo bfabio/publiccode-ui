@@ -358,10 +358,22 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   .activity-weights-drawer .vitality-debug {
     width: 100%;
   }
+  .activity-weights-drawer .vitality-debug th:last-child,
+  .activity-weights-drawer .vitality-debug td:last-child {
+    text-align: right;
+  }
   .activity-weights-drawer .vitality-split {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: max-content max-content max-content;
+    justify-content: end;
     row-gap: 6px;
-    padding-left: 12px;
+    padding: 10px 4px 12px;
+  }
+  .activity-weights-drawer .vitality-split label {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
   }
   :root[data-activity-debug-hidden] .activity-weights-btn,
   :root[data-activity-debug-hidden] .activity-custom-toggle,
