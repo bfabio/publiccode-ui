@@ -1,7 +1,6 @@
 import React from "react";
 import {
   useCapWarningVisibility,
-  useListWeightDistributionVisibility,
   useOpenCodeBadgeVisibility,
 } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
@@ -40,17 +39,12 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
     setEnabled: setCapWarningsEnabled,
   } = useCapWarningVisibility();
   const {
-    enabled: listWeightDistributionEnabled,
-    ready: listWeightDistributionReady,
-    setEnabled: setListWeightDistributionEnabled,
-  } = useListWeightDistributionVisibility();
-  const {
     enabled: openCodeBadgesEnabled,
     ready: openCodeBadgesReady,
     setEnabled: setOpenCodeBadgesEnabled,
   } = useOpenCodeBadgeVisibility();
 
-  const ready = capWarningsReady && listWeightDistributionReady && openCodeBadgesReady;
+  const ready = capWarningsReady && openCodeBadgesReady;
 
   return (
     <section className={`software-metrics activity-settings${ready ? "" : " is-loading"}`}>
@@ -59,11 +53,6 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
           label={L.capWarning}
           enabled={capWarningsEnabled}
           onToggle={() => setCapWarningsEnabled(!capWarningsEnabled)}
-        />
-        <PreferenceToggle
-          label={L.listWeightDistribution}
-          enabled={listWeightDistributionEnabled}
-          onToggle={() => setListWeightDistributionEnabled(!listWeightDistributionEnabled)}
         />
         <PreferenceToggle
           label={L.openCodeBadges}

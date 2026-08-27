@@ -75,9 +75,6 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
       }
       document.documentElement.dataset.catalogView =
         new URLSearchParams(location.search).get('view') === 'table' ? 'table' : 'list';
-      if (localStorage.getItem('publiccode-ui:list-weight-distribution') === '1') {
-        document.documentElement.dataset.listWeightDistribution = '1';
-      }
     </script>
     <link rel="alternate" hreflang="en" href={enUrl} />
     <link rel="alternate" hreflang="it" href={itUrl} />
@@ -665,29 +662,6 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     margin: 0 0 2rem;
   }
   .activity-settings .activity-preferences .settings-preference { margin: 0; }
-  .catalog-results .activity-index .software-weight-distribution {
-    align-self: stretch;
-    width: 100%;
-    margin: 0;
-  }
-  .catalog-results .activity-index .vitality-weight-distribution {
-    width: 100%;
-    margin: 0.4rem 0 0;
-  }
-  .catalog-results .activity-index .software-weight-distribution .vitality-weight-bar {
-    box-sizing: border-box;
-    width: 100%;
-    height: 6px;
-  }
-  .activity-index-skeleton-distribution {
-    display: none;
-  }
-  html[data-list-weight-distribution="1"] .activity-index-skeleton-distribution {
-    display: block;
-  }
-  .activity-index-skeleton-distribution .vitality-weight-legend-swatch {
-    background: var(--skeleton-shimmer, rgb(0 0 0 / 8%));
-  }
   output.catalog-result-count {
     position: relative;
   }
