@@ -18,7 +18,6 @@ export const LABELS = {
     forks: "Forks",
     issuesOpen: "Open issues",
     issuesClosed: "Closed issues",
-    tags: "Tags",
     oldestCommit: "First commit",
     dim: {
       contributors: "Contributors",
@@ -97,7 +96,6 @@ export const LABELS = {
     forks: "Fork",
     issuesOpen: "Issue aperte",
     issuesClosed: "Issue chiuse",
-    tags: "Tag",
     oldestCommit: "Primo commit",
     dim: {
       contributors: "Contributori",
