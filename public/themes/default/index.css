@@ -1114,12 +1114,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
-.software-meta dt svg {
-  width: 1.25em;
-  text-align: center;
-  margin-right: 0.5em;
-  opacity: 0.7;
-}
 .software-meta dd {
   margin: 0;
   font-size: 14px;

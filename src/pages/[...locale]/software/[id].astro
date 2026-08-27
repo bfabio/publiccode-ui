@@ -150,14 +150,14 @@ const badgeRadar = makeRadar(
     </header>
 
     <dl class="software-meta">
-      {multiCatalog && catalogName && <><dt><Fragment set:html={faIcon('layer-group')} /> {t(locale, 'catalog_label')}</dt><dd>{flag && <span class="catalog-flag" aria-hidden="true">{flag}</span>}{catalogName}</dd></>}
-      {license && <><dt><Fragment set:html={faIcon('gavel')} /> {t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url} target="_blank" rel="noopener noreferrer">{license.name}</a> : license.name}</dd></>}
-      {release && <><dt><Fragment set:html={faIcon('calendar', 'far')} /> {t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
-      {pc.developmentStatus && <><dt><Fragment set:html={faIcon('circle-info')} /> {t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
-      {pc.softwareType && <><dt><Fragment set:html={faIcon('cube')} /> {t(locale, 'software_type')}</dt><dd>{t(locale, 'type_' + pc.softwareType)}</dd></>}
-      {pc.maintenance?.type && <><dt><Fragment set:html={faIcon('wrench')} /> {t(locale, 'maintenance_type')}</dt><dd>{t(locale, 'maintenance_' + pc.maintenance.type)}</dd></>}
-      {platforms.length > 0 && <><dt><Fragment set:html={faIcon('desktop')} /> {t(locale, 'platforms')}</dt><dd class="platform-list">{platforms.map((p) => <span class="platform">{p.icon && <Fragment set:html={faIcon(p.icon.name, p.icon.prefix)} />}{p.label}</span>)}</dd></>}
-      {languages.length > 0 && <><dt><Fragment set:html={faIcon('language')} /> {t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
+      {multiCatalog && catalogName && <><dt>{t(locale, 'catalog_label')}</dt><dd>{flag && <span class="catalog-flag" aria-hidden="true">{flag}</span>}{catalogName}</dd></>}
+      {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url} target="_blank" rel="noopener noreferrer">{license.name}</a> : license.name}</dd></>}
+      {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} title={release.formatted}>{release.relative}</time></dd></>}
+      {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
+      {pc.softwareType && <><dt>{t(locale, 'software_type')}</dt><dd>{t(locale, 'type_' + pc.softwareType)}</dd></>}
+      {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{t(locale, 'maintenance_' + pc.maintenance.type)}</dd></>}
+      {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd class="platform-list">{platforms.map((p) => <span class="platform">{p.icon && <Fragment set:html={faIcon(p.icon.name, p.icon.prefix)} />}{p.label}</span>)}</dd></>}
+      {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
     {allBadges.length > 0 && (
