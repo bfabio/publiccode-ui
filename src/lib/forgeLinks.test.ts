@@ -27,8 +27,8 @@ describe("forgeRepoUrl", () => {
 describe("forgeMetricUrl", () => {
   const gh = "https://github.com/a/b";
   it("maps github metrics to their pages", () => {
-    expect(forgeMetricUrl(gh, "stars")).toBe(`${gh}/stargazers`);
-    expect(forgeMetricUrl(gh, "forks")).toBe(`${gh}/forks`);
+    expect(forgeMetricUrl(gh, "stars")).toBe(`${gh}#:~:text=stars`);
+    expect(forgeMetricUrl(gh, "forks")).toBe(`${gh}/forks?include=active%2Cinactive&page=1&period=&sort_by=stargazer_counts`);
     expect(forgeMetricUrl(gh, "issuesOpen")).toBe(`${gh}/issues?q=is%3Aissue+is%3Aopen`);
     expect(forgeMetricUrl(gh, "issuesClosed")).toBe(`${gh}/issues?q=is%3Aissue+is%3Aclosed`);
     expect(forgeMetricUrl(gh, "pullRequestsAllTime")).toBe(`${gh}/pulls?q=is%3Apr`);
@@ -37,7 +37,7 @@ describe("forgeMetricUrl", () => {
 
   it("maps gitlab metrics, any gitlab host", () => {
     const gl = "https://gitlab.opencode.de/g/sub/p";
-    expect(forgeMetricUrl(gl, "stars")).toBe(`${gl}/-/starrers`);
+    expect(forgeMetricUrl(gl, "stars")).toBe(`${gl}#:~:text=stars`);
     expect(forgeMetricUrl(gl, "forks")).toBe(`${gl}/-/forks`);
     expect(forgeMetricUrl(gl, "issuesOpen")).toBe(`${gl}/-/issues/?state=opened`);
     expect(forgeMetricUrl(gl, "issuesClosed")).toBe(`${gl}/-/issues/?state=closed`);
@@ -47,7 +47,7 @@ describe("forgeMetricUrl", () => {
 
   it("maps gitea hosts", () => {
     const gt = "https://codeberg.org/o/r";
-    expect(forgeMetricUrl(gt, "stars")).toBe(`${gt}/stars`);
+    expect(forgeMetricUrl(gt, "stars")).toBe(`${gt}#:~:text=stars`);
     expect(forgeMetricUrl(gt, "forks")).toBe(`${gt}/forks`);
     expect(forgeMetricUrl(gt, "issuesOpen")).toBe(`${gt}/issues?state=open`);
     expect(forgeMetricUrl(gt, "issuesClosed")).toBe(`${gt}/issues?state=closed`);
