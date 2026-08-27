@@ -2,7 +2,7 @@ import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faDownload, faFilter, faGavel, faList, faRotateLeft, faSliders, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { formatDate } from "../lib/date.js";
+import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
 import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
 import { toCsv } from "../lib/csv";
@@ -122,6 +122,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
   const [openScoreId, setOpenScoreId] = useState<string | null>(null);
   const [dataInfoOpen, setDataInfoOpen] = useState(false);
+  // SSG bakes absolute dates; relative wording renders only after
+  // hydration so the first client render matches the server HTML
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const deferredQuery = useDeferredValue(query);
   const defaultSort: ListSortBy = view === "table" ? "activity_desc" : "release_date_desc";
   const effectiveSort: ListSortBy = sortBy || defaultSort;
@@ -521,7 +525,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               </ul>
               {item.releaseDate && (() => {
                 const d = formatDate(item.releaseDate, locale);
-                return d ? <span className="card-date"><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={d.formatted}>{d.relative}</time></span> : null;
+                return d ? <span className="card-date"><FontAwesomeIcon icon={faCalendar} /> <time dateTime={d.datetime} title={hydrated ? d.formatted : undefined}>{hydrated ? relativeDate(item.releaseDate, locale) : d.formatted}</time></span> : null;
               })()}
               {item.license && (
                 item.license.url

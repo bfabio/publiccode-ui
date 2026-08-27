@@ -54,7 +54,7 @@ const fmtNum = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 
           {updated && (
             <Fragment>
               {t(locale, 'last_updated')}:{' '}
-              <time datetime={updated.datetime} title={updated.formatted}>{updated.relative}</time>
+              <time datetime={updated.datetime} data-relative>{updated.formatted}</time>
               {' · '}
             </Fragment>
           )}

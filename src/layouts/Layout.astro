@@ -115,6 +115,17 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     <main>
       <slot />
     </main>
+    <script>
+      import { relativeDate } from "../lib/date.js";
+
+      const locale = document.documentElement.lang || "en";
+      for (const el of document.querySelectorAll("time[data-relative]")) {
+        const rel = relativeDate(el.getAttribute("datetime"), locale);
+        if (!rel) continue;
+        el.title = el.textContent ?? "";
+        el.textContent = rel;
+      }
+    </script>
   </body>
 </html>
 
