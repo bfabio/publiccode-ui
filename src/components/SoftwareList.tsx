@@ -6,7 +6,7 @@ import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
 import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
 import { toCsv } from "../lib/csv";
-import { useActivityConfigs, useCapWarningVisibility } from "../lib/useVitalityConfig";
+import { useActivityConfigs, useActivityDebugVisibility, useCapWarningVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
@@ -104,6 +104,7 @@ const tableSortsFor = (col: TableColumn): [ListSortBy, ListSortBy] => {
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null; title?: string }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats, title }) => {
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
+  const { enabled: debugEnabled } = useActivityDebugVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
@@ -560,14 +561,14 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   setOpenScoreId(null);
                 }
               };
-              const customWeightTrigger = custom ? (
+              const customWeightTrigger = !debugEnabled ? null : custom ? (
                 <button type="button" className="activity-custom-toggle" onClick={toggleScorePanel} aria-expanded={expanded} aria-controls={scorePanelId} aria-label={l.activityCustomWeights ?? "Custom weights for this software"} title={l.activityCustomWeights ?? "Custom weights for this software"}>
                   <FontAwesomeIcon icon={faSliders} />
                 </button>
               ) : (
                 <span className="activity-custom-toggle-placeholder" aria-hidden="true" />
               );
-              const scorePanel = expanded ? (
+              const scorePanel = expanded && debugEnabled ? (
                 <div className="activity-score-panel" id={scorePanelId}>
                   <svg className="activity-score-pointer" viewBox="0 0 14 8" aria-hidden="true" focusable="false">
                     <path d="M7 0.5 13.5 7.5h-13Z" />

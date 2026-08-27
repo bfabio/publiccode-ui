@@ -6,7 +6,7 @@ import { formatDate, relativeDate } from "../lib/date.js";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
-import { useCapWarningVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
+import { useActivityDebugVisibility, useCapWarningVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
 
@@ -30,6 +30,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
   const L = LABELS[locale === "it" ? "it" : "en"];
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
+  const { enabled: debugEnabled } = useActivityDebugVisibility();
   const [showDebug, setShowDebug] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
@@ -165,12 +166,14 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
             <p className="vitality-scope">{L.scoreScope(result.covered, result.total)}</p>
           )}
         </div>
+        {debugEnabled && (
         <button type="button" className="vitality-weights-toggle" onClick={() => setShowDebug((s) => !s)} aria-expanded={showDebug}>
           <span>{showDebug ? L.debugHide : L.debugShow}</span>
           <FontAwesomeIcon icon={faAngleDown} className={showDebug ? "rot" : undefined} />
         </button>
+        )}
 
-        {showDebug && (
+        {showDebug && debugEnabled && (
           <div className="vitality-weights-panel">
             <VitalityWeightsWidget
               result={result}

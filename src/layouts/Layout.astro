@@ -40,7 +40,12 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     <script is:inline>
-      try { if (sessionStorage.getItem('activity-drawer') === '1') document.documentElement.setAttribute('data-activity-drawer', ''); } catch {}
+      try {
+        if (localStorage.getItem('publiccode-ui:activity-debug') !== '0'
+            && sessionStorage.getItem('activity-drawer') === '1') {
+          document.documentElement.setAttribute('data-activity-drawer', '');
+        }
+      } catch {}
     </script>
     <script is:inline>
       document.addEventListener('load', function(e) {
@@ -72,6 +77,9 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
       document.getElementById('theme-css').href = `${base}/themes/${activeTheme}/index.css`;
       if (localStorage.getItem('publiccode-ui:opencode-badges') !== '1') {
         document.documentElement.setAttribute('data-opencode-badges-hidden', '');
+      }
+      if (localStorage.getItem('publiccode-ui:activity-debug') === '0') {
+        document.documentElement.setAttribute('data-activity-debug-hidden', '');
       }
       document.documentElement.dataset.catalogView =
         new URLSearchParams(location.search).get('view') === 'table' ? 'table' : 'list';
@@ -325,6 +333,12 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     flex-wrap: wrap;
     row-gap: 6px;
     padding-left: 12px;
+  }
+  :root[data-activity-debug-hidden] #weights-menu-item,
+  :root[data-activity-debug-hidden] .activity-custom-toggle,
+  :root[data-activity-debug-hidden] .activity-custom-toggle-placeholder,
+  :root[data-activity-debug-hidden] .vitality-weights-toggle {
+    display: none !important;
   }
   :root[data-opencode-badges-hidden] .opencode-badge-list,
   :root[data-opencode-badges-hidden] #radar-tab-badges,
