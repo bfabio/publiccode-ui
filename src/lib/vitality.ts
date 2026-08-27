@@ -160,7 +160,7 @@ function composite(
 }
 
 /**
- * Single-software scoring. Composite (history/activity) and ratio-issue xmax
+ * Single-software scoring. Composite (history/activity) and issue-volume xmax
  * are approximated from per-metric catalog stats, since the true maxima of a
  * combination cannot be recovered from marginals. Simple metrics and the
  * `open` issue mode stay exact.
@@ -228,10 +228,15 @@ export function computeVitality(
     const present = isPresent(activity.issuesOpen) && isPresent(activity.issuesClosed);
     const open = activity.issuesOpen ?? 0;
     const closed = activity.issuesClosed ?? 0;
-    const xmaxRatio = refMax(stats, 'issuesOpen', xmaxMode) / Math.max(1, statValue(stats, 'issuesClosed', 'min'));
-    const ratio = closed === 0 ? (open > 0 ? xmaxRatio : 0) : open / closed;
-    const score = present ? 1 - normalize(ratio, xmaxRatio) : null;
-    push('issues', present, present ? ratio : null, score, true);
+    // A busy tracker means an alive project, so volume is the base
+    // signal. It also zeroes the never-used 0/0 tracker for free.
+    const xmaxVolume = refMax(stats, 'issuesOpen', xmaxMode) + refMax(stats, 'issuesClosed', xmaxMode);
+    const volume = normalize(open + closed, xmaxVolume);
+    // Triage discount: full credit up to one open per two closed,
+    // none when nothing was ever closed.
+    const factor = open === 0 ? 1 : closed === 0 ? 0 : Math.min(1, closed / (2 * open));
+    const score = present ? volume * factor : null;
+    push('issues', present, present ? open + closed : null, score, true);
     if (present) dims[dims.length - 1].rawParts = { open, closed };
   }
 
