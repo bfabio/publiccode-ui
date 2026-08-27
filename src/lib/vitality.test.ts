@@ -210,6 +210,52 @@ describe('issues raw display parts', () => {
     expect(issues.raw).toBe(1);
     expect(issues.rawParts).toBeUndefined();
   });
+
+  it('ratio mode scores a never-used tracker (0/0) at zero', () => {
+    const ghost = { ...activity, issuesOpen: 0, issuesClosed: 0 } as SoftwareActivity;
+    const r = computeVitality(ghost, stats, DEFAULT_CONFIG);
+    const issues = r.dimensions.find((d) => d.key === 'issues')!;
+    expect(issues.present).toBe(true);
+    expect(issues.normalized).toBe(0);
+    expect(issues.contribution).toBe(0);
+    expect(issues.rawParts).toEqual({ open: 0, closed: 0 });
+  });
+});
+
+describe('issue volume scoring', () => {
+  const s = (max: number) => ({ max, min: 0, count: 10, mean: max / 2, median: max / 2, p95: max });
+  const istats: CatalogStats = { ...stats, issuesOpen: s(50), issuesClosed: s(500) };
+  const base = {
+    v: 1, tags: 74, recentDays: 180, contributors: 30,
+    commitsAllTime: 4194, commitsRecent: 485,
+  };
+  const volume = (total: number) => Math.log(1 + total) / Math.log(1 + 550);
+  const issuesOf = (open: number, closed: number) => {
+    const a = { ...base, issuesOpen: open, issuesClosed: closed } as SoftwareActivity;
+    return computeVitality(a, istats, DEFAULT_CONFIG).dimensions.find((d) => d.key === 'issues')!;
+  };
+
+  it('gives the full ratio factor up to one open per two closed', () => {
+    expect(issuesOf(10, 20).normalized).toBeCloseTo(volume(30), 10);
+  });
+
+  it('discounts a backlog past the one-to-two knee', () => {
+    expect(issuesOf(20, 10).normalized).toBeCloseTo(volume(30) * (10 / 40), 10);
+  });
+
+  it('zeroes a tracker where nothing was ever closed', () => {
+    expect(issuesOf(9, 0).normalized).toBe(0);
+  });
+
+  it('scores a closed-only tracker on volume alone', () => {
+    expect(issuesOf(0, 30).normalized).toBeCloseTo(volume(30), 10);
+  });
+
+  it('exposes the total as raw next to the open/closed parts', () => {
+    const d = issuesOf(20, 10);
+    expect(d.raw).toBe(30);
+    expect(d.rawParts).toEqual({ open: 20, closed: 10 });
+  });
 });
 
 describe('over-allocated weights refuse the score', () => {
