@@ -4,6 +4,7 @@ export const STORAGE_KEY = 'publiccode-ui:vitality';
 export const URL_PARAM = 'activity';
 export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
 export const CAP_WARNING_VISIBILITY_KEY = 'publiccode-ui:activity-cap-warning';
+export const ACTIVITY_DEBUG_VISIBILITY_KEY = 'publiccode-ui:activity-debug';
 
 export function readOpenCodeBadgeVisibility(): boolean {
   if (typeof window === 'undefined') return false;
@@ -36,6 +37,18 @@ export function writeCapWarningVisibility(enabled: boolean): void {
   if (enabled) window.localStorage.removeItem(CAP_WARNING_VISIBILITY_KEY);
   else window.localStorage.setItem(CAP_WARNING_VISIBILITY_KEY, '0');
   emitStoreChange(CAP_WARNING_VISIBILITY_KEY);
+}
+
+export function readActivityDebugVisibility(): boolean {
+  if (typeof window === 'undefined') return true;
+  return window.localStorage.getItem(ACTIVITY_DEBUG_VISIBILITY_KEY) !== '0';
+}
+
+export function writeActivityDebugVisibility(enabled: boolean): void {
+  if (typeof window === 'undefined') return;
+  if (enabled) window.localStorage.removeItem(ACTIVITY_DEBUG_VISIBILITY_KEY);
+  else window.localStorage.setItem(ACTIVITY_DEBUG_VISIBILITY_KEY, '0');
+  emitStoreChange(ACTIVITY_DEBUG_VISIBILITY_KEY);
 }
 
 export function mergeConfig(c: Partial<VitalityConfig> | null): VitalityConfig {
@@ -119,7 +132,7 @@ export function readAllSoftwareConfigs(): Map<string, VitalityConfig> {
 export function subscribeStore(callback: (key: string | null) => void): () => void {
   if (typeof window === 'undefined') return () => {};
   const handler = (e: StorageEvent) => {
-    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
+    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key === ACTIVITY_DEBUG_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
   };
   window.addEventListener('storage', handler);
   tabListeners.add(callback);

@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  useActivityDebugVisibility,
   useCapWarningVisibility,
   useOpenCodeBadgeVisibility,
 } from "../lib/useVitalityConfig";
@@ -39,16 +40,27 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
     setEnabled: setCapWarningsEnabled,
   } = useCapWarningVisibility();
   const {
+    enabled: activityDebugEnabled,
+    ready: activityDebugReady,
+    setEnabled: setActivityDebugEnabled,
+  } = useActivityDebugVisibility();
+  const {
     enabled: openCodeBadgesEnabled,
     ready: openCodeBadgesReady,
     setEnabled: setOpenCodeBadgesEnabled,
   } = useOpenCodeBadgeVisibility();
 
-  const ready = capWarningsReady && openCodeBadgesReady;
+  const ready = capWarningsReady && activityDebugReady && openCodeBadgesReady;
 
   return (
     <section className={`software-metrics activity-settings${ready ? "" : " is-loading"}`}>
       <div className="activity-preferences">
+        <PreferenceToggle
+          label={L.activityDebug}
+          description={L.activityDebugHelp}
+          enabled={activityDebugEnabled}
+          onToggle={() => setActivityDebugEnabled(!activityDebugEnabled)}
+        />
         <PreferenceToggle
           label={L.capWarning}
           enabled={capWarningsEnabled}

@@ -5,6 +5,7 @@ import {
   clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore, writeGlobalConfig,
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   CAP_WARNING_VISIBILITY_KEY, readCapWarningVisibility, writeCapWarningVisibility,
+  ACTIVITY_DEBUG_VISIBILITY_KEY, readActivityDebugVisibility, writeActivityDebugVisibility,
   withActivityConfig,
 } from './vitalityStore.ts';
 import { DEFAULT_CONFIG, type VitalityConfig } from './vitality.ts';
@@ -123,10 +124,11 @@ describe('subscribeStore', () => {
     fire(softwareKey('abc'));
     fire(OPENCODE_BADGES_VISIBILITY_KEY);
     fire(CAP_WARNING_VISIBILITY_KEY);
+    fire(ACTIVITY_DEBUG_VISIBILITY_KEY);
     fire('unrelated-key');
     fire('publiccode-ui:vitalityBackup');
     fire(null);
-    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, null]);
+    expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, CAP_WARNING_VISIBILITY_KEY, ACTIVITY_DEBUG_VISIBILITY_KEY, null]);
   });
 
   it('fires for same-tab writes, where no storage event exists', () => {
@@ -166,6 +168,19 @@ describe('cap warning visibility', () => {
     writeCapWarningVisibility(true);
     expect(readCapWarningVisibility()).toBe(true);
     expect(storage.getItem(CAP_WARNING_VISIBILITY_KEY)).toBeNull();
+  });
+});
+
+describe('activity debug visibility', () => {
+  it('is enabled by default and persists only the disabled state', () => {
+    const { storage } = stubWindow();
+    expect(readActivityDebugVisibility()).toBe(true);
+    writeActivityDebugVisibility(false);
+    expect(readActivityDebugVisibility()).toBe(false);
+    expect(storage.getItem(ACTIVITY_DEBUG_VISIBILITY_KEY)).toBe('0');
+    writeActivityDebugVisibility(true);
+    expect(readActivityDebugVisibility()).toBe(true);
+    expect(storage.getItem(ACTIVITY_DEBUG_VISIBILITY_KEY)).toBeNull();
   });
 });
 

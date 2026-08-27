@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
-import { useGlobalActivityConfig } from "../lib/useVitalityConfig";
+import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -25,6 +25,8 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
     setXmaxMode,
     reset,
   } = useGlobalActivityConfig();
+  const { enabled: debugEnabled } = useActivityDebugVisibility();
+  const shown = open && debugEnabled;
 
   useEffect(() => {
     const onToggle = () => setOpen((o) => !o);
@@ -33,9 +35,9 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   }, []);
 
   useEffect(() => {
-    document.documentElement.toggleAttribute("data-activity-drawer", open);
+    document.documentElement.toggleAttribute("data-activity-drawer", shown);
     try { sessionStorage.setItem("activity-drawer", open ? "1" : "0"); } catch {}
-    if (!open) return;
+    if (!shown) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
@@ -44,7 +46,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
       document.documentElement.removeAttribute("data-activity-drawer");
       document.removeEventListener("keydown", onKey);
     };
-  }, [open]);
+  }, [open, shown]);
 
   const confirmReset = () => {
     if (window.confirm(L.resetConfirmation)) reset();
@@ -53,7 +55,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
 
   return (
     <>
-      {open && (
+      {shown && (
         <div className={`activity-weights-drawer${ready ? "" : " is-loading"}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
             <h3>{L.globalWeights}</h3>
