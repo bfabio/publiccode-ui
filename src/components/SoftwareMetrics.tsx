@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { computeVitality } from "../lib/vitality";
+import { formatDate, relativeDate } from "../lib/date.js";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
@@ -30,6 +31,8 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const [showDebug, setShowDebug] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const confirmResetToGlobal = () => {
     if (window.confirm(L.resetGlobalConfirmation)) resetToGlobal();
@@ -70,6 +73,20 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
         <div className="metrics-group">
           <h3>{L.groupCode}</h3>
           <dl>
+            {activity.oldestCommit && (() => {
+              const d = formatDate(activity.oldestCommit, locale);
+              if (!d) return null;
+              return (
+                <>
+                  <dt>{L.oldestCommit}</dt>
+                  <dd>
+                    <time dateTime={d.datetime} title={hydrated ? d.formatted : undefined}>
+                      {hydrated ? relativeDate(activity.oldestCommit, locale) : d.formatted}
+                    </time>
+                  </dd>
+                </>
+              );
+            })()}
             {code.map((row) => {
               if (row.kind === "forge") {
                 const fs = fieldState(activity, row.key);
@@ -114,11 +131,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
           </dl>
         </div>
       </div>
-
-      <p className="metrics-info">
-        {L.tags}: <strong>{fmt(activity.tags, locale) ?? L.na}</strong>
-        {activity.oldestCommit && <> &middot; {L.oldestCommit}: <strong>{activity.oldestCommit}</strong></>}
-      </p>
 
       <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${showCapWarning ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
         <span className="vitality-label">{L.scoreLabel}</span>

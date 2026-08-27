@@ -1404,16 +1404,6 @@ dialog nav button:hover {
   color: var(--accent-bright);
   text-decoration-color: currentColor;
 }
-.metrics-info {
-  font-size: 13px;
-  color: var(--text-tertiary);
-  margin: 0.75rem 0 0;
-}
-.metrics-info strong {
-  color: var(--text-secondary);
-  font-weight: 510;
-}
-
 .activity-catalog {
   margin-bottom: 2rem;
 }
