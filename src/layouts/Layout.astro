@@ -329,7 +329,9 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     row-gap: 6px;
     padding-left: 12px;
   }
-  :root[data-opencode-badges-hidden] .opencode-badges {
+  :root[data-opencode-badges-hidden] .opencode-badge-list,
+  :root[data-opencode-badges-hidden] #radar-tab-badges,
+  :root[data-opencode-badges-hidden] #radar-panel-badges {
     display: none !important;
   }
   .opencode-badges {
@@ -377,6 +379,7 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
   .opencode-badges .badge-medal-locked { filter: grayscale(1) opacity(0.35); }
   .opencode-badges .badge-chart {
     flex: 0 0 auto;
+    margin-left: auto;
     padding: 5px;
     color: var(--text-quaternary);
     font-size: 1rem;
@@ -437,7 +440,14 @@ const weightsLabel = LABELS[locale === 'it' ? 'it' : 'en'].globalWeights;
     font-size: 12px;
   }
   .badge-link svg { width: 0.8em; }
-  #radar-popover { padding: 0.6rem; }
+  #radar-popover {
+    position-area: block-end span-inline-start;
+    padding: 0.6rem;
+  }
+  #radar-popover::before {
+    left: auto;
+    right: 7px;
+  }
   .radar-tabs {
     display: flex;
     gap: 0.2rem;
