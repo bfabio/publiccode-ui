@@ -68,6 +68,7 @@ interface Labels {
   sortReleaseAsc: string;
   sortActivityDesc?: string;
   sortActivityAsc?: string;
+  sortRelevance?: string;
   results: string;
   noResults: string;
   clearFilters: string;
@@ -127,6 +128,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const deferredQuery = useDeferredValue(query);
   const defaultSort: ListSortBy = view === "table" ? "activity_desc" : "release_date_desc";
   const effectiveSort: ListSortBy = sortBy || defaultSort;
+  // While a query is active, relevance leads and the picked order only
+  // breaks ties, so every option advertises the pair
+  const sortOption = (label: string) => deferredQuery ? `${l.sortRelevance ?? "Relevance"}, ${label.charAt(0).toLowerCase()}${label.slice(1)}` : label;
 
   useEffect(() => {
     const id = setTimeout(() => setQuery(inputValue), 150);
@@ -243,8 +247,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (effectiveSort.startsWith("dim_")) {
       return dimensionScores ? sortByScores(filtered, dimensionScores, effectiveSort.endsWith("_asc") ? "asc" : "desc", deferredQuery) : filtered;
     }
-    return sortItems(filtered, effectiveSort as SortBy, activityScores, deferredQuery);
-  }, [filtered, effectiveSort, deferredQuery, activityScores, dimensionScores]);
+    return sortItems(filtered, effectiveSort as SortBy, activityScores, deferredQuery, view === "list");
+  }, [filtered, effectiveSort, deferredQuery, activityScores, dimensionScores, view]);
 
   const visibleItems = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount]);
 
@@ -345,12 +349,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           <label className="sort-control">
             <span>{l.sortBy}</span>
             <select name="sort_by" value={effectiveSort} onChange={(e) => setSortBy(e.target.value as ListSortBy)}>
-              <option value="release_date_desc">{l.sortReleaseDesc}</option>
-              <option value="release_date_asc">{l.sortReleaseAsc}</option>
-              <option value="name_asc">{l.sortNameAsc}</option>
-              <option value="name_desc">{l.sortNameDesc}</option>
-              {anyActivity && <option value="activity_desc">{l.sortActivityDesc ?? "Highest activity score"}</option>}
-              {anyActivity && <option value="activity_asc">{l.sortActivityAsc ?? "Lowest activity score"}</option>}
+              <option value="release_date_desc">{sortOption(l.sortReleaseDesc)}</option>
+              <option value="release_date_asc">{sortOption(l.sortReleaseAsc)}</option>
+              <option value="name_asc">{sortOption(l.sortNameAsc)}</option>
+              <option value="name_desc">{sortOption(l.sortNameDesc)}</option>
+              {anyActivity && <option value="activity_desc">{sortOption(l.sortActivityDesc ?? "Highest activity score")}</option>}
+              {anyActivity && <option value="activity_asc">{sortOption(l.sortActivityAsc ?? "Lowest activity score")}</option>}
             </select>
           </label>
         )}
