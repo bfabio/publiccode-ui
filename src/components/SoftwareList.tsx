@@ -478,7 +478,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                           : state === "disabled" ? weightLabels.stateDisabled
                           : weightLabels.stateUnknown;
                         const stateTitle = state === "failed" ? weightLabels.stateFailedTitle
-                          : state === "disabled" ? weightLabels.stateDisabledTitle
+                          : state === "disabled" ? undefined
                           : weightLabels.stateUnknownTitle;
                         return (
                           <td key={key} className={`catalog-table-score${points === null ? " is-na" : ""}`} title={points === null ? stateTitle : undefined}>

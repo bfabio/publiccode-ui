@@ -568,39 +568,8 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   .vitality-weight-pie .vitality-weight-legend-value {
     font-weight: 650;
   }
-  .vitality-weight-legend {
-    cursor: default;
-    display: grid;
-    grid-template-columns: max-content 1fr max-content;
-    gap: 0.15rem 0.35rem;
-    align-items: center;
-    max-width: 420px;
-    margin: 0.4rem auto 0;
-    color: var(--text-tertiary);
-    font-size: 11px;
-    line-height: 1.25;
-  }
-  .vitality-weight-legend-item {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    align-items: center;
-    padding: 2px 5px;
-    border-radius: var(--radius-sm, 4px);
-    transition: background 0.2s ease;
-  }
-  .vitality-weight-legend-label {
-    white-space: nowrap;
-    text-align: left;
-  }
   .vitality-weight-legend-value {
     font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-  .vitality-weight-legend-swatch {
-    width: 0.65rem;
-    height: 0.65rem;
-    border-radius: 50%;
   }
   .activity-badge,
   time[title] {
@@ -615,9 +584,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   .vitality-weight-distribution .is-free { --dim-color: #8a8f98; }
   .vitality-weight-segment {
     fill: var(--dim-color);
-  }
-  .vitality-weight-legend-swatch {
-    background: var(--dim-color);
   }
   .vitality-weight-pattern-bg {
     fill: var(--bg-elevated, #f4f4f4);
@@ -656,7 +622,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   }
   .vitality-weight-segment,
   .vitality-weight-callout,
-  .vitality-weight-legend-swatch,
   .vitality-weight-legend-label,
   .vitality-weight-legend-value {
     transition:
@@ -670,15 +635,6 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       :is(.vitality-weight-segment, .vitality-weight-legend-item > *) {
       opacity: 0.3;
       filter: saturate(0.4);
-    }
-    &:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors,
-    &:has(.is-history:hover) .vitality-weight-legend-item.is-history,
-    &:has(.is-activity:hover) .vitality-weight-legend-item.is-activity,
-    &:has(.is-stars:hover) .vitality-weight-legend-item.is-stars,
-    &:has(.is-forks:hover) .vitality-weight-legend-item.is-forks,
-    &:has(.is-issues:hover) .vitality-weight-legend-item.is-issues,
-    &:has(.is-free:hover) .vitality-weight-legend-item.is-free {
-      background: color-mix(in srgb, var(--dim-color) 18%, transparent);
     }
     &:has(.is-contributors:hover) :is(.is-contributors, .is-contributors > *),
     &:has(.is-history:hover) :is(.is-history, .is-history > *),
@@ -700,29 +656,10 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       filter: brightness(1.1) saturate(1.2);
       transform: var(--pop, none);
     }
-    &:has(.is-contributors:hover) .vitality-weight-legend-swatch.is-contributors,
-    &:has(.is-history:hover) .vitality-weight-legend-swatch.is-history,
-    &:has(.is-activity:hover) .vitality-weight-legend-swatch.is-activity,
-    &:has(.is-stars:hover) .vitality-weight-legend-swatch.is-stars,
-    &:has(.is-forks:hover) .vitality-weight-legend-swatch.is-forks,
-    &:has(.is-issues:hover) .vitality-weight-legend-swatch.is-issues {
-      box-shadow: 0 0 6px var(--dim-color);
-      transform: scale(1.4);
-    }
-    &:has(.is-contributors:hover) .vitality-weight-legend-item.is-contributors > .vitality-weight-legend-value,
-    &:has(.is-history:hover) .vitality-weight-legend-item.is-history > .vitality-weight-legend-value,
-    &:has(.is-activity:hover) .vitality-weight-legend-item.is-activity > .vitality-weight-legend-value,
-    &:has(.is-stars:hover) .vitality-weight-legend-item.is-stars > .vitality-weight-legend-value,
-    &:has(.is-forks:hover) .vitality-weight-legend-item.is-forks > .vitality-weight-legend-value,
-    &:has(.is-issues:hover) .vitality-weight-legend-item.is-issues > .vitality-weight-legend-value {
-      transform: scale(1.25);
-      transform-origin: right center;
-    }
   }
   @media (prefers-reduced-motion: reduce) {
     .vitality-weight-segment,
     .vitality-weight-callout,
-    .vitality-weight-legend-swatch,
     .vitality-weight-legend-label,
     .vitality-weight-legend-value {
       transition: none;
