@@ -37,7 +37,7 @@ const items = allSoftware.map((s) => {
 <Layout title={t(locale, 'catalog')} description={t(locale, 'catalog_description')}>
   <section class="home-hero">
     <h1>{t(locale, 'catalog')}</h1>
-    <SearchBox client:load items={items} base={base} placeholder={t(locale, 'search_placeholder')} />
+    <SearchBox client:load items={items} base={base} placeholder={t(locale, 'search_placeholder')} clearLabel={t(locale, 'clear_search')} />
     <p><a href={`${base}/software/`}>{t(locale, 'browse_all')}</a></p>
   </section>
 </Layout>

@@ -43,6 +43,15 @@ nav[aria-label="Breadcrumb"] li + li::before {
   padding: 2px 4px;
   border: 1px solid #ccc;
 }
+.catalog-search input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+.search-clear {
+  margin-left: 4px;
+}
+.search-clear svg {
+  width: 0.7em;
+}
 .suggestions {
   position: absolute;
   top: 100%;
