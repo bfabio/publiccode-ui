@@ -184,13 +184,16 @@ nav[aria-label="Breadcrumb"] li + li::before {
   content: ": ";
 }
 .catalog-results .activity-index-label {
+  display: inline;
+  white-space: nowrap;
+}
+.catalog-results .activity-index-label-text { white-space: nowrap; }
+.catalog-results .activity-index-value {
   display: inline-grid;
   grid-template-columns: max-content 18px;
   align-items: center;
   column-gap: 4px;
-  white-space: nowrap;
 }
-.catalog-results .activity-index-label-text { white-space: nowrap; }
 .catalog-results .activity-custom-toggle,
 .catalog-results .activity-custom-toggle-placeholder {
   display: inline-flex;
