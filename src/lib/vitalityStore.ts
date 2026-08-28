@@ -43,7 +43,7 @@ export function mergeConfig(c: Partial<VitalityConfig> | null): VitalityConfig {
     weights: { ...DEFAULT_CONFIG.weights, ...(c?.weights ?? {}) },
     subWeights: { ...DEFAULT_CONFIG.subWeights, ...(c?.subWeights ?? {}) },
     issueMode: c?.issueMode === 'open' ? 'open' : 'ratio',
-    xmaxMode: c?.xmaxMode === 'p95' ? 'p95' : 'max',
+    xmaxMode: c?.xmaxMode === 'max' ? 'max' : 'p95',
   };
 }
 

@@ -33,7 +33,7 @@ export const DEFAULT_CONFIG: VitalityConfig = {
   },
   subWeights: { phC: 0.7, phM: 0.3, caC: 0.7, caM: 0.3 },
   issueMode: 'ratio',
-  xmaxMode: 'max',
+  xmaxMode: 'p95',
 };
 
 export const DIMENSION_ORDER: DimensionKey[] = [
