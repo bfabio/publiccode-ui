@@ -114,4 +114,58 @@ describe("query tiebreak", () => {
     const out = sortItems(items, "release_date_desc");
     expect(out.map((i) => i.id)).toEqual(["a", "b"]);
   });
+
+  it("name substring outranks a name without the query", () => {
+    const items = [
+      item("desc", "Aaa", "2026-01-01"),
+      item("sub", "Zeta open", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open");
+    expect(out.map((i) => i.id)).toEqual(["sub", "desc"]);
+  });
+});
+
+describe("relevance first", () => {
+  it("rank beats the picked order", () => {
+    const items = [
+      item("old", "Open", "2020-01-01"),
+      item("new", "Zeta open", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open", true);
+    expect(out.map((i) => i.id)).toEqual(["old", "new"]);
+  });
+
+  it("prefix beats substring regardless of dates", () => {
+    const items = [
+      item("sub", "Zeta open", "2026-01-01"),
+      item("prefix", "Openbao", "2020-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open", true);
+    expect(out.map((i) => i.id)).toEqual(["prefix", "sub"]);
+  });
+
+  it("the picked order decides inside a rank", () => {
+    const items = [
+      item("a", "Alpha open", "2020-01-01"),
+      item("z", "Zeta open", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, "open", true);
+    expect(out.map((i) => i.id)).toEqual(["z", "a"]);
+  });
+
+  it("an unscored exact match beats a scored non-match", () => {
+    const scores = new Map<string, number | null>([["other", 90]]);
+    const items = [item("other", "Aardvark"), item("exact", "Open")];
+    const out = sortItems(items, "activity_desc", scores, "open", true);
+    expect(out.map((i) => i.id)).toEqual(["exact", "other"]);
+  });
+
+  it("without a query the flag changes nothing", () => {
+    const items = [
+      item("old", "Alpha", "2020-01-01"),
+      item("new", "Zeta", "2026-01-01"),
+    ];
+    const out = sortItems(items, "release_date_desc", undefined, undefined, true);
+    expect(out.map((i) => i.id)).toEqual(["new", "old"]);
+  });
 });
