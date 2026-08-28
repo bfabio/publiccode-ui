@@ -20,7 +20,7 @@ describe('mergeConfig', () => {
   it('coerces unknown modes to defaults', () => {
     const c = mergeConfig({ issueMode: 'x' as never, xmaxMode: 'y' as never });
     expect(c.issueMode).toBe('ratio');
-    expect(c.xmaxMode).toBe('max');
+    expect(c.xmaxMode).toBe('p95');
   });
 });
 
@@ -32,8 +32,8 @@ describe('parseConfig', () => {
   });
 
   it('parses a serialized config', () => {
-    const c = parseConfig(JSON.stringify({ xmaxMode: 'p95' }));
-    expect(c?.xmaxMode).toBe('p95');
+    const c = parseConfig(JSON.stringify({ xmaxMode: 'max' }));
+    expect(c?.xmaxMode).toBe('max');
   });
 });
 
@@ -46,9 +46,9 @@ describe('isDefaultConfig', () => {
 
 describe('pickConfig', () => {
   it('prefers url, then software, then global, then default', () => {
-    const url = { ...DEFAULT_CONFIG, xmaxMode: 'p95' as const };
+    const url = { ...DEFAULT_CONFIG, xmaxMode: 'max' as const };
     const software = { ...DEFAULT_CONFIG, issueMode: 'open' as const };
-    const global = { ...DEFAULT_CONFIG, xmaxMode: 'p95' as const, issueMode: 'open' as const };
+    const global = { ...DEFAULT_CONFIG, xmaxMode: 'max' as const, issueMode: 'open' as const };
     expect(pickConfig(url, software, global)).toBe(url);
     expect(pickConfig(null, software, global)).toBe(software);
     expect(pickConfig(null, null, global)).toBe(global);
