@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
 import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useVitalityConfig";
+import { isDefaultConfig } from "../lib/vitalityStore";
 import { LABELS } from "../lib/vitalityLabels";
 import { WeightStepper } from "./WeightStepper";
 
@@ -157,7 +158,9 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
               </label>
             </div>
 
-            <button type="button" className="vitality-reset" onClick={confirmReset}>{L.reset}</button>
+            {!isDefaultConfig(config) && (
+              <button type="button" className="vitality-reset" onClick={confirmReset}>{L.reset}</button>
+            )}
           </div>
         </div>
       )}
