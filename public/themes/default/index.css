@@ -584,11 +584,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   grid-column: 1 / 3;
 }
 .activity-index-label {
-  display: grid;
-  position: relative;
-  grid-template-columns: max-content 18px;
-  align-items: center;
-  column-gap: 4px;
   font-size: 10px;
   font-weight: 510;
   letter-spacing: 0.3px;
@@ -597,6 +592,12 @@ nav[aria-label="Breadcrumb"] li + li::before {
   white-space: nowrap;
 }
 .activity-index-label-text { white-space: nowrap; }
+.activity-index-value {
+  display: grid;
+  grid-template-columns: max-content 18px;
+  align-items: center;
+  column-gap: 4px;
+}
 .activity-custom-toggle,
 .activity-custom-toggle-placeholder {
   display: inline-flex;

@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faRotateLeft, faSliders, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faPencil, faRotateLeft, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
@@ -560,7 +560,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               };
               const customWeightTrigger = !debugEnabled ? null : custom ? (
                 <button type="button" className="activity-custom-toggle" onClick={toggleScorePanel} aria-expanded={expanded} aria-controls={scorePanelId} aria-label={l.activityCustomWeights ?? "Custom weights for this software"} title={l.activityCustomWeights ?? "Custom weights for this software"}>
-                  <FontAwesomeIcon icon={faSliders} />
+                  <FontAwesomeIcon icon={faPencil} />
                 </button>
               ) : (
                 <span className="activity-custom-toggle-placeholder" aria-hidden="true" />
@@ -603,11 +603,13 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <div className="activity-index">
                     <div className="activity-index-label">
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
+                    </div>
+                    <div className="activity-index-value">
+                      <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
+                        {v.overAllocated ? "?" : <FontAwesomeIcon icon={faHourglassHalf} />}
+                      </span>
                       {customWeightTrigger}
                     </div>
-                    <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
-                      {v.overAllocated ? "?" : <FontAwesomeIcon icon={faHourglassHalf} />}
-                    </span>
                     {scorePanel}
                   </div>
                 );
@@ -624,11 +626,13 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   <div className={`activity-index${capped ? " is-capped-unknown" : ""}`}>
                     <div className="activity-index-label">
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
+                    </div>
+                    <div className="activity-index-value">
+                      <span className={`activity-badge${custom ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
+                        {Math.round(v.score100)}
+                      </span>
                       {customWeightTrigger}
                     </div>
-                  <span className={`activity-badge${custom ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
-                    {Math.round(v.score100)}
-                  </span>
                     {scorePanel}
                   </div>
               );
