@@ -1,6 +1,9 @@
 import type { SoftwareActivity, CatalogStats, MetricStats, StatMetric, ForgeMetric } from '../types/analysis';
 import { FEATURE_OF } from './activity';
 
+/** 'open' is the overall-issues mode: plain open+closed volume with no
+    triage discount. The key predates the rename and survives in stored
+    configs and shared URLs. */
 export type IssueMode = 'ratio' | 'open';
 export type XmaxMode = 'max' | 'p95';
 
@@ -165,8 +168,7 @@ function composite(
 /**
  * Single-software scoring. Composite (history/activity) and issue-volume xmax
  * are approximated from per-metric catalog stats, since the true maxima of a
- * combination cannot be recovered from marginals. Simple metrics and the
- * `open` issue mode stay exact.
+ * combination cannot be recovered from marginals. Simple metrics stay exact.
  */
 export function computeVitality(
   activity: SoftwareActivity,
@@ -222,12 +224,7 @@ export function computeVitality(
     false,
   );
 
-  if (issueMode === 'open') {
-    const present = isPresent(activity.issuesOpen);
-    const open = activity.issuesOpen ?? 0;
-    const score = present ? 1 - normalize(open, refMax(stats, 'issuesOpen', xmaxMode)) : null;
-    push('issues', present, present ? open : null, score, false);
-  } else {
+  {
     const present = isPresent(activity.issuesOpen) && isPresent(activity.issuesClosed);
     const open = activity.issuesOpen ?? 0;
     const closed = activity.issuesClosed ?? 0;
@@ -235,9 +232,12 @@ export function computeVitality(
     // signal. It also zeroes the never-used 0/0 tracker for free.
     const xmaxVolume = refMax(stats, 'issuesOpen', xmaxMode) + refMax(stats, 'issuesClosed', xmaxMode);
     const volume = normalize(open + closed, xmaxVolume);
-    // Triage discount: full credit up to one open per two closed,
-    // none when nothing was ever closed.
-    const factor = open === 0 ? 1 : closed === 0 ? 0 : Math.min(1, closed / (2 * open));
+    // Triage discount, ratio mode only: full credit up to one open per
+    // two closed, none when nothing was ever closed.
+    const factor =
+      issueMode === 'ratio'
+        ? open === 0 ? 1 : closed === 0 ? 0 : Math.min(1, closed / (2 * open))
+        : 1;
     const score = present ? volume * factor : null;
     push('issues', present, present ? open + closed : null, score, true);
     if (present) dims[dims.length - 1].rawParts = { open, closed };

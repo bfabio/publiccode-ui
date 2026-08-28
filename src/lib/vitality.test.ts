@@ -214,11 +214,12 @@ describe('issues raw display parts', () => {
     expect(issues.rawParts).toEqual({ open: 1, closed: 0 });
   });
 
-  it('open mode keeps the plain count without parts', () => {
-    const r = computeVitality(activity, stats, { ...DEFAULT_CONFIG, issueMode: 'open' });
+  it('overall mode exposes the total with the open/closed parts', () => {
+    const busy = { ...activity, issuesOpen: 2, issuesClosed: 3 } as SoftwareActivity;
+    const r = computeVitality(busy, stats, { ...DEFAULT_CONFIG, issueMode: 'open' });
     const issues = r.dimensions.find((d) => d.key === 'issues')!;
-    expect(issues.raw).toBe(1);
-    expect(issues.rawParts).toBeUndefined();
+    expect(issues.raw).toBe(5);
+    expect(issues.rawParts).toEqual({ open: 2, closed: 3 });
   });
 
   it('ratio mode scores a never-used tracker (0/0) at zero', () => {
@@ -265,6 +266,25 @@ describe('issue volume scoring', () => {
     const d = issuesOf(20, 10);
     expect(d.raw).toBe(30);
     expect(d.rawParts).toEqual({ open: 20, closed: 10 });
+  });
+
+  const overallOf = (a: SoftwareActivity) =>
+    computeVitality(a, istats, { ...DEFAULT_CONFIG, issueMode: 'open' })
+      .dimensions.find((d) => d.key === 'issues')!;
+
+  it('overall mode scores the plain volume with no triage discount', () => {
+    const a = { ...base, issuesOpen: 20, issuesClosed: 10 } as SoftwareActivity;
+    expect(overallOf(a).normalized).toBeCloseTo(volume(30), 10);
+  });
+
+  it('overall mode keeps a never-triaged tracker on volume', () => {
+    const a = { ...base, issuesOpen: 9, issuesClosed: 0 } as SoftwareActivity;
+    expect(overallOf(a).normalized).toBeCloseTo(volume(9), 10);
+  });
+
+  it('overall mode needs both counts', () => {
+    const a = { ...base, issuesOpen: 4 } as SoftwareActivity;
+    expect(overallOf(a).present).toBe(false);
   });
 });
 
