@@ -300,3 +300,10 @@ export function localizeDescription(description, locale) {
     {}
   );
 }
+
+const localePrefix = new RegExp(`^/(${Object.keys(translations).join("|")})(?=/|$)`);
+
+export function routePathname(pathname, base) {
+  const path = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
+  return path.replace(localePrefix, "") || "/";
+}
