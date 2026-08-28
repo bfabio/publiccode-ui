@@ -105,11 +105,11 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
           <li role="none"><a href={settingsHref} role="menuitem">{t(locale, 'settings')}</a></li>
           <li class="settings-menu-label" role="presentation">{t(locale, 'theme')}</li>
           {themes.map((t) => (
-            <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}</button></li>
+            <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}<Fragment set:html={faIcon('check')} /></button></li>
           ))}
           <li class="settings-menu-label" role="presentation">{t(locale, 'language')}</li>
-          <li role="none"><a href={enUrl} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English</a></li>
-          <li role="none"><a href={itUrl} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano</a></li>
+          <li role="none"><a href={enUrl} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English<Fragment set:html={faIcon('check')} /></a></li>
+          <li role="none"><a href={itUrl} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano<Fragment set:html={faIcon('check')} /></a></li>
         </ul>
       </div>
       <ActivityWeightsMenu client:load locale={locale} />
@@ -240,11 +240,21 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   #settings-menu a:hover {
     background: var(--surface-btn-hover, rgba(0,0,0,0.05));
   }
+  #settings-menu [role="menuitemradio"] {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  #settings-menu [role="menuitemradio"] :global(svg) {
+    height: 11px;
+    margin-left: auto;
+    visibility: hidden;
+  }
   #settings-menu [aria-checked="true"] {
     font-weight: 600;
   }
-  #settings-menu [aria-checked="true"]::after {
-    content: ' *';
+  #settings-menu [aria-checked="true"] :global(svg) {
+    visibility: visible;
   }
   .settings-menu-label {
     margin: 4px 8px 2px;
