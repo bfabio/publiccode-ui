@@ -160,9 +160,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
               {L.capDisabled}
             </p>
           )}
-          {result.score100 !== null && result.covered < result.total && (
-            <p className="vitality-scope">{L.scoreScope(result.covered, result.total)}</p>
-          )}
         </div>
         {debugEnabled && (
         <button type="button" className="vitality-weights-toggle" onClick={() => setShowDebug((s) => !s)} aria-expanded={showDebug}>

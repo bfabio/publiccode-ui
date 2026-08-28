@@ -73,25 +73,14 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
   const orderedKeys = [...DIMENSION_ORDER].sort((a, b) => (valueOf(b) ?? -1) - (valueOf(a) ?? -1));
   const free = points ? 0 : freeWeightPoints(config.weights);
   const freeLabel = (free < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(free)));
-  const stateToken = (state: DimensionState) =>
-    state === "failed" ? L.stateFailed : state === "disabled" ? L.stateDisabled : L.stateUnknown;
-  const stateTitle = (state: DimensionState) =>
-    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.stateDisabledTitle : L.stateUnknownTitle;
   const display = (key: DimensionKey) => {
-    const value = valueOf(key);
-    if (value !== null) return points ? String(Math.round(value)) : `${Math.round(value * 100)}%`;
-    const dim = dimOf(key);
-    return dim ? stateToken(dim.state) : "n/a";
-  };
-  const titleOf = (key: DimensionKey) => {
-    const dim = dimOf(key);
-    return dim && dim.state !== "ok" ? stateTitle(dim.state) : undefined;
+    const value = valueOf(key) as number;
+    return points ? String(Math.round(value)) : `${Math.round(value * 100)}%`;
   };
   const patternId = React.useId();
 
   const sliceKeys: Array<DimensionKey | "free"> = orderedKeys.filter((key) => (valueOf(key) ?? 0) > 0);
   if (!points && free > 0) sliceKeys.push("free");
-  const rowKeys = orderedKeys.filter((key) => (valueOf(key) ?? 0) <= 0);
   const sliceValue = (key: DimensionKey | "free") =>
     key === "free" ? free : points ? (valueOf(key) as number) : (valueOf(key) as number) * 100;
   const total = sliceKeys.reduce((sum, key) => sum + sliceValue(key), 0);
@@ -116,8 +105,8 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
 
   return (
   <div className="vitality-weight-distribution">
-    {arcs.length > 0 && (
-      <div className="vitality-weight-title">{points ? L.colContribution : L.weights}</div>
+    {arcs.length > 0 && !points && (
+      <div className="vitality-weight-title">{L.weights}</div>
     )}
     {arcs.length > 0 && (
       <svg className="vitality-weight-pie" viewBox={`0 0 ${PIE_W} ${PIE_H}`} role="list" aria-label={L.weights}>
@@ -158,24 +147,6 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
         })}
       </svg>
     )}
-    {(rowKeys.length > 0 || (!points && free < 0)) && (
-      <div className="vitality-weight-legend">
-        {rowKeys.map((key) => (
-          <span key={key} className={`vitality-weight-legend-item is-${key}`} title={titleOf(key)}>
-            <span className={`vitality-weight-legend-swatch is-${key}`} />
-            <span className="vitality-weight-legend-label">{L.dim[key]}</span>
-            <span className="vitality-weight-legend-value">{display(key)}</span>
-          </span>
-        ))}
-        {!points && free < 0 && (
-          <span className="vitality-weight-legend-item is-free">
-            <span className="vitality-weight-legend-swatch is-free" />
-            <span className="vitality-weight-legend-label">{freeLabel}</span>
-            <span className="vitality-weight-legend-value" />
-          </span>
-        )}
-      </div>
-    )}
   </div>
   );
 };
@@ -194,7 +165,7 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
   const toggleSplit = (key: DimensionKey) => setOpenSplits((current) => ({ ...current, [key]: !current[key] }));
   const freePool = freeWeightPoints(config.weights);
   const stateTitleOf = (state: DimensionState) =>
-    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.stateDisabledTitle : L.stateUnknownTitle;
+    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.rowDisabled : L.stateUnknownTitle;
 
   return (
     <>
