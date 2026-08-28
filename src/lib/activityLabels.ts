@@ -1,4 +1,4 @@
-import type { DimensionKey } from './vitality';
+import type { DimensionKey } from './activityScore';
 
 export const LABELS = {
   en: {

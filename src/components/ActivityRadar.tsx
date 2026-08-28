@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { computeVitality } from "../lib/vitality";
-import { usePageActivityConfig } from "../lib/useVitalityConfig";
-import { LABELS } from "../lib/vitalityLabels";
+import { computeActivityScore } from "../lib/activityScore";
+import { usePageActivityConfig } from "../lib/useActivityConfig";
+import { LABELS } from "../lib/activityLabels";
 import type { CatalogStats, SoftwareActivity } from "../types/analysis";
 
 interface Props {
@@ -27,7 +27,7 @@ export const ActivityRadar: React.FC<Props> = ({ softwareId, activity, stats, lo
   const labels = LABELS[locale === "it" ? "it" : "en"];
   const { config, ready } = usePageActivityConfig(softwareId);
   const dimensions = useMemo(
-    () => computeVitality(activity, stats, config).dimensions
+    () => computeActivityScore(activity, stats, config).dimensions
       .filter((dimension) => dimension.present && dimension.normalized !== null)
       .map((dimension) => ({ label: labels.dim[dimension.key], value: dimension.normalized ?? 0 })),
     [activity, config, labels.dim, stats],

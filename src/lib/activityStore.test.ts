@@ -5,9 +5,9 @@ import {
   clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore, writeGlobalConfig,
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   ACTIVITY_DEBUG_VISIBILITY_KEY, readActivityDebugVisibility, writeActivityDebugVisibility,
-  withActivityConfig,
-} from './vitalityStore.ts';
-import { DEFAULT_CONFIG, type VitalityConfig } from './vitality.ts';
+  withActivityConfig, migrateLegacyConfigs,
+} from './activityStore.ts';
+import { DEFAULT_CONFIG, type ActivityConfig } from './activityScore.ts';
 
 describe('mergeConfig', () => {
   it('fills missing fields from defaults', () => {
@@ -80,7 +80,7 @@ function stubWindow() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('software configs', () => {
-  const custom: VitalityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
+  const custom: ActivityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
 
   it('builds the key from the prefix', () => {
     expect(softwareKey('abc')).toBe(`${SOFTWARE_PREFIX}abc`);
@@ -114,6 +114,29 @@ describe('software configs', () => {
   });
 });
 
+describe('migrateLegacyConfigs', () => {
+  it('moves the old vitality keys to the activity keys', () => {
+    const { storage } = stubWindow();
+    const custom = JSON.stringify({ ...DEFAULT_CONFIG, issueMode: 'open' });
+    storage.setItem('publiccode-ui:vitality', custom);
+    storage.setItem('publiccode-ui:vitality:abc', custom);
+    migrateLegacyConfigs();
+    expect(storage.getItem(STORAGE_KEY)).toBe(custom);
+    expect(storage.getItem(softwareKey('abc'))).toBe(custom);
+    expect(storage.getItem('publiccode-ui:vitality')).toBeNull();
+    expect(storage.getItem('publiccode-ui:vitality:abc')).toBeNull();
+  });
+
+  it('keeps an already written activity key over the old value', () => {
+    const { storage } = stubWindow();
+    storage.setItem('publiccode-ui:vitality', 'old');
+    storage.setItem(STORAGE_KEY, 'new');
+    migrateLegacyConfigs();
+    expect(storage.getItem(STORAGE_KEY)).toBe('new');
+    expect(storage.getItem('publiccode-ui:vitality')).toBeNull();
+  });
+});
+
 describe('subscribeStore', () => {
   it('fires for our keys and full clears, not foreign keys', () => {
     const { fire } = stubWindow();
@@ -124,7 +147,7 @@ describe('subscribeStore', () => {
     fire(OPENCODE_BADGES_VISIBILITY_KEY);
     fire(ACTIVITY_DEBUG_VISIBILITY_KEY);
     fire('unrelated-key');
-    fire('publiccode-ui:vitalityBackup');
+    fire('publiccode-ui:activityBackup');
     fire(null);
     expect(seen).toEqual([STORAGE_KEY, softwareKey('abc'), OPENCODE_BADGES_VISIBILITY_KEY, ACTIVITY_DEBUG_VISIBILITY_KEY, null]);
   });

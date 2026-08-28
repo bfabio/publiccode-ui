@@ -578,7 +578,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
-.vitality-badge.is-loading,
+.activity-score-badge.is-loading,
 .activity-settings.is-loading {
   visibility: hidden;
 }
@@ -791,13 +791,13 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .settings-switch.is-on { background: var(--accent); }
 .settings-switch.is-on > span { transform: translateX(16px); }
 .settings-switch:focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
-.vitality-value.is-custom {
+.activity-value.is-custom {
   color: #c0bfbc;
 }
-.vitality-value.is-capped-unknown {
+.activity-value.is-capped-unknown {
   color: #c86e66;
 }
-.vitality-scope.vitality-cap-warning {
+.activity-scope.activity-cap-warning {
   display: inline-flex;
   align-items: center;
   gap: 5px;

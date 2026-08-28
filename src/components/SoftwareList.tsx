@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faPencil, faRotateLeft, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate, relativeDate } from "../lib/date.js";
-import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
+import { computeActivityScore, DIMENSION_ORDER, type DimensionKey } from "../lib/activityScore";
 import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
 import { toCsv } from "../lib/csv";
-import { useActivityConfigs, useActivityDebugVisibility } from "../lib/useVitalityConfig";
-import { withActivityConfig } from "../lib/vitalityStore";
+import { useActivityConfigs, useActivityDebugVisibility } from "../lib/useActivityConfig";
+import { withActivityConfig } from "../lib/activityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
-import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
-import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
+import { LABELS as ACTIVITY_LABELS } from "../lib/activityLabels";
+import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
 import { catalogFlag } from "../lib/catalogFlags";
 
 function highlight(text: string, query: string) {
@@ -106,7 +106,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
   const { enabled: debugEnabled } = useActivityDebugVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
-  const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
+  const weightLabels = ACTIVITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
   const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(() => readParam("q"));
@@ -194,7 +194,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const allAudiences = useMemo(() => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(), [items]);
   const incompleteDataCount = useMemo(() => items.filter((item) => {
     if (!item.activity) return true;
-    const result = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id));
+    const result = computeActivityScore(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id));
     return result.score100 === null;
   }).length, [items, globalStats, statsByCatalog, configFor]);
   const incompleteDataPercentage = items.length === 0 ? 0 : Math.round((incompleteDataCount / items.length) * 100);
@@ -225,7 +225,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     const scores = new Map<string, number | null>();
     for (const i of items) {
       if (i.activity) {
-        scores.set(i.id, computeVitality(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id)).score100);
+        scores.set(i.id, computeActivityScore(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id)).score100);
       }
     }
     return scores;
@@ -237,7 +237,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     const scores = new Map<string, number | null>();
     for (const i of items) {
       if (i.activity) {
-        const dim = computeVitality(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id))
+        const dim = computeActivityScore(i.activity, globalStats ?? statsByCatalog[i.catalogId] ?? null, configFor(i.id))
           .dimensions.find((d) => d.key === key);
         scores.set(i.id, dim && dim.present && dim.normalized !== null ? dim.contribution : null);
       }
@@ -284,7 +284,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     const header = [l.colName ?? "Name", l.activityScore ?? "Activity score", ...DIMENSION_ORDER.map((key) => weightLabels.dim[key])];
     const rows = sorted.map((item) => {
       const v = item.activity
-        ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
+        ? computeActivityScore(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
         : null;
       return [
         item.name,
@@ -428,7 +428,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         {anyActivity && (
           <label className="filter-check">
             <input type="checkbox" name="activity" checked={onlyActivity} onChange={(e) => setOnlyActivity(e.target.checked)} />
-            {l.hasActivityData ?? "With vitality data"}
+            {l.hasActivityData ?? "With activity data"}
           </label>
         )}
         {hasActiveCriteria && (
@@ -463,7 +463,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
                   const detailHref = withActivityConfig(`${base}/software/${item.id}`, customConfig);
                   const v = item.activity
-                    ? computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
+                    ? computeActivityScore(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
                     : null;
                   return (
                     <tr
@@ -550,7 +550,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             </footer>
             {item.activity && (() => {
               const activityConfig = itemActivityConfig;
-              const v = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
+              const v = computeActivityScore(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, activityConfig);
               if (!activityConfigReady) {
                 return (
                   <div className="activity-index is-loading" aria-busy="true" aria-label={l.activityScore ?? "Activity score"}>
@@ -600,7 +600,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                     </div>
                   </div>
                   {v.score100 === null && !v.overAllocated && <p>{weightLabels.scorePending}</p>}
-                  <VitalityWeightsWidget
+                  <ActivityWeightsWidget
                     result={v}
                     config={activityConfig}
                     labels={weightLabels}

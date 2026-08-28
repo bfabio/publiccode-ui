@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
-import { DIMENSION_ORDER, freeWeightPoints, type DimensionKey, type DimensionState, type VitalityConfig, type VitalityResult } from "../lib/vitality";
-import { LABELS } from "../lib/vitalityLabels";
+import { DIMENSION_ORDER, freeWeightPoints, type DimensionKey, type DimensionState, type ActivityConfig, type ActivityScoreResult } from "../lib/activityScore";
+import { LABELS } from "../lib/activityLabels";
 import { WeightStepper } from "./WeightStepper";
 
-type SubKey = keyof VitalityConfig["subWeights"];
+type SubKey = keyof ActivityConfig["subWeights"];
 type Labels = typeof LABELS.en;
 
 const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
@@ -14,14 +14,14 @@ const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
 };
 
 interface Props {
-  result: VitalityResult;
-  config: VitalityConfig;
+  result: ActivityScoreResult;
+  config: ActivityConfig;
   labels: Labels;
   locale: string;
   onWeight: (key: DimensionKey, value: number) => void;
   onSplit: (edited: SubKey, other: SubKey, value: number) => void;
-  onIssueMode: (mode: VitalityConfig["issueMode"]) => void;
-  onXmaxMode: (mode: VitalityConfig["xmaxMode"]) => void;
+  onIssueMode: (mode: ActivityConfig["issueMode"]) => void;
+  onXmaxMode: (mode: ActivityConfig["xmaxMode"]) => void;
 }
 
 const PIE_W = 420;
@@ -62,7 +62,7 @@ const layoutCallouts = <T extends { natural: number; y: number }>(items: T[]) =>
   }
 };
 
-export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels"> & { result?: VitalityResult }> = ({ config, labels: L, result }) => {
+export const ActivityWeightDistribution: React.FC<Pick<Props, "config" | "labels"> & { result?: ActivityScoreResult }> = ({ config, labels: L, result }) => {
   const points = result ? new Map(result.dimensions.map((d) => [d.key, d])) : null;
   const dimOf = (key: DimensionKey) => points?.get(key);
   const valueOf = (key: DimensionKey): number | null => {
@@ -104,17 +104,17 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
   layoutCallouts(arcs.filter((arc) => arc.side === -1));
 
   return (
-  <div className="vitality-weight-distribution">
+  <div className="activity-weight-distribution">
     {arcs.length > 0 && !points && (
-      <div className="vitality-weight-title">{L.weights}</div>
+      <div className="activity-weight-title">{L.weights}</div>
     )}
     {arcs.length > 0 && (
-      <svg className="vitality-weight-pie" viewBox={`0 0 ${PIE_W} ${PIE_H}`} role="list" aria-label={L.weights}>
+      <svg className="activity-weight-pie" viewBox={`0 0 ${PIE_W} ${PIE_H}`} role="list" aria-label={L.weights}>
         {!points && free > 0 && (
           <defs>
             <pattern id={patternId} className="is-free" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-              <rect className="vitality-weight-pattern-bg" width="6" height="6" />
-              <rect className="vitality-weight-pattern-fg" width="3" height="6" />
+              <rect className="activity-weight-pattern-bg" width="6" height="6" />
+              <rect className="activity-weight-pattern-fg" width="3" height="6" />
             </pattern>
           </defs>
         )}
@@ -125,9 +125,9 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
             ...(arc.key === "free" ? { fill: `url(#${patternId})` } : null),
           } as React.CSSProperties;
           return arcs.length === 1 ? (
-            <circle key={arc.key} className={`vitality-weight-segment is-${arc.key}`} cx={PIE_CX} cy={PIE_CY} r={PIE_R} role="listitem" aria-label={aria} style={style} />
+            <circle key={arc.key} className={`activity-weight-segment is-${arc.key}`} cx={PIE_CX} cy={PIE_CY} r={PIE_R} role="listitem" aria-label={aria} style={style} />
           ) : (
-            <path key={arc.key} className={`vitality-weight-segment is-${arc.key}`} d={slicePath(arc.start, arc.end)} role="listitem" aria-label={aria} style={style} />
+            <path key={arc.key} className={`activity-weight-segment is-${arc.key}`} d={slicePath(arc.start, arc.end)} role="listitem" aria-label={aria} style={style} />
           );
         })}
         {arcs.map((arc) => {
@@ -136,11 +136,11 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
           const tailX = PIE_CX + arc.side * CALLOUT_TAIL_X;
           const y = +arc.y.toFixed(1);
           return (
-            <g key={arc.key} className={`vitality-weight-legend-item is-${arc.key}`} aria-hidden="true">
-              <polyline className="vitality-weight-callout" points={`${anchor.x},${anchor.y} ${elbowX},${y} ${tailX},${y}`} />
-              <text className="vitality-weight-legend-label" x={tailX + arc.side * 5} y={y} dy="0.35em" textAnchor={arc.side === 1 ? "start" : "end"}>
+            <g key={arc.key} className={`activity-weight-legend-item is-${arc.key}`} aria-hidden="true">
+              <polyline className="activity-weight-callout" points={`${anchor.x},${anchor.y} ${elbowX},${y} ${tailX},${y}`} />
+              <text className="activity-weight-legend-label" x={tailX + arc.side * 5} y={y} dy="0.35em" textAnchor={arc.side === 1 ? "start" : "end"}>
                 {arc.key === "free" ? freeLabel : L.dim[arc.key]}
-                {arc.key !== "free" && <tspan className="vitality-weight-legend-value" dx="5">{display(arc.key)}</tspan>}
+                {arc.key !== "free" && <tspan className="activity-weight-legend-value" dx="5">{display(arc.key)}</tspan>}
               </text>
             </g>
           );
@@ -151,7 +151,7 @@ export const VitalityWeightDistribution: React.FC<Pick<Props, "config" | "labels
   );
 };
 
-export const VitalityWeightsWidget: React.FC<Props> = ({
+export const ActivityWeightsWidget: React.FC<Props> = ({
   result,
   config,
   labels: L,
@@ -169,9 +169,9 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
 
   return (
     <>
-      <VitalityWeightDistribution config={config} labels={L} result={result} />
+      <ActivityWeightDistribution config={config} labels={L} result={result} />
 
-      <table className="vitality-debug">
+      <table className="activity-debug">
         <thead>
           <tr>
             <th>{L.colDimension}</th>
@@ -190,7 +190,7 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
                 <tr className={dimension.present ? undefined : "is-excluded"}>
                   <td>
                     {split ? (
-                      <button type="button" className="vitality-split-toggle" aria-expanded={!!open} onClick={() => toggleSplit(dimension.key)}>
+                      <button type="button" className="activity-split-toggle" aria-expanded={!!open} onClick={() => toggleSplit(dimension.key)}>
                         <FontAwesomeIcon icon={faAngleDown} className={open ? "rot" : undefined} />
                         {L.dim[dimension.key]}
                       </button>
@@ -224,9 +224,9 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
                   )}
                 </tr>
                 {open && split && (
-                  <tr className="vitality-split-row">
+                  <tr className="activity-split-row">
                     <td colSpan={5}>
-                      <div className="vitality-split">
+                      <div className="activity-split">
                         <label>
                           <span>{L.commits}</span>
                           <WeightStepper value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => onSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
@@ -247,7 +247,7 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
           <tr>
             <td colSpan={3}></td>
             <td>
-              <span className={`vitality-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
+              <span className={`activity-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
                 {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
               </span>
             </td>
@@ -262,18 +262,18 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
         </tfoot>
       </table>
 
-      <div className="vitality-config">
+      <div className="activity-config">
         <div className="config-grid">
           <label>
             <span>{L.issueMode}</span>
-            <select value={config.issueMode} onChange={(e) => onIssueMode(e.target.value as VitalityConfig["issueMode"])}>
+            <select value={config.issueMode} onChange={(e) => onIssueMode(e.target.value as ActivityConfig["issueMode"])}>
               <option value="ratio">{L.modeRatio}</option>
               <option value="open">{L.modeOpen}</option>
             </select>
           </label>
           <label>
             <span>{L.xmaxMode}</span>
-            <select value={config.xmaxMode} onChange={(e) => onXmaxMode(e.target.value as VitalityConfig["xmaxMode"])}>
+            <select value={config.xmaxMode} onChange={(e) => onXmaxMode(e.target.value as ActivityConfig["xmaxMode"])}>
               <option value="max">{L.xmaxMax}</option>
               <option value="p95">{L.xmaxP95}</option>
             </select>

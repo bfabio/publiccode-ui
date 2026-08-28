@@ -365,21 +365,21 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     font-size: 12px;
     color: var(--text-tertiary, #666);
   }
-  .activity-weights-drawer .vitality-debug {
+  .activity-weights-drawer .activity-debug {
     width: 100%;
   }
-  .activity-weights-drawer .vitality-debug th:last-child,
-  .activity-weights-drawer .vitality-debug td:last-child {
+  .activity-weights-drawer .activity-debug th:last-child,
+  .activity-weights-drawer .activity-debug td:last-child {
     text-align: right;
   }
-  .activity-weights-drawer .vitality-split {
+  .activity-weights-drawer .activity-split {
     display: grid;
     grid-template-columns: max-content max-content max-content;
     justify-content: end;
     row-gap: 6px;
     padding: 10px 4px 12px;
   }
-  .activity-weights-drawer .vitality-split label {
+  .activity-weights-drawer .activity-split label {
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
@@ -388,7 +388,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
   :root[data-activity-debug-hidden] .activity-weights-btn,
   :root[data-activity-debug-hidden] .activity-custom-toggle,
   :root[data-activity-debug-hidden] .activity-custom-toggle-placeholder,
-  :root[data-activity-debug-hidden] .vitality-weights-toggle {
+  :root[data-activity-debug-hidden] .activity-weights-toggle {
     display: none !important;
   }
   :root[data-opencode-badges-hidden] .opencode-badge-list,
@@ -540,77 +540,77 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     text-align: center;
   }
   .activity-radar.is-loading { visibility: hidden; }
-  .vitality-weight-distribution {
+  .activity-weight-distribution {
     margin: 0 0 0.85rem;
   }
-  .vitality-weight-title {
+  .activity-weight-title {
     margin: 0 0 0.35rem;
     font-size: 12px;
     font-weight: 650;
     color: var(--text-secondary, #555);
     text-align: center;
   }
-  .vitality-weight-pie {
+  .activity-weight-pie {
     display: block;
     width: 100%;
     max-width: 420px;
     height: auto;
     margin: 0 auto;
   }
-  .vitality-weight-segment {
+  .activity-weight-segment {
     stroke: var(--bg-surface, #fff);
     stroke-width: 2;
     stroke-linejoin: round;
   }
-  .vitality-weight-callout {
+  .activity-weight-callout {
     fill: none;
     stroke: var(--dim-color);
     stroke-width: 1.5;
     stroke-linejoin: round;
   }
-  .vitality-weight-pie text {
+  .activity-weight-pie text {
     font-size: 11px;
     fill: currentColor;
   }
-  .vitality-weight-pie .vitality-weight-legend-item {
+  .activity-weight-pie .activity-weight-legend-item {
     color: var(--text-tertiary);
   }
-  .vitality-weight-pie .vitality-weight-legend-value {
+  .activity-weight-pie .activity-weight-legend-value {
     font-weight: 650;
   }
-  .vitality-weight-legend-value {
+  .activity-weight-legend-value {
     font-variant-numeric: tabular-nums;
   }
   .activity-badge,
   time[title] {
     cursor: help;
   }
-  .vitality-weight-distribution .is-contributors { --dim-color: #6d7ed5; }
-  .vitality-weight-distribution .is-history { --dim-color: #4da6a0; }
-  .vitality-weight-distribution .is-activity { --dim-color: #d69a58; }
-  .vitality-weight-distribution .is-stars { --dim-color: #a77ac8; }
-  .vitality-weight-distribution .is-issues { --dim-color: #cf7370; }
-  .vitality-weight-distribution .is-forks { --dim-color: #7fa265; }
-  .vitality-weight-distribution .is-free { --dim-color: #8a8f98; }
-  .vitality-weight-segment {
+  .activity-weight-distribution .is-contributors { --dim-color: #6d7ed5; }
+  .activity-weight-distribution .is-history { --dim-color: #4da6a0; }
+  .activity-weight-distribution .is-activity { --dim-color: #d69a58; }
+  .activity-weight-distribution .is-stars { --dim-color: #a77ac8; }
+  .activity-weight-distribution .is-issues { --dim-color: #cf7370; }
+  .activity-weight-distribution .is-forks { --dim-color: #7fa265; }
+  .activity-weight-distribution .is-free { --dim-color: #8a8f98; }
+  .activity-weight-segment {
     fill: var(--dim-color);
   }
-  .vitality-weight-pattern-bg {
+  .activity-weight-pattern-bg {
     fill: var(--bg-elevated, #f4f4f4);
   }
-  .vitality-weight-pattern-fg {
+  .activity-weight-pattern-fg {
     fill: var(--dim-color);
   }
-  .vitality-free-points {
+  .activity-free-points {
     font-size: 11px;
     color: var(--text-tertiary, #888);
     white-space: nowrap;
   }
-  .vitality-free-points.has-free {
+  .activity-free-points.has-free {
     color: var(--text-primary, #111);
     font-weight: 650;
   }
-  .vitality-free-points.is-over {
+  .activity-free-points.is-over {
     padding: 2px 8px;
     color: #fff;
     font-weight: 650;
@@ -619,30 +619,30 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     border-radius: var(--radius-sm, 4px);
   }
   .activity-badge.is-over-allocated,
-  .vitality-value.is-over-allocated {
+  .activity-value.is-over-allocated {
     color: #dc4c3f !important;
     color: light-dark(#c03428, #ef6a5e) !important;
   }
-  .vitality-free-points.is-empty {
+  .activity-free-points.is-empty {
     visibility: hidden;
   }
   .weight-stepper button:disabled {
     opacity: 0.35;
     cursor: default;
   }
-  .vitality-weight-segment,
-  .vitality-weight-callout,
-  .vitality-weight-legend-label,
-  .vitality-weight-legend-value {
+  .activity-weight-segment,
+  .activity-weight-callout,
+  .activity-weight-legend-label,
+  .activity-weight-legend-value {
     transition:
       opacity 0.2s ease,
       filter 0.2s ease,
       color 0.2s ease,
       transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .vitality-weight-distribution {
-    &:has(.vitality-weight-segment:hover, .vitality-weight-legend-item:hover)
-      :is(.vitality-weight-segment, .vitality-weight-legend-item > *) {
+  .activity-weight-distribution {
+    &:has(.activity-weight-segment:hover, .activity-weight-legend-item:hover)
+      :is(.activity-weight-segment, .activity-weight-legend-item > *) {
       opacity: 0.3;
       filter: saturate(0.4);
     }
@@ -657,21 +657,21 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
       filter: none;
       color: var(--text-primary, inherit);
     }
-    &:has(.is-contributors:hover) .vitality-weight-segment.is-contributors,
-    &:has(.is-history:hover) .vitality-weight-segment.is-history,
-    &:has(.is-activity:hover) .vitality-weight-segment.is-activity,
-    &:has(.is-stars:hover) .vitality-weight-segment.is-stars,
-    &:has(.is-forks:hover) .vitality-weight-segment.is-forks,
-    &:has(.is-issues:hover) .vitality-weight-segment.is-issues {
+    &:has(.is-contributors:hover) .activity-weight-segment.is-contributors,
+    &:has(.is-history:hover) .activity-weight-segment.is-history,
+    &:has(.is-activity:hover) .activity-weight-segment.is-activity,
+    &:has(.is-stars:hover) .activity-weight-segment.is-stars,
+    &:has(.is-forks:hover) .activity-weight-segment.is-forks,
+    &:has(.is-issues:hover) .activity-weight-segment.is-issues {
       filter: brightness(1.1) saturate(1.2);
       transform: var(--pop, none);
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .vitality-weight-segment,
-    .vitality-weight-callout,
-    .vitality-weight-legend-label,
-    .vitality-weight-legend-value {
+    .activity-weight-segment,
+    .activity-weight-callout,
+    .activity-weight-legend-label,
+    .activity-weight-legend-value {
       transition: none;
     }
   }

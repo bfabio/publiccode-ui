@@ -15,14 +15,14 @@ export type DimensionKey =
   | 'issues'
   | 'forks';
 
-export interface VitalityConfig {
+export interface ActivityConfig {
   weights: Record<DimensionKey, number>;
   subWeights: { phC: number; phM: number; caC: number; caM: number };
   issueMode: IssueMode;
   xmaxMode: XmaxMode;
 }
 
-export const DEFAULT_CONFIG: VitalityConfig = {
+export const DEFAULT_CONFIG: ActivityConfig = {
   weights: {
     contributors: 0.2,
     history: 0.15,
@@ -54,7 +54,7 @@ const FORGE_METRICS: ForgeMetric[] = [
   'pullRequestsRecent',
 ];
 
-export interface VitalityCap {
+export interface ActivityScoreCap {
   limit: 89;
   reason: 'disabled';
 }
@@ -118,7 +118,7 @@ export interface DimensionResult {
   rawParts?: { open: number; closed: number };
 }
 
-export interface VitalityResult {
+export interface ActivityScoreResult {
   score100: number | null;
   dimensions: DimensionResult[];
   approximated: boolean;
@@ -126,7 +126,7 @@ export interface VitalityResult {
   failed: DimensionKey[];
   covered: number;
   total: number;
-  cap: VitalityCap | null;
+  cap: ActivityScoreCap | null;
   /** Data we still mean to collect (a metric unknown or a fetch that
       failed): the score is withheld and the UI shows it as on its way. */
   pending: boolean;
@@ -170,11 +170,11 @@ function composite(
  * are approximated from per-metric catalog stats, since the true maxima of a
  * combination cannot be recovered from marginals. Simple metrics stay exact.
  */
-export function computeVitality(
+export function computeActivityScore(
   activity: SoftwareActivity,
   stats: CatalogStats | null,
-  config: VitalityConfig,
-): VitalityResult {
+  config: ActivityConfig,
+): ActivityScoreResult {
   const { weights, subWeights, issueMode, xmaxMode } = config;
   const { phC, phM, caC, caM } = subWeights;
 
@@ -296,7 +296,7 @@ export function computeVitality(
   // as a low grade. Known n/a is real evidence, so it only bounds the
   // claim (the SSL Labs model).
   const pending = failed.length > 0 || hasUnknown;
-  const cap: VitalityCap | null =
+  const cap: ActivityScoreCap | null =
     !pending && hasDisabled ? { limit: 89, reason: 'disabled' } : null;
 
   const overAllocated = freeWeightPoints(weights) < 0;

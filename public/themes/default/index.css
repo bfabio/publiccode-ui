@@ -894,17 +894,17 @@ nav[aria-label="Breadcrumb"] li + li::before {
     color: #c0bfbc;
   }
 }
-.vitality-unavailable {
+.activity-unavailable {
   margin: 0;
   color: var(--text-tertiary);
   font-style: italic;
 }
-.vitality-scope {
+.activity-scope {
   margin: 0 0 4px;
   color: var(--text-tertiary);
   font-size: 0.85em;
 }
-.vitality-scope.vitality-cap-warning {
+.activity-scope.activity-cap-warning {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -1374,7 +1374,7 @@ dialog nav button:hover {
   to { background-position: -120% 0; }
 }
 
-/* ── detail: activity & vitality ── */
+/* ── detail: activity metrics & score ── */
 
 .software-metrics .metrics-grid {
   display: grid;
@@ -1440,7 +1440,7 @@ dialog nav button:hover {
   width: 100%;
 }
 
-.vitality-badge {
+.activity-score-badge {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -1451,10 +1451,10 @@ dialog nav button:hover {
   border: 1px solid var(--border-standard);
   border-radius: var(--radius-lg);
 }
-.vitality-badge.is-expanded {
+.activity-score-badge.is-expanded {
   row-gap: 0;
 }
-.vitality-label {
+.activity-label {
   grid-column: 1 / -1;
   font-size: 10px;
   font-weight: 510;
@@ -1462,12 +1462,12 @@ dialog nav button:hover {
   text-transform: uppercase;
   color: var(--text-quaternary);
 }
-.vitality-score {
+.activity-score {
   display: flex;
   align-items: baseline;
   gap: 4px;
 }
-.vitality-value {
+.activity-value {
   font-size: 2.5rem;
   font-weight: 590;
   letter-spacing: -0.704px;
@@ -1475,29 +1475,29 @@ dialog nav button:hover {
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
-.vitality-max {
+.activity-max {
   font-size: 0.9rem;
   color: var(--text-quaternary);
 }
-.vitality-meta {
+.activity-score-meta {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.vitality-title {
+.activity-title {
   font-size: 13px;
   font-weight: 510;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.vitality-title abbr {
+.activity-title abbr {
   color: var(--text-quaternary);
   text-decoration: none;
   cursor: help;
 }
-.vitality-weights-toggle {
+.activity-weights-toggle {
   display: flex;
   grid-column: 1 / -1;
   align-items: center;
@@ -1513,41 +1513,41 @@ dialog nav button:hover {
   padding: 0.75rem 0 0;
   cursor: pointer;
 }
-.vitality-weights-toggle:hover,
-.vitality-weights-toggle:focus-visible {
+.activity-weights-toggle:hover,
+.activity-weights-toggle:focus-visible {
   color: var(--accent-bright);
 }
-.vitality-value.is-custom {
+.activity-value.is-custom {
   color: #c0bfbc;
 }
-.vitality-value.is-capped-unknown {
+.activity-value.is-capped-unknown {
   color: #c86e66;
 }
-.vitality-weights-toggle svg {
+.activity-weights-toggle svg {
   transition: transform 0.15s;
 }
-.vitality-weights-toggle svg.rot {
+.activity-weights-toggle svg.rot {
   transform: rotate(180deg);
 }
-.vitality-weights-panel {
+.activity-weights-panel {
   grid-column: 1 / -1;
   padding-top: 0.75rem;
 }
-.vitality-badge.is-loading,
+.activity-score-badge.is-loading,
 .activity-settings.is-loading {
   visibility: hidden;
 }
-.vitality-weights-panel .vitality-debug {
+.activity-weights-panel .activity-debug {
   margin-top: 0;
 }
 
-.vitality-debug {
+.activity-debug {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
   font-size: 13px;
 }
-.vitality-debug th {
+.activity-debug th {
   text-align: left;
   font-size: 11px;
   text-transform: uppercase;
@@ -1557,19 +1557,19 @@ dialog nav button:hover {
   padding: 6px 8px;
   border-bottom: 1px solid var(--border-standard);
 }
-.vitality-debug td {
+.activity-debug td {
   padding: 8px;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   vertical-align: middle;
 }
-.vitality-debug td:first-child {
+.activity-debug td:first-child {
   color: var(--text-primary);
   font-weight: 510;
   font-variant-numeric: normal;
 }
-.vitality-debug .bar-track {
+.activity-debug .bar-track {
   display: inline-block;
   vertical-align: middle;
   width: 60px;
@@ -1579,27 +1579,27 @@ dialog nav button:hover {
   overflow: hidden;
   margin-right: 8px;
 }
-.vitality-debug .bar-fill {
+.activity-debug .bar-fill {
   display: block;
   height: 100%;
   background: var(--accent);
   border-radius: var(--radius-pill);
 }
-.vitality-debug tr.is-excluded td,
-.vitality-debug .is-na {
+.activity-debug tr.is-excluded td,
+.activity-debug .is-na {
   color: var(--text-quaternary);
 }
-.vitality-debug abbr {
+.activity-debug abbr {
   cursor: help;
   color: var(--text-quaternary);
   text-decoration: none;
 }
-.vitality-debug tfoot td {
+.activity-debug tfoot td {
   font-weight: 590;
   color: var(--text-primary);
   border-bottom: none;
 }
-.vitality-debug .weight-input {
+.activity-debug .weight-input {
   width: 64px;
   font: inherit;
   font-size: 13px;
@@ -1611,10 +1611,10 @@ dialog nav button:hover {
   font-variant-numeric: tabular-nums;
   outline: none;
 }
-.vitality-debug .weight-input:focus {
+.activity-debug .weight-input:focus {
   border-color: var(--accent);
 }
-.vitality-split-toggle {
+.activity-split-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1626,31 +1626,31 @@ dialog nav button:hover {
   padding: 0;
   cursor: pointer;
 }
-.vitality-split-toggle svg {
+.activity-split-toggle svg {
   font-size: 10px;
   color: var(--text-quaternary);
   transition: transform 0.15s;
 }
-.vitality-split-toggle svg.rot {
+.activity-split-toggle svg.rot {
   transform: rotate(180deg);
 }
-.vitality-split-row td {
+.activity-split-row td {
   padding: 0;
 }
-.vitality-split {
+.activity-split {
   display: flex;
   gap: 16px;
   padding: 10px 8px 12px 28px;
   background: var(--bg-elevated);
 }
-.vitality-split label {
+.activity-split label {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
   color: var(--text-tertiary);
 }
-.vitality-split input {
+.activity-split input {
   width: 64px;
   font: inherit;
   font-size: 13px;
@@ -1662,11 +1662,11 @@ dialog nav button:hover {
   font-variant-numeric: tabular-nums;
   outline: none;
 }
-.vitality-split input:focus {
+.activity-split input:focus {
   border-color: var(--accent);
 }
 
-.vitality-config {
+.activity-config {
   margin-top: 1rem;
   padding: 1.25rem;
   background: var(--bg-surface);
@@ -1676,13 +1676,13 @@ dialog nav button:hover {
   flex-direction: column;
   gap: 1rem;
 }
-.vitality-config fieldset {
+.activity-config fieldset {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem 1rem;
   margin: 0;
 }
-.vitality-config legend {
+.activity-config legend {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -1690,7 +1690,7 @@ dialog nav button:hover {
   font-weight: 510;
   padding: 0 6px;
 }
-.vitality-config .weight-sum {
+.activity-config .weight-sum {
   text-transform: none;
   color: var(--text-tertiary);
   margin-left: 8px;
@@ -1722,7 +1722,7 @@ dialog nav button:hover {
 .config-grid select:focus {
   border-color: var(--accent);
 }
-.vitality-reset {
+.activity-reset {
   font: inherit;
   font-size: 12px;
   font-weight: 510;
@@ -1733,11 +1733,11 @@ dialog nav button:hover {
   padding: 5px 14px;
   cursor: pointer;
 }
-.vitality-reset:hover {
+.activity-reset:hover {
   color: var(--text-primary);
   border-color: var(--text-quaternary);
 }
-.vitality-override {
+.activity-override {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1750,7 +1750,7 @@ dialog nav button:hover {
   border-radius: var(--radius-pill);
   padding: 3px 6px 3px 10px;
 }
-.vitality-override button {
+.activity-override button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1766,8 +1766,8 @@ dialog nav button:hover {
   opacity: 0.55;
   transition: opacity 0.15s;
 }
-.vitality-override:hover button,
-.vitality-override button:focus-visible {
+.activity-override:hover button,
+.activity-override button:focus-visible {
   opacity: 1;
 }
 .weight-stepper {

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import { readSoftwareConfig, withActivityConfig } from "../lib/vitalityStore";
+import { readSoftwareConfig, withActivityConfig } from "../lib/activityStore";
 
 interface SearchItem {
   id: string;
