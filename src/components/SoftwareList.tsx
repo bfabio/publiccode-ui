@@ -6,7 +6,7 @@ import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
 import { sortByScores, sortItems, type SortBy, type SortDirection } from "../lib/sortSoftware";
 import { toCsv } from "../lib/csv";
-import { useActivityConfigs, useActivityDebugVisibility, useCapWarningVisibility } from "../lib/useVitalityConfig";
+import { useActivityConfigs, useActivityDebugVisibility } from "../lib/useVitalityConfig";
 import { withActivityConfig } from "../lib/vitalityStore";
 import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as VITALITY_LABELS } from "../lib/vitalityLabels";
@@ -102,7 +102,6 @@ const tableSortsFor = (col: TableColumn): [ListSortBy, ListSortBy] => {
 
 export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; labels?: Labels; locale?: string; catalogs?: CatalogInfo[]; statsByCatalog?: Record<string, CatalogStats>; globalStats?: CatalogStats | null; title?: string }> = ({ items, base, labels, locale = 'en', catalogs, statsByCatalog = {}, globalStats, title }) => {
   const { configFor, hasOverride, ready: activityConfigReady, setWeightFor, setSplitFor, setIssueModeFor, setXmaxModeFor, resetFor } = useActivityConfigs();
-  const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const { enabled: debugEnabled } = useActivityDebugVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
@@ -545,7 +544,6 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               }
               const custom = customConfig !== null;
               const capped = v.score100 !== null && v.cap !== null && v.score100 === v.cap.limit;
-              const showCapWarning = capWarningsReady && capWarningsEnabled && capped;
               const customNote = custom
                 ? ` (${l.activityCustomWeights ?? "Custom weights for this software"})`
                 : "";
@@ -623,12 +621,12 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 ? ` (${l.activityCapDisabled ?? "capped at 89: a forge feature is disabled"})`
                 : "";
               return (
-                  <div className={`activity-index${showCapWarning ? " is-capped-unknown" : ""}`}>
+                  <div className={`activity-index${capped ? " is-capped-unknown" : ""}`}>
                     <div className="activity-index-label">
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
-                  <span className={`activity-badge${custom ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
+                  <span className={`activity-badge${custom ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
                     {Math.round(v.score100)}
                   </span>
                     {scorePanel}

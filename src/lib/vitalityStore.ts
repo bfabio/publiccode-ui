@@ -3,7 +3,6 @@ import { DEFAULT_CONFIG, type VitalityConfig } from './vitality';
 export const STORAGE_KEY = 'publiccode-ui:vitality';
 export const URL_PARAM = 'activity';
 export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
-export const CAP_WARNING_VISIBILITY_KEY = 'publiccode-ui:activity-cap-warning';
 export const ACTIVITY_DEBUG_VISIBILITY_KEY = 'publiccode-ui:activity-debug';
 
 export function readOpenCodeBadgeVisibility(): boolean {
@@ -25,18 +24,6 @@ export function writeOpenCodeBadgeVisibility(enabled: boolean): void {
   if (enabled) window.localStorage.setItem(OPENCODE_BADGES_VISIBILITY_KEY, '1');
   else window.localStorage.removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
   emitStoreChange(OPENCODE_BADGES_VISIBILITY_KEY);
-}
-
-export function readCapWarningVisibility(): boolean {
-  if (typeof window === 'undefined') return true;
-  return window.localStorage.getItem(CAP_WARNING_VISIBILITY_KEY) !== '0';
-}
-
-export function writeCapWarningVisibility(enabled: boolean): void {
-  if (typeof window === 'undefined') return;
-  if (enabled) window.localStorage.removeItem(CAP_WARNING_VISIBILITY_KEY);
-  else window.localStorage.setItem(CAP_WARNING_VISIBILITY_KEY, '0');
-  emitStoreChange(CAP_WARNING_VISIBILITY_KEY);
 }
 
 export function readActivityDebugVisibility(): boolean {
@@ -132,7 +119,7 @@ export function readAllSoftwareConfigs(): Map<string, VitalityConfig> {
 export function subscribeStore(callback: (key: string | null) => void): () => void {
   if (typeof window === 'undefined') return () => {};
   const handler = (e: StorageEvent) => {
-    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === CAP_WARNING_VISIBILITY_KEY || e.key === ACTIVITY_DEBUG_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
+    if (e.key === null || e.key === STORAGE_KEY || e.key === OPENCODE_BADGES_VISIBILITY_KEY || e.key === ACTIVITY_DEBUG_VISIBILITY_KEY || e.key.startsWith(SOFTWARE_PREFIX)) callback(e.key);
   };
   window.addEventListener('storage', handler);
   tabListeners.add(callback);

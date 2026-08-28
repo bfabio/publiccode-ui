@@ -6,7 +6,7 @@ import { formatDate, relativeDate } from "../lib/date.js";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
-import { useActivityDebugVisibility, useCapWarningVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
+import { useActivityDebugVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
 import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
 
@@ -29,7 +29,6 @@ interface Props {
 export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en", repoUrl = null, overview = null }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
-  const { enabled: capWarningsEnabled, ready: capWarningsReady } = useCapWarningVisibility();
   const { enabled: debugEnabled } = useActivityDebugVisibility();
   const [showDebug, setShowDebug] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -41,7 +40,6 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
 
   const result = useMemo(() => computeVitality(activity, stats, config), [activity, stats, config]);
   const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
-  const showCapWarning = capWarningsReady && capWarningsEnabled && capped;
 
   const win = activity.recentDays ?? 180;
   const code: CodeRow[] = [
@@ -133,7 +131,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
         </div>
       </div>
 
-      <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${showCapWarning ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
+      <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${capped ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
         <span className="vitality-label">{L.scoreLabel}</span>
         {result.overAllocated ? (
           <div className="vitality-score" title={L.overAllocatedTitle}>
@@ -144,7 +142,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
           <p className="vitality-unavailable"><FontAwesomeIcon icon={faHourglassHalf} /> {L.scorePending}</p>
         ) : (
           <div className="vitality-score">
-            <span className={`vitality-value${overridden ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
+            <span className={`vitality-value${overridden ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
             <span className="vitality-max">/ 100</span>
           </div>
         )}
@@ -158,7 +156,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
             </span>
           )}
           {capped && (
-            <p className={`vitality-scope${showCapWarning ? " vitality-cap-warning" : ""}`}>
+            <p className="vitality-scope vitality-cap-warning">
               {L.capDisabled}
             </p>
           )}
