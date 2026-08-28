@@ -193,7 +193,9 @@ export const VitalityWeightsWidget: React.FC<Props> = ({
             <td>
               {result.overAllocated
                 ? <span title={L.overAllocatedTitle}>?</span>
-                : result.score100 === null ? L.na : result.score100.toFixed(1)}
+                : result.score100 === null
+                  ? <span title={L.scorePendingTitle}>{L.stateUnknown}</span>
+                  : result.score100.toFixed(1)}
             </td>
           </tr>
         </tfoot>

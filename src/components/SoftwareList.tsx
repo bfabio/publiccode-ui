@@ -1,6 +1,6 @@
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faDownload, faFilter, faGavel, faList, faRotateLeft, faSliders, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faRotateLeft, faSliders, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { formatDate, relativeDate } from "../lib/date.js";
 import { computeVitality, DIMENSION_ORDER, type DimensionKey } from "../lib/vitality";
@@ -78,10 +78,9 @@ interface Labels {
   showMore: string;
   hasActivityData?: string;
   activityScore?: string;
-  activityScoreNa?: string;
+  activityScorePending?: string;
   activityScoreScope?: string;
   activityCapDisabled?: string;
-  activityCapUnknown?: string;
   activityCustomWeights?: string;
   activityDataCompleteness?: string;
   viewList?: string;
@@ -191,7 +190,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const incompleteDataCount = useMemo(() => items.filter((item) => {
     if (!item.activity) return true;
     const result = computeVitality(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id));
-    return result.score100 === null || result.cap?.reason === "unknown";
+    return result.score100 === null;
   }).length, [items, globalStats, statsByCatalog, configFor]);
   const incompleteDataPercentage = items.length === 0 ? 0 : Math.round((incompleteDataCount / items.length) * 100);
   const incompleteDataSummary = (l.activityDataCompleteness ?? "{total} total - {missing} have missing data = {percentage}%")
@@ -464,7 +463,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                           v.overAllocated
                             ? <span className="activity-badge is-over-allocated" title={weightLabels.overAllocatedTitle}>?</span>
                             : v.score100 === null
-                              ? <span className="activity-badge is-na">n/a</span>
+                              ? <span className="activity-badge is-na" title={weightLabels.scorePendingTitle}><FontAwesomeIcon icon={faHourglassHalf} /></span>
                               : <span className="activity-badge">{Math.round(v.score100)}</span>
                         )}
                       </td>
@@ -545,8 +544,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 );
               }
               const custom = customConfig !== null;
-              const hasUnknownCap = v.score100 !== null && v.cap?.reason === "unknown" && v.score100 === v.cap.limit;
-              const showCapWarning = capWarningsReady && capWarningsEnabled && hasUnknownCap;
+              const capped = v.score100 !== null && v.cap !== null && v.score100 === v.cap.limit;
+              const showCapWarning = capWarningsReady && capWarningsEnabled && capped;
               const customNote = custom
                 ? ` (${l.activityCustomWeights ?? "Custom weights for this software"})`
                 : "";
@@ -585,7 +584,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       </button>
                     </div>
                   </div>
-                  {v.score100 === null && !v.overAllocated && <p>{weightLabels.scoreUnavailable}</p>}
+                  {v.score100 === null && !v.overAllocated && <p>{weightLabels.scorePending}</p>}
                   <VitalityWeightsWidget
                     result={v}
                     config={activityConfig}
@@ -608,8 +607,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                       {customWeightTrigger}
                     </div>
-                    <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScoreNa ?? "Activity score unavailable"}${customNote}`}>
-                      {v.overAllocated ? "?" : "n/a"}
+                    <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
+                      {v.overAllocated ? "?" : <FontAwesomeIcon icon={faHourglassHalf} />}
                     </span>
                     {scorePanel}
                   </div>
@@ -621,9 +620,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                     .replace("{total}", String(v.total))})`
                 : "";
               const capNote = v.cap && v.score100 === v.cap.limit
-                ? ` (${v.cap.reason === "disabled"
-                    ? (l.activityCapDisabled ?? "capped at 89: a forge feature is disabled")
-                    : (l.activityCapUnknown ?? "capped at 79: some metrics are unknown")})`
+                ? ` (${l.activityCapDisabled ?? "capped at 89: a forge feature is disabled"})`
                 : "";
               return (
                   <div className={`activity-index${showCapWarning ? " is-capped-unknown" : ""}`}>

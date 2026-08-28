@@ -799,6 +799,9 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-size: 12px;
   font-weight: 500;
 }
+.activity-badge.is-na svg {
+  font-size: 20px;
+}
 .catalog-results .categories {
   display: flex;
   gap: 4px;

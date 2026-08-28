@@ -56,7 +56,7 @@ export const ActivityRadar: React.FC<Props> = ({ softwareId, activity, stats, lo
             return <text key={axis.label} x={position.x} y={position.y} className="radar-label" textAnchor="middle" dominantBaseline="central">{axis.label}</text>;
           })}
         </svg>
-      ) : <p className="radar-empty">{labels.scoreUnavailable}</p>}
+      ) : <p className="radar-empty">{labels.scorePending}</p>}
     </div>
   );
 };

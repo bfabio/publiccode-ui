@@ -16,9 +16,9 @@ describe('computeVitality with missing pull requests', () => {
 
   const result = computeVitality(activity, stats, DEFAULT_CONFIG);
 
-  it('produces a finite, positive score', () => {
-    expect(Number.isNaN(result.score100)).toBe(false);
-    expect(result.score100).toBeGreaterThan(0);
+  it('suppresses the score while the forge metrics are pending', () => {
+    expect(result.score100).toBeNull();
+    expect(result.pending).toBe(true);
   });
 
   it('keeps the composite dimensions present using commits alone', () => {
@@ -32,12 +32,13 @@ describe('computeVitality with missing pull requests', () => {
 });
 
 describe('computeVitality with no commit or pull request data', () => {
-  it('excludes the composite dimensions and stays finite', () => {
+  it('excludes the composite dimensions and suppresses the score', () => {
     const activity = { v: 1, tags: 0, recentDays: 180, contributors: 5 } as SoftwareActivity;
     const result = computeVitality(activity, stats, DEFAULT_CONFIG);
     const history = result.dimensions.find((d) => d.key === 'history')!;
     expect(history.present).toBe(false);
-    expect(Number.isNaN(result.score100)).toBe(false);
+    expect(result.score100).toBeNull();
+    expect(result.pending).toBe(true);
   });
 });
 
@@ -50,6 +51,7 @@ describe('computeVitality with a failed forge fetch', () => {
     } as SoftwareActivity;
     const result = computeVitality(activity, stats, DEFAULT_CONFIG);
     expect(result.score100).toBeNull();
+    expect(result.pending).toBe(true);
     expect(result.failed).toEqual(['stars']);
   });
 
@@ -69,17 +71,18 @@ describe('computeVitality with a failed forge fetch', () => {
 });
 
 describe('computeVitality with absent forge metrics', () => {
-  it('scores what is present and reports the coverage', () => {
+  it('suppresses the score, reports pending and the coverage', () => {
     const activity = {
       v: 1, tags: 74, recentDays: 180, contributors: 30,
       commitsAllTime: 4194, commitsRecent: 485,
     } as SoftwareActivity;
     const result = computeVitality(activity, stats, DEFAULT_CONFIG);
-    expect(result.score100).not.toBeNull();
+    expect(result.score100).toBeNull();
+    expect(result.pending).toBe(true);
     expect(result.failed).toEqual([]);
     expect(result.covered).toBe(3);
     expect(result.total).toBe(6);
-    expect(result.cap).toEqual({ limit: 79, reason: 'unknown' });
+    expect(result.cap).toBeNull();
   });
 });
 
@@ -100,6 +103,7 @@ describe('computeVitality caps on incomplete evidence', () => {
   it('reports no cap with full coverage', () => {
     const r = computeVitality(full, richStats, DEFAULT_CONFIG);
     expect(r.cap).toBeNull();
+    expect(r.pending).toBe(false);
     expect(r.score100).toBeGreaterThan(89);
   });
 
@@ -110,23 +114,27 @@ describe('computeVitality caps on incomplete evidence', () => {
       richStats, DEFAULT_CONFIG,
     );
     expect(r.cap).toEqual({ limit: 89, reason: 'disabled' });
+    expect(r.pending).toBe(false);
     expect(r.score100).toBe(89);
   });
 
-  it('caps at 79 when a metric is unknown', () => {
+  it('suppresses the score when a metric is unknown', () => {
     const { issuesOpen, issuesClosed, ...rest } = full;
     const r = computeVitality(rest as SoftwareActivity, richStats, DEFAULT_CONFIG);
-    expect(r.cap).toEqual({ limit: 79, reason: 'unknown' });
-    expect(r.score100).toBe(79);
+    expect(r.score100).toBeNull();
+    expect(r.pending).toBe(true);
+    expect(r.cap).toBeNull();
   });
 
-  it('lets unknown win over disabled', () => {
+  it('lets unknown suppression win over the disabled cap', () => {
     const { issuesOpen, issuesClosed, stars, ...rest } = full;
     const r = computeVitality(
       { ...rest, disabled: ['issues'] } as SoftwareActivity,
       richStats, DEFAULT_CONFIG,
     );
-    expect(r.cap).toEqual({ limit: 79, reason: 'unknown' });
+    expect(r.score100).toBeNull();
+    expect(r.pending).toBe(true);
+    expect(r.cap).toBeNull();
   });
 
   it('does not truncate a score already under the cap', () => {
@@ -138,6 +146,7 @@ describe('computeVitality caps on incomplete evidence', () => {
     } as SoftwareActivity;
     const r = computeVitality(low, richStats, DEFAULT_CONFIG);
     expect(r.cap).toEqual({ limit: 89, reason: 'disabled' });
+    expect(r.pending).toBe(false);
     expect(r.score100).toBeGreaterThan(0);
     expect(r.score100).toBeLessThan(89);
   });
@@ -148,6 +157,7 @@ describe('computeVitality caps on incomplete evidence', () => {
       richStats, DEFAULT_CONFIG,
     );
     expect(r.score100).toBeNull();
+    expect(r.pending).toBe(true);
     expect(r.cap).toBeNull();
   });
 
@@ -262,6 +272,8 @@ describe('over-allocated weights refuse the score', () => {
   const activity = {
     v: 1, tags: 74, recentDays: 180, contributors: 30,
     commitsAllTime: 4194, commitsRecent: 485,
+    pullRequestsAllTime: 210, pullRequestsRecent: 14,
+    stars: 2000, forks: 500, issuesOpen: 5, issuesClosed: 140,
   } as SoftwareActivity;
 
   it('reports overAllocated and a null score past 100', () => {
