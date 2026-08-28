@@ -19,29 +19,29 @@ import {
   readActivityDebugVisibility,
   writeActivityDebugVisibility,
   ACTIVITY_DEBUG_VISIBILITY_KEY,
-} from './vitalityStore';
+} from './activityStore';
 import {
   allocateWeight,
   DEFAULT_CONFIG,
-  type VitalityConfig,
+  type ActivityConfig,
   type DimensionKey,
-} from './vitality';
+} from './activityScore';
 
-type SubKey = keyof VitalityConfig['subWeights'];
+type SubKey = keyof ActivityConfig['subWeights'];
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-function applyWeight(c: VitalityConfig, key: DimensionKey, value: number): VitalityConfig {
+function applyWeight(c: ActivityConfig, key: DimensionKey, value: number): ActivityConfig {
   return { ...c, weights: allocateWeight(c.weights, key, value) };
 }
 
-function applySplit(c: VitalityConfig, edited: SubKey, other: SubKey, value: number): VitalityConfig {
+function applySplit(c: ActivityConfig, edited: SubKey, other: SubKey, value: number): ActivityConfig {
   const v = round2(Math.max(0, Math.min(1, value)));
   return { ...c, subWeights: { ...c.subWeights, [edited]: v, [other]: round2(1 - v) } };
 }
 
 export function useGlobalActivityConfig() {
-  const [config, setConfig] = useState<VitalityConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<ActivityConfig>(DEFAULT_CONFIG);
   const [ready, setReady] = useState(false);
   useClientLayoutEffect(() => {
     const load = () => setConfig(readGlobalConfig());
@@ -49,7 +49,7 @@ export function useGlobalActivityConfig() {
     setReady(true);
     return subscribeStore(load);
   }, []);
-  const update = (next: VitalityConfig) => {
+  const update = (next: ActivityConfig) => {
     setConfig(next);
     writeGlobalConfig(next);
   };
@@ -58,14 +58,14 @@ export function useGlobalActivityConfig() {
     ready,
     setWeight: (k: DimensionKey, v: number) => update(applyWeight(config, k, v)),
     setSplit: (e: SubKey, o: SubKey, v: number) => update(applySplit(config, e, o, v)),
-    setIssueMode: (m: VitalityConfig['issueMode']) => update({ ...config, issueMode: m }),
-    setXmaxMode: (m: VitalityConfig['xmaxMode']) => update({ ...config, xmaxMode: m }),
+    setIssueMode: (m: ActivityConfig['issueMode']) => update({ ...config, issueMode: m }),
+    setXmaxMode: (m: ActivityConfig['xmaxMode']) => update({ ...config, xmaxMode: m }),
     reset: () => update(DEFAULT_CONFIG),
   };
 }
 
 export function usePageActivityConfig(softwareId: string) {
-  const [config, setConfig] = useState<VitalityConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<ActivityConfig>(DEFAULT_CONFIG);
   const [overridden, setOverridden] = useState(false);
   const [ready, setReady] = useState(false);
   const overriddenRef = useRef(overridden);
@@ -99,7 +99,7 @@ export function usePageActivityConfig(softwareId: string) {
     });
   }, [softwareId]);
 
-  const edit = (next: VitalityConfig) => {
+  const edit = (next: ActivityConfig) => {
     setConfig(next);
     writeSoftwareConfig(softwareId, next);
     writeUrlConfig(next);
@@ -112,8 +112,8 @@ export function usePageActivityConfig(softwareId: string) {
     ready,
     setWeight: (k: DimensionKey, v: number) => edit(applyWeight(config, k, v)),
     setSplit: (e: SubKey, o: SubKey, v: number) => edit(applySplit(config, e, o, v)),
-    setIssueMode: (m: VitalityConfig['issueMode']) => edit({ ...config, issueMode: m }),
-    setXmaxMode: (m: VitalityConfig['xmaxMode']) => edit({ ...config, xmaxMode: m }),
+    setIssueMode: (m: ActivityConfig['issueMode']) => edit({ ...config, issueMode: m }),
+    setXmaxMode: (m: ActivityConfig['xmaxMode']) => edit({ ...config, xmaxMode: m }),
     resetToGlobal: () => {
       clearSoftwareConfig(softwareId);
       clearUrlConfig();
@@ -124,8 +124,8 @@ export function usePageActivityConfig(softwareId: string) {
 }
 
 export function useActivityConfigs() {
-  const [global, setGlobal] = useState<VitalityConfig>(DEFAULT_CONFIG);
-  const [overrides, setOverrides] = useState<Map<string, VitalityConfig>>(
+  const [global, setGlobal] = useState<ActivityConfig>(DEFAULT_CONFIG);
+  const [overrides, setOverrides] = useState<Map<string, ActivityConfig>>(
     () => new Map(),
   );
   const [ready, setReady] = useState(false);
@@ -140,7 +140,7 @@ export function useActivityConfigs() {
     return subscribeStore(load);
   }, []);
 
-  const updateFor = (id: string, next: VitalityConfig) => {
+  const updateFor = (id: string, next: ActivityConfig) => {
     writeSoftwareConfig(id, next);
     setOverrides((current) => new Map(current).set(id, next));
   };
@@ -159,10 +159,10 @@ export function useActivityConfigs() {
     setSplitFor: (id: string, edited: SubKey, other: SubKey, value: number) => {
       updateFor(id, applySplit(overrides.get(id) ?? global, edited, other, value));
     },
-    setIssueModeFor: (id: string, mode: VitalityConfig['issueMode']) => {
+    setIssueModeFor: (id: string, mode: ActivityConfig['issueMode']) => {
       updateFor(id, { ...(overrides.get(id) ?? global), issueMode: mode });
     },
-    setXmaxModeFor: (id: string, mode: VitalityConfig['xmaxMode']) => {
+    setXmaxModeFor: (id: string, mode: ActivityConfig['xmaxMode']) => {
       updateFor(id, { ...(overrides.get(id) ?? global), xmaxMode: mode });
     },
     resetFor: (id: string) => {

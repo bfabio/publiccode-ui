@@ -2,8 +2,8 @@ import React from "react";
 import {
   useActivityDebugVisibility,
   useOpenCodeBadgeVisibility,
-} from "../lib/useVitalityConfig";
-import { LABELS } from "../lib/vitalityLabels";
+} from "../lib/useActivityConfig";
+import { LABELS } from "../lib/activityLabels";
 
 interface PreferenceToggleProps {
   label: string;

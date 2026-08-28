@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn, faAngleDown, faHourglassHalf, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
-import { computeVitality } from "../lib/vitality";
+import { computeActivityScore } from "../lib/activityScore";
 import { formatDate, relativeDate } from "../lib/date.js";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
-import { useActivityDebugVisibility, usePageActivityConfig } from "../lib/useVitalityConfig";
-import { LABELS } from "../lib/vitalityLabels";
-import { VitalityWeightsWidget } from "./VitalityWeightsWidget";
+import { useActivityDebugVisibility, usePageActivityConfig } from "../lib/useActivityConfig";
+import { LABELS } from "../lib/activityLabels";
+import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
 
 const fmt = (n: number | null | undefined, locale: string) =>
   typeof n === "number" ? n.toLocaleString(locale) : null;
@@ -38,7 +38,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
     if (window.confirm(L.resetGlobalConfirmation)) resetToGlobal();
   };
 
-  const result = useMemo(() => computeVitality(activity, stats, config), [activity, stats, config]);
+  const result = useMemo(() => computeActivityScore(activity, stats, config), [activity, stats, config]);
   const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
 
   const win = activity.recentDays ?? 180;
@@ -131,24 +131,24 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
         </div>
       </div>
 
-      <div className={`vitality-badge${showDebug ? " is-expanded" : ""}${capped ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
-        <span className="vitality-label">{L.scoreLabel}</span>
+      <div className={`activity-score-badge${showDebug ? " is-expanded" : ""}${capped ? " is-capped-unknown" : ""}${ready ? "" : " is-loading"}`}>
+        <span className="activity-label">{L.scoreLabel}</span>
         {result.overAllocated ? (
-          <div className="vitality-score" title={L.overAllocatedTitle}>
-            <span className="vitality-value is-over-allocated">?</span>
-            <span className="vitality-max">/ 100</span>
+          <div className="activity-score" title={L.overAllocatedTitle}>
+            <span className="activity-value is-over-allocated">?</span>
+            <span className="activity-max">/ 100</span>
           </div>
         ) : result.score100 === null ? (
-          <p className="vitality-unavailable"><FontAwesomeIcon icon={faHourglassHalf} /> {L.scorePending}</p>
+          <p className="activity-unavailable"><FontAwesomeIcon icon={faHourglassHalf} /> {L.scorePending}</p>
         ) : (
-          <div className="vitality-score">
-            <span className={`vitality-value${overridden ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
-            <span className="vitality-max">/ 100</span>
+          <div className="activity-score">
+            <span className={`activity-value${overridden ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
+            <span className="activity-max">/ 100</span>
           </div>
         )}
-        <div className="vitality-meta">
+        <div className="activity-score-meta">
           {overridden && (
-            <span className="vitality-override">
+            <span className="activity-override">
               <span>{L.overrideActive}</span>
               <button type="button" onClick={confirmResetToGlobal} title={L.resetGlobal} aria-label={L.resetGlobal}>
                 <FontAwesomeIcon icon={faRotateLeft} />
@@ -156,21 +156,21 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
             </span>
           )}
           {capped && (
-            <p className="vitality-scope vitality-cap-warning">
+            <p className="activity-scope activity-cap-warning">
               {L.capDisabled}
             </p>
           )}
         </div>
         {debugEnabled && (
-        <button type="button" className="vitality-weights-toggle" onClick={() => setShowDebug((s) => !s)} aria-expanded={showDebug}>
+        <button type="button" className="activity-weights-toggle" onClick={() => setShowDebug((s) => !s)} aria-expanded={showDebug}>
           <span>{showDebug ? L.debugHide : L.debugShow}</span>
           <FontAwesomeIcon icon={faAngleDown} className={showDebug ? "rot" : undefined} />
         </button>
         )}
 
         {showDebug && debugEnabled && (
-          <div className="vitality-weights-panel">
-            <VitalityWeightsWidget
+          <div className="activity-weights-panel">
+            <ActivityWeightsWidget
               result={result}
               config={config}
               labels={L}

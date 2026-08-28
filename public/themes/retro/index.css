@@ -412,13 +412,13 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .settings-switch.is-on { background: #000; }
 .settings-switch.is-on > span { transform: translateX(14px); }
 .settings-switch:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
-.vitality-value.is-custom {
+.activity-value.is-custom {
   color: #c0bfbc;
 }
-.vitality-value.is-capped-unknown {
+.activity-value.is-capped-unknown {
   color: #a64d45;
 }
-.vitality-scope.vitality-cap-warning {
+.activity-scope.activity-cap-warning {
   display: inline-flex;
   align-items: center;
   gap: 4px;

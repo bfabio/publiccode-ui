@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
-import { DIMENSION_ORDER, freeWeightPoints, type VitalityConfig, type DimensionKey } from "../lib/vitality";
-import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useVitalityConfig";
-import { isDefaultConfig } from "../lib/vitalityStore";
-import { LABELS } from "../lib/vitalityLabels";
+import { DIMENSION_ORDER, freeWeightPoints, type ActivityConfig, type DimensionKey } from "../lib/activityScore";
+import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useActivityConfig";
+import { isDefaultConfig } from "../lib/activityStore";
+import { LABELS } from "../lib/activityLabels";
 import { WeightStepper } from "./WeightStepper";
 
-type SubKey = keyof VitalityConfig["subWeights"];
+type SubKey = keyof ActivityConfig["subWeights"];
 
 const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
   history: { c: "phC", m: "phM" },
@@ -75,7 +75,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
           </div>
           <p className="settings-intro">{L.settingsIntro}</p>
 
-          <table className="vitality-debug">
+          <table className="activity-debug">
             <thead>
               <tr>
                 <th>{L.colDimension}</th>
@@ -99,9 +99,9 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
                       </td>
                     </tr>
                     {split && (
-                      <tr className="vitality-split-row">
+                      <tr className="activity-split-row">
                         <td colSpan={2}>
-                          <div className="vitality-split">
+                          <div className="activity-split">
                             <label>
                               <span>{L.commits}</span>
                               <WeightStepper
@@ -132,7 +132,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
               <tr>
                 <td></td>
                 <td>
-                  <span className={`vitality-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
+                  <span className={`activity-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
                     {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
                   </span>
                 </td>
@@ -140,18 +140,18 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
             </tfoot>
           </table>
 
-          <div className="vitality-config">
+          <div className="activity-config">
             <div className="config-grid">
               <label>
                 <span>{L.issueMode}</span>
-                <select value={config.issueMode} onChange={(e) => setIssueMode(e.target.value as VitalityConfig["issueMode"])}>
+                <select value={config.issueMode} onChange={(e) => setIssueMode(e.target.value as ActivityConfig["issueMode"])}>
                   <option value="ratio">{L.modeRatio}</option>
                   <option value="open">{L.modeOpen}</option>
                 </select>
               </label>
               <label>
                 <span>{L.xmaxMode}</span>
-                <select value={config.xmaxMode} onChange={(e) => setXmaxMode(e.target.value as VitalityConfig["xmaxMode"])}>
+                <select value={config.xmaxMode} onChange={(e) => setXmaxMode(e.target.value as ActivityConfig["xmaxMode"])}>
                   <option value="max">{L.xmaxMax}</option>
                   <option value="p95">{L.xmaxP95}</option>
                 </select>
@@ -159,7 +159,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
             </div>
 
             {!isDefaultConfig(config) && (
-              <button type="button" className="vitality-reset" onClick={confirmReset}>{L.reset}</button>
+              <button type="button" className="activity-reset" onClick={confirmReset}>{L.reset}</button>
             )}
           </div>
         </div>
