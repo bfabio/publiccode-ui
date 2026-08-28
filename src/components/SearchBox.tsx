@@ -1,4 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { readSoftwareConfig, withActivityConfig } from "../lib/vitalityStore";
 
 interface SearchItem {
@@ -29,13 +31,14 @@ interface SearchBoxProps {
   items: SearchItem[];
   base: string;
   placeholder?: string;
+  clearLabel?: string;
   value?: string;
   onChange?: (value: string) => void;
 }
 
 const MAX_SUGGESTIONS = 7;
 
-export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder = "Search...", value, onChange }) => {
+export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder = "Search...", clearLabel = "Clear search", value, onChange }) => {
   const [internalValue, setInternalValue] = useState("");
   const inputValue = value ?? internalValue;
   const update = useCallback((v: string) => {
@@ -122,6 +125,16 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         aria-controls="search-suggestions"
         style={navigating ? { opacity: 0.6, cursor: "wait" } : undefined}
       />
+      {inputValue && !navigating && (
+        <button
+          type="button"
+          className="search-clear"
+          aria-label={clearLabel}
+          onClick={() => { update(""); setSelectedIdx(-1); inputRef.current?.focus(); }}
+        >
+          <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+        </button>
+      )}
       {navigating && (
         <>
           <style>{"@keyframes search-spin { to { transform: rotate(360deg) } }"}</style>

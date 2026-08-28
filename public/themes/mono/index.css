@@ -33,7 +33,6 @@
   --dialog-btn-bg: rgba(0,0,0,0.05);
   --dialog-btn-bg-hover: rgba(0,0,0,0.1);
 
-  --search-cancel-filter: none;
   --mark-bg: rgba(37,99,235,0.1);
 
   --radius-sm: 4px;
@@ -178,7 +177,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 }
 .catalog-search input[type="search"] {
   width: 100%;
-  padding: 14px 18px 14px 44px;
+  padding: 14px 44px 14px 44px;
   font: inherit;
   font-size: 16px;
   font-weight: 400;
@@ -200,7 +199,31 @@ nav[aria-label="Breadcrumb"] li + li::before {
   box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 .catalog-search input[type="search"]::-webkit-search-cancel-button {
-  filter: var(--search-cancel-filter);
+  display: none;
+}
+.search-clear {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+.search-clear:hover {
+  color: var(--text-primary);
+  background: var(--surface-btn-hover);
+}
+.search-clear svg {
+  width: 14px;
+  height: 14px;
 }
 
 .suggestions {

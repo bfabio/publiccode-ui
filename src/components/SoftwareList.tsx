@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faPencil, faRotateLeft, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
@@ -74,6 +74,7 @@ interface Labels {
   clearFilters: string;
   allTypes: string;
   searchPlaceholder: string;
+  clearSearch?: string;
   filters: string;
   sortBy: string;
   showMore: string;
@@ -107,6 +108,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = VITALITY_LABELS[locale === "it" ? "it" : "en"];
   const [inputValue, setInputValue] = useState(() => readParam("q"));
+  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState(() => readParam("q"));
   const [sortBy, setSortBy] = useState<ListSortBy | "">(() => readParam("sort_by") as ListSortBy | "");
   const [category, setCategory] = useState(() => readParam("category"));
@@ -332,6 +334,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
       </div>
       <div className="catalog-search">
         <input
+          ref={searchRef}
           type="search"
           name="q"
           autoComplete="off"
@@ -342,6 +345,16 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
           placeholder={l.searchPlaceholder}
           aria-label={l.searchPlaceholder}
         />
+        {inputValue && (
+          <button
+            type="button"
+            className="search-clear"
+            aria-label={l.clearSearch ?? "Clear search"}
+            onClick={() => { setInputValue(""); searchRef.current?.focus(); }}
+          >
+            <FontAwesomeIcon icon={faXmark} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       <div className="catalog-toolbar">
