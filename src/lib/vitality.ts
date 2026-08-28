@@ -52,8 +52,8 @@ const FORGE_METRICS: ForgeMetric[] = [
 ];
 
 export interface VitalityCap {
-  limit: 89 | 79;
-  reason: 'disabled' | 'unknown';
+  limit: 89;
+  reason: 'disabled';
 }
 
 /**
@@ -124,6 +124,9 @@ export interface VitalityResult {
   covered: number;
   total: number;
   cap: VitalityCap | null;
+  /** Data we still mean to collect (a metric unknown or a fetch that
+      failed): the score is withheld and the UI shows it as on its way. */
+  pending: boolean;
   /** Weights sum past 100: the config is mid-edit, so the score is
       refused (score100 null) rather than silently renormalized. */
   overAllocated: boolean;
@@ -288,17 +291,17 @@ export function computeVitality(
     }
   }
 
-  // The SSL Labs model: the sub-score stays renormalized, incomplete
-  // evidence only bounds the claim.
+  // A metric we still mean to collect (never fetched, or the fetch
+  // failed) withholds the score entirely: a partial number would read
+  // as a low grade. Known n/a is real evidence, so it only bounds the
+  // claim (the SSL Labs model).
+  const pending = failed.length > 0 || hasUnknown;
   const cap: VitalityCap | null =
-    failed.length > 0 ? null
-    : hasUnknown ? { limit: 79, reason: 'unknown' }
-    : hasDisabled ? { limit: 89, reason: 'disabled' }
-    : null;
+    !pending && hasDisabled ? { limit: 89, reason: 'disabled' } : null;
 
   const overAllocated = freeWeightPoints(weights) < 0;
   const score100 =
-    failed.length > 0 || overAllocated
+    pending || overAllocated
       ? null
       : Math.min(
           presentDims.reduce((acc, d) => acc + d.contribution, 0),
@@ -316,6 +319,7 @@ export function computeVitality(
     covered: presentDims.length,
     total: DIMENSION_ORDER.length,
     cap,
+    pending,
     overAllocated,
   };
 }

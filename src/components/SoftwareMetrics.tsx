@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChartColumn, faAngleDown, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faChartColumn, faAngleDown, faHourglassHalf, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { computeVitality } from "../lib/vitality";
 import { formatDate, relativeDate } from "../lib/date.js";
 import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
@@ -40,8 +40,8 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
   };
 
   const result = useMemo(() => computeVitality(activity, stats, config), [activity, stats, config]);
-  const hasUnknownCap = result.score100 !== null && result.cap?.reason === "unknown" && result.score100 === result.cap.limit;
-  const showCapWarning = capWarningsReady && capWarningsEnabled && hasUnknownCap;
+  const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
+  const showCapWarning = capWarningsReady && capWarningsEnabled && capped;
 
   const win = activity.recentDays ?? 180;
   const code: CodeRow[] = [
@@ -141,7 +141,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
             <span className="vitality-max">/ 100</span>
           </div>
         ) : result.score100 === null ? (
-          <p className="vitality-unavailable">{L.scoreUnavailable}</p>
+          <p className="vitality-unavailable"><FontAwesomeIcon icon={faHourglassHalf} /> {L.scorePending}</p>
         ) : (
           <div className="vitality-score">
             <span className={`vitality-value${overridden ? " is-custom" : ""}${showCapWarning ? " is-capped-unknown" : ""}`}>{Math.round(result.score100)}</span>
@@ -157,9 +157,9 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, 
               </button>
             </span>
           )}
-          {result.score100 !== null && result.cap && result.score100 === result.cap.limit && (
+          {capped && (
             <p className={`vitality-scope${showCapWarning ? " vitality-cap-warning" : ""}`}>
-              {result.cap.reason === "disabled" ? L.capDisabled : L.capUnknown}
+              {L.capDisabled}
             </p>
           )}
           {result.score100 !== null && result.covered < result.total && (

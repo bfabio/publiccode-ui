@@ -642,6 +642,9 @@ nav[aria-label="Breadcrumb"] li + li::before {
   font-weight: 400;
   letter-spacing: 0;
 }
+.activity-badge.is-na svg {
+  font-size: 20px;
+}
 .activity-score-panel {
   position: absolute;
   z-index: 10;
