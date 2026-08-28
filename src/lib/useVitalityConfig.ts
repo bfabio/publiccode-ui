@@ -16,9 +16,6 @@ import {
   readOpenCodeBadgeVisibility,
   writeOpenCodeBadgeVisibility,
   OPENCODE_BADGES_VISIBILITY_KEY,
-  readCapWarningVisibility,
-  writeCapWarningVisibility,
-  CAP_WARNING_VISIBILITY_KEY,
   readActivityDebugVisibility,
   writeActivityDebugVisibility,
   ACTIVITY_DEBUG_VISIBILITY_KEY,
@@ -196,27 +193,6 @@ export function useOpenCodeBadgeVisibility() {
     setEnabled(next);
     writeOpenCodeBadgeVisibility(next);
     document.documentElement.toggleAttribute('data-opencode-badges-hidden', !next);
-  };
-
-  return { enabled, ready, setEnabled: update };
-}
-
-export function useCapWarningVisibility() {
-  const [enabled, setEnabled] = useState(true);
-  const [ready, setReady] = useState(false);
-
-  useClientLayoutEffect(() => {
-    const load = () => setEnabled(readCapWarningVisibility());
-    load();
-    setReady(true);
-    return subscribeStore((key) => {
-      if (key === null || key === CAP_WARNING_VISIBILITY_KEY) load();
-    });
-  }, []);
-
-  const update = (next: boolean) => {
-    setEnabled(next);
-    writeCapWarningVisibility(next);
   };
 
   return { enabled, ready, setEnabled: update };

@@ -597,12 +597,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   white-space: nowrap;
 }
 .activity-index-label-text { white-space: nowrap; }
-.activity-cap-warning {
-  display: inline-flex;
-  align-items: center;
-  color: #c86e66;
-  font-size: 12px;
-}
 .activity-custom-toggle,
 .activity-custom-toggle-placeholder {
   display: inline-flex;

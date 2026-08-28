@@ -1,7 +1,6 @@
 import React from "react";
 import {
   useActivityDebugVisibility,
-  useCapWarningVisibility,
   useOpenCodeBadgeVisibility,
 } from "../lib/useVitalityConfig";
 import { LABELS } from "../lib/vitalityLabels";
@@ -35,11 +34,6 @@ const PreferenceToggle: React.FC<PreferenceToggleProps> = ({ label, description,
 export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
   const {
-    enabled: capWarningsEnabled,
-    ready: capWarningsReady,
-    setEnabled: setCapWarningsEnabled,
-  } = useCapWarningVisibility();
-  const {
     enabled: activityDebugEnabled,
     ready: activityDebugReady,
     setEnabled: setActivityDebugEnabled,
@@ -50,7 +44,7 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
     setEnabled: setOpenCodeBadgesEnabled,
   } = useOpenCodeBadgeVisibility();
 
-  const ready = capWarningsReady && activityDebugReady && openCodeBadgesReady;
+  const ready = activityDebugReady && openCodeBadgesReady;
 
   return (
     <section className={`software-metrics activity-settings${ready ? "" : " is-loading"}`}>
@@ -60,11 +54,6 @@ export const ActivitySettings: React.FC<{ locale?: string }> = ({ locale = "en" 
           description={L.activityDebugHelp}
           enabled={activityDebugEnabled}
           onToggle={() => setActivityDebugEnabled(!activityDebugEnabled)}
-        />
-        <PreferenceToggle
-          label={L.capWarning}
-          enabled={capWarningsEnabled}
-          onToggle={() => setCapWarningsEnabled(!capWarningsEnabled)}
         />
         <PreferenceToggle
           label={L.openCodeBadges}

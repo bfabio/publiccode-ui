@@ -725,12 +725,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .activity-badge.is-custom {
   color: #c0bfbc;
 }
-.activity-cap-warning {
-  display: inline-flex;
-  align-items: center;
-  color: #c86e66;
-  font-size: 12px;
-}
 .activity-badge.is-capped-unknown {
   color: #c86e66;
 }

@@ -360,11 +360,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-results .activity-badge.is-custom {
   color: #c0bfbc;
 }
-.activity-cap-warning {
-  display: inline-flex;
-  align-items: center;
-  color: #a64d45;
-}
 .catalog-results .activity-badge.is-capped-unknown {
   color: #a64d45;
 }
