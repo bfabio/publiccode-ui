@@ -18,6 +18,7 @@ import {
   faGear,
   faScaleBalanced,
   faChartPie,
+  faCheck,
   faArrowUpRightFromSquare,
   faShieldHalved,
   faHeartPulse,
@@ -31,7 +32,7 @@ library.add(
   faCodeBranch, faGlobe, faBook, faFileCode, faGavel, faCircleInfo,
   faCube, faWrench, faDesktop, faLanguage, faListCheck, faImages,
   faAlignLeft, faAddressBook, faLayerGroup, faGear, faCalendar,
-  faScaleBalanced, faChartPie, faArrowUpRightFromSquare,
+  faScaleBalanced, faChartPie, faCheck, faArrowUpRightFromSquare,
   faShieldHalved, faHeartPulse, faArrowsRotate, faLink,
   faWindows, faApple, faLinux, faAndroid,
 );
