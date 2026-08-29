@@ -3,9 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartColumn, faAngleDown, faHourglassHalf, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { computeActivityScore } from "../lib/activityScore";
 import { formatDate, relativeDate } from "../lib/date.js";
-import type { SoftwareActivity, CatalogStats, ForgeMetric } from "../types/analysis";
+import type { ForgeMetric } from "../types/analysis";
 import { fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
+import { useActivityData } from "../lib/useActivityData";
 import { useActivityDebugVisibility, usePageActivityConfig } from "../lib/useActivityConfig";
 import { LABELS } from "../lib/activityLabels";
 import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
@@ -19,26 +20,36 @@ type CodeRow =
 
 interface Props {
   softwareId: string;
-  activity: SoftwareActivity;
-  stats: CatalogStats | null;
+  catalogId: string | null;
   locale?: string;
   repoUrl?: string | null;
   overview?: { href: string; label: string } | null;
 }
 
-export const SoftwareMetrics: React.FC<Props> = ({ softwareId, activity, stats, locale = "en", repoUrl = null, overview = null }) => {
+export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale = "en", repoUrl = null, overview = null }) => {
   const L = LABELS[locale === "it" ? "it" : "en"];
+  const { activity, stats, loaded } = useActivityData(softwareId, catalogId);
   const { config, overridden, ready, setWeight, setSplit, setIssueMode, setXmaxMode, resetToGlobal } = usePageActivityConfig(softwareId);
   const { enabled: debugEnabled } = useActivityDebugVisibility();
   const [showDebug, setShowDebug] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
+  const result = useMemo(
+    () => (activity ? computeActivityScore(activity, stats, config) : null),
+    [activity, stats, config],
+  );
+
+  if (loaded && !activity) return null;
+  // An empty island has no box (astro-island is display: contents)
+  // and a boxless client:visible island never intersects, so the
+  // pre-fetch render must keep a visible shell.
+  if (!activity || !result) return <section className="software-metrics" aria-busy="true" />;
+
   const confirmResetToGlobal = () => {
     if (window.confirm(L.resetGlobalConfirmation)) resetToGlobal();
   };
 
-  const result = useMemo(() => computeActivityScore(activity, stats, config), [activity, stats, config]);
   const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
 
   const win = activity.recentDays ?? 180;

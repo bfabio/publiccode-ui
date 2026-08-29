@@ -1,14 +1,13 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { faIcon } from '../../../lib/icons.js';
-import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllOpenCodeBadges, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
+import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllOpenCodeBadges } from '../../../lib/api.js';
 import { SoftwareMetrics } from '../../../components/SoftwareMetrics';
 import { ActivityRadar } from '../../../components/ActivityRadar';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, localizeDescription } from '../../../lib/i18n.js';
-import { usableStats } from '../../../lib/activity.ts';
 import { catalogFlag } from '../../../lib/catalogFlags.ts';
 import { describePlatform } from '../../../lib/platforms.ts';
 import { formatDate } from '../../../lib/date.js';
@@ -24,8 +23,6 @@ export async function getStaticPaths() {
   const multiCatalog = catalogs.length > 1;
   const softwareAnalysis = await fetchAllSoftwareAnalysis();
   const openCodeBadges = await fetchAllOpenCodeBadges();
-  const catalogAnalysis = await fetchAllCatalogAnalysis();
-  const rootAnalysis = await fetchRootCatalogAnalysis();
   const locales = [undefined, 'it'];
   return locales.flatMap((locale) =>
     software.map((s) => {
@@ -34,25 +31,22 @@ export async function getStaticPaths() {
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         catalogFlag: catalogFlag(catalogMap[s.catalogId]?.slug),
         multiCatalog,
-        activity: softwareAnalysis.get(s.id) ?? null,
+        // The metric values live in /software-data/ fragments the
+        // islands fetch, so metric churn leaves this page cached.
+        hasActivity: (softwareAnalysis.get(s.id) ?? null) !== null,
         badges: openCodeBadges.get(s.id) ?? null,
-        stats: usableStats(rootAnalysis) ?? usableStats(catalogAnalysis.get(s.catalogId) ?? null),
       };
       return {
         params: { locale, id: s.id },
         props,
-        // activity.t is the API's stamp of the last namespace
-        // change. It is never rendered and the hash already sees
-        // the change itself, so keying on it could only invalidate
-        // spuriously.
-        cacheKey: dataCacheKey({ ...props, activity: props.activity && { ...props.activity, t: undefined } }),
+        cacheKey: dataCacheKey(props),
       };
     })
   );
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, catalogFlag: flag, multiCatalog, activity, badges, stats } = Astro.props;
+const { software, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -169,7 +163,7 @@ const badgeRadar = makeRadar(
       {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
 
-    {(allBadges.length > 0 || activity) && (
+    {(allBadges.length > 0 || hasActivity) && (
       <section class="software-badges opencode-badges" aria-label={allBadges.length > 0 ? t(locale, 'badges') : t(locale, 'activity_score')}>
         {allBadges.length > 0 && (
         <div class="opencode-badge-list">
@@ -223,15 +217,15 @@ const badgeRadar = makeRadar(
           </div>
           )}
           <div id="radar-panel-activity" class="radar-tabpanel" role="tabpanel" aria-labelledby="radar-tab-activity" data-radar-panel="activity" hidden={allBadges.length > 0}>
-            {activity
-              ? <ActivityRadar client:load softwareId={software.id} activity={activity} stats={stats} locale={locale} />
+            {hasActivity
+              ? <ActivityRadar client:load softwareId={software.id} catalogId={software.catalogId} locale={locale} />
               : <p class="radar-empty">{t(locale, 'no_activity_data')}</p>}
           </div>
         </div>
       </section>
     )}
 
-    {activity && <SoftwareMetrics client:visible softwareId={software.id} activity={activity} stats={stats} locale={locale} repoUrl={repoUrl} overview={activityOverview} />}
+    {hasActivity && <SoftwareMetrics client:visible softwareId={software.id} catalogId={software.catalogId} locale={locale} repoUrl={repoUrl} overview={activityOverview} />}
 
     {features.length > 0 && (
       <section class="software-features">

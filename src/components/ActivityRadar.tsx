@@ -1,13 +1,12 @@
 import React, { useMemo } from "react";
 import { computeActivityScore } from "../lib/activityScore";
+import { useActivityData } from "../lib/useActivityData";
 import { usePageActivityConfig } from "../lib/useActivityConfig";
 import { LABELS } from "../lib/activityLabels";
-import type { CatalogStats, SoftwareActivity } from "../types/analysis";
 
 interface Props {
   softwareId: string;
-  activity: SoftwareActivity;
-  stats: CatalogStats | null;
+  catalogId: string | null;
   locale?: string;
 }
 
@@ -23,13 +22,14 @@ const xy = (angle: number, distance: number) => ({
   y: center + distance * Math.sin(angle),
 });
 
-export const ActivityRadar: React.FC<Props> = ({ softwareId, activity, stats, locale = "en" }) => {
+export const ActivityRadar: React.FC<Props> = ({ softwareId, catalogId, locale = "en" }) => {
   const labels = LABELS[locale === "it" ? "it" : "en"];
+  const { activity, stats, loaded } = useActivityData(softwareId, catalogId);
   const { config, ready } = usePageActivityConfig(softwareId);
   const dimensions = useMemo(
-    () => computeActivityScore(activity, stats, config).dimensions
+    () => (activity ? computeActivityScore(activity, stats, config).dimensions
       .filter((dimension) => dimension.present && dimension.normalized !== null)
-      .map((dimension) => ({ label: labels.dim[dimension.key], value: dimension.normalized ?? 0 })),
+      .map((dimension) => ({ label: labels.dim[dimension.key], value: dimension.normalized ?? 0 })) : []),
     [activity, config, labels.dim, stats],
   );
   const axes = dimensions.map((dimension, index) => ({
@@ -42,7 +42,7 @@ export const ActivityRadar: React.FC<Props> = ({ softwareId, activity, stats, lo
   const data = axes.map((axis) => point(axis.angle, radius * axis.value)).join(" ");
 
   return (
-    <div className={`activity-radar${ready ? "" : " is-loading"}`}>
+    <div className={`activity-radar${ready && loaded ? "" : " is-loading"}`}>
       {axes.length > 0 ? (
         <svg className="radar-chart" viewBox={`0 0 ${size} ${size}`} role="img" aria-label={labels.section}>
           {rings.map((points) => <polygon key={points} points={points} className="radar-ring" />)}
@@ -56,7 +56,7 @@ export const ActivityRadar: React.FC<Props> = ({ softwareId, activity, stats, lo
             return <text key={axis.label} x={position.x} y={position.y} className="radar-label" textAnchor="middle" dominantBaseline="central">{axis.label}</text>;
           })}
         </svg>
-      ) : <p className="radar-empty">{labels.scorePending}</p>}
+      ) : loaded ? <p className="radar-empty">{labels.scorePending}</p> : null}
     </div>
   );
 };
