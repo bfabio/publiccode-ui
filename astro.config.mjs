@@ -12,7 +12,10 @@ const hoistedNodeModules = path.join(path.dirname(require.resolve("@astrojs/reac
 export default defineConfig({
   site: "https://bfabio.github.io",
   base: process.env.BASE_PATH ?? "/",
-  build: { concurrency: 20 },
+  // The incremental cache silently disables (with a WARN) at any
+  // concurrency above 1.
+  build: { concurrency: 1 },
+  experimental: { incrementalBuild: true },
   integrations: [react()],
   i18n: {
     defaultLocale: "en",

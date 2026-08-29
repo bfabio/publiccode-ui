@@ -34,6 +34,15 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Restored after npm ci, which wipes node_modules. A fresh key
+      # every run keeps the newest cache saved; restore-keys picks it
+      # up on the next one.
+      - uses: actions/cache@v6
+        with:
+          path: node_modules/.astro
+          key: astro-build-cache-${{ github.run_id }}
+          restore-keys: |
+            astro-build-cache-
       - run: npm run typecheck
       - run: npm run build
         env:
