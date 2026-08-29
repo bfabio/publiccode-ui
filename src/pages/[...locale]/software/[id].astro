@@ -15,6 +15,7 @@ import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
 import { forgeRepoUrl } from '../../../lib/forgeLinks.ts';
+import { dataCacheKey } from '../../../lib/cacheKey.ts';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -27,9 +28,8 @@ export async function getStaticPaths() {
   const rootAnalysis = await fetchRootCatalogAnalysis();
   const locales = [undefined, 'it'];
   return locales.flatMap((locale) =>
-    software.map((s) => ({
-      params: { locale, id: s.id },
-      props: {
+    software.map((s) => {
+      const props = {
         software: s,
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         catalogFlag: catalogFlag(catalogMap[s.catalogId]?.slug),
@@ -37,8 +37,17 @@ export async function getStaticPaths() {
         activity: softwareAnalysis.get(s.id) ?? null,
         badges: openCodeBadges.get(s.id) ?? null,
         stats: usableStats(rootAnalysis) ?? usableStats(catalogAnalysis.get(s.catalogId) ?? null),
-      },
-    }))
+      };
+      return {
+        params: { locale, id: s.id },
+        props,
+        // activity.t is the API's stamp of the last namespace
+        // change. It is never rendered and the hash already sees
+        // the change itself, so keying on it could only invalidate
+        // spuriously.
+        cacheKey: dataCacheKey({ ...props, activity: props.activity && { ...props.activity, t: undefined } }),
+      };
+    })
   );
 }
 
