@@ -6,8 +6,8 @@ export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
 export const ACTIVITY_DEBUG_VISIBILITY_KEY = 'publiccode-ui:activity-debug';
 
 export function readOpenCodeBadgeVisibility(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.localStorage.getItem(OPENCODE_BADGES_VISIBILITY_KEY) === '1';
+  if (typeof window === 'undefined') return true;
+  return window.localStorage.getItem(OPENCODE_BADGES_VISIBILITY_KEY) !== '0';
 }
 
 // "storage" events fire only in other tabs, so islands on the same page
@@ -21,8 +21,8 @@ function emitStoreChange(key: string): void {
 
 export function writeOpenCodeBadgeVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
-  if (enabled) window.localStorage.setItem(OPENCODE_BADGES_VISIBILITY_KEY, '1');
-  else window.localStorage.removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
+  if (enabled) window.localStorage.removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
+  else window.localStorage.setItem(OPENCODE_BADGES_VISIBILITY_KEY, '0');
   emitStoreChange(OPENCODE_BADGES_VISIBILITY_KEY);
 }
 

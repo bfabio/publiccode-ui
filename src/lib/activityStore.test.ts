@@ -168,14 +168,14 @@ describe('subscribeStore', () => {
 });
 
 describe('openCode badge visibility', () => {
-  it('is disabled by default and persists only the enabled state', () => {
+  it('is enabled by default and persists only the disabled state', () => {
     const { storage } = stubWindow();
-    expect(readOpenCodeBadgeVisibility()).toBe(false);
-    writeOpenCodeBadgeVisibility(true);
     expect(readOpenCodeBadgeVisibility()).toBe(true);
-    expect(storage.getItem(OPENCODE_BADGES_VISIBILITY_KEY)).toBe('1');
     writeOpenCodeBadgeVisibility(false);
     expect(readOpenCodeBadgeVisibility()).toBe(false);
+    expect(storage.getItem(OPENCODE_BADGES_VISIBILITY_KEY)).toBe('0');
+    writeOpenCodeBadgeVisibility(true);
+    expect(readOpenCodeBadgeVisibility()).toBe(true);
     expect(storage.getItem(OPENCODE_BADGES_VISIBILITY_KEY)).toBeNull();
   });
 });

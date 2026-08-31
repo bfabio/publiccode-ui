@@ -177,7 +177,7 @@ export function useActivityConfigs() {
 }
 
 export function useOpenCodeBadgeVisibility() {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [ready, setReady] = useState(false);
 
   useClientLayoutEffect(() => {
