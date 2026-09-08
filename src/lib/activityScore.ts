@@ -114,8 +114,8 @@ export interface DimensionResult {
       inspected (unknown), or feature turned off on the forge (disabled). */
   state: DimensionState;
   /** Real counts behind a derived raw, so the UI can show "open/closed"
-      instead of the ratio (or its worst-case sentinel). */
-  rawParts?: { open: number; closed: number };
+      or "commits/pull requests" instead of the total. */
+  rawParts?: { open: number; closed: number } | { commits: number; pullRequests: number };
 }
 
 export interface ActivityScoreResult {
@@ -144,31 +144,50 @@ interface CompositePart {
   metric: StatMetric;
 }
 
-/**
- * A composite dimension averages its sub-metrics by their split weights.
- * Absent sub-metrics are dropped and the present ones renormalized, so a repo
- * with commits but no pull requests still scores on commits alone. With both
- * present the renormalization is a no-op (the split already sums to 1).
- */
-function composite(
-  parts: CompositePart[],
-  stats: CatalogStats | null,
-  xmaxMode: XmaxMode,
-): { present: boolean; raw: number | null; normalized: number | null } {
-  const present = parts.filter((p) => isPresent(p.value));
-  if (present.length === 0) return { present: false, raw: null, normalized: null };
-
-  const wSum = present.reduce((acc, p) => acc + p.sub, 0) || 1;
-  const raw = present.reduce((acc, p) => acc + (p.sub / wSum) * (p.value as number), 0);
-  const xmax = present.reduce((acc, p) => acc + (p.sub / wSum) * refMax(stats, p.metric, xmaxMode), 0);
-
-  return { present: true, raw, normalized: normalize(raw, xmax) };
+interface CompositeResult {
+  present: boolean;
+  raw: number | null;
+  normalized: number | null;
+  rawParts?: { commits: number; pullRequests: number };
 }
 
 /**
- * Single-software scoring. Composite (history/activity) and issue-volume xmax
- * are approximated from per-metric catalog stats, since the true maxima of a
- * combination cannot be recovered from marginals. Simple metrics stay exact.
+ * A composite dimension blends the levels of its two sub-metrics by the
+ * split weights, each level normalized against that metric's own catalog
+ * stat. Blending the raw counts instead lets commits swamp pull requests,
+ * since the catalog has about ten times more commits than pull requests,
+ * and the split then changes nothing visible. An absent sub-metric is
+ * dropped and the other takes the whole split, so a repo with commits but
+ * no pull requests still scores on commits alone.
+ */
+function composite(
+  commits: CompositePart,
+  pullRequests: CompositePart,
+  stats: CatalogStats | null,
+  xmaxMode: XmaxMode,
+): CompositeResult {
+  const present = [commits, pullRequests].filter((p) => isPresent(p.value));
+  if (present.length === 0) return { present: false, raw: null, normalized: null };
+
+  const wSum = present.reduce((acc, p) => acc + p.sub, 0) || 1;
+  const normalized = present.reduce(
+    (acc, p) => acc + (p.sub / wSum) * normalize(p.value as number, refMax(stats, p.metric, xmaxMode)),
+    0,
+  );
+  const raw = present.reduce((acc, p) => acc + (p.value as number), 0);
+  const rawParts =
+    isPresent(commits.value) && isPresent(pullRequests.value)
+      ? { commits: commits.value, pullRequests: pullRequests.value }
+      : undefined;
+
+  return { present: true, raw, normalized, rawParts };
+}
+
+/**
+ * Single-software scoring. Every metric normalizes against its own catalog
+ * stat, exact. The one approximation is the issue-volume xmax, summed from
+ * the open and closed maxima because the true maximum of the sum cannot be
+ * recovered from the marginals.
  */
 export function computeActivityScore(
   activity: SoftwareActivity,
@@ -201,19 +220,23 @@ export function computeActivityScore(
   );
 
   {
-    const h = composite([
+    const h = composite(
       { value: activity.commitsAllTime, sub: phC, metric: 'commitsAllTime' },
       { value: activity.pullRequestsAllTime, sub: phM, metric: 'pullRequestsAllTime' },
-    ], stats, xmaxMode);
-    push('history', h.present, h.raw, h.normalized, true);
+      stats, xmaxMode,
+    );
+    push('history', h.present, h.raw, h.normalized, false);
+    if (h.rawParts) dims[dims.length - 1].rawParts = h.rawParts;
   }
 
   {
-    const a = composite([
+    const a = composite(
       { value: activity.commitsRecent, sub: caC, metric: 'commitsRecent' },
       { value: activity.pullRequestsRecent, sub: caM, metric: 'pullRequestsRecent' },
-    ], stats, xmaxMode);
-    push('activity', a.present, a.raw, a.normalized, true);
+      stats, xmaxMode,
+    );
+    push('activity', a.present, a.raw, a.normalized, false);
+    if (a.rawParts) dims[dims.length - 1].rawParts = a.rawParts;
   }
 
   push(
