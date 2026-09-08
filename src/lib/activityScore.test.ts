@@ -309,3 +309,38 @@ describe('over-allocated weights refuse the score', () => {
     expect(r.score100).not.toBeNull();
   });
 });
+
+describe('composite dimensions blend normalized levels', () => {
+  const s = (p95: number) => ({ max: p95 * 4, min: 0, count: 10, mean: p95 / 2, median: p95 / 4, p95 });
+  const blendStats: CatalogStats = {
+    commitsAllTime: s(14891), pullRequestsAllTime: s(1016),
+    commitsRecent: s(507), pullRequestsRecent: s(145),
+  };
+  const activity = {
+    v: 1, tags: 0, recentDays: 180, contributors: 5,
+    commitsAllTime: 500, pullRequestsAllTime: 34,
+    commitsRecent: 200, pullRequestsRecent: 30,
+  } as SoftwareActivity;
+  const level = (x: number, xmax: number) => Math.log1p(x) / Math.log1p(xmax);
+  const history = (config = DEFAULT_CONFIG) =>
+    computeActivityScore(activity, blendStats, config).dimensions.find((d) => d.key === 'history')!;
+
+  it('weights each sub-metric level by the split, not the raw counts', () => {
+    expect(history().normalized).toBeCloseTo(0.7 * level(500, 14891) + 0.3 * level(34, 1016), 10);
+  });
+
+  it('follows the split all the way to pull requests alone', () => {
+    const config = { ...DEFAULT_CONFIG, subWeights: { ...DEFAULT_CONFIG.subWeights, phC: 0, phM: 1 } };
+    expect(history(config).normalized).toBeCloseTo(level(34, 1016), 10);
+  });
+
+  it('exposes commits and pull requests as raw parts', () => {
+    const h = history();
+    expect(h.rawParts).toEqual({ commits: 500, pullRequests: 34 });
+    expect(h.raw).toBe(534);
+  });
+
+  it('is exact, with no approximated reference maximum', () => {
+    expect(history().approximated).toBe(false);
+  });
+});

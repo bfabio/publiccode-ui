@@ -13,6 +13,13 @@ const SPLIT: Partial<Record<DimensionKey, { c: SubKey; m: SubKey }>> = {
   activity: { c: "caC", m: "caM" },
 };
 
+type RawParts = NonNullable<ActivityScoreResult["dimensions"][number]["rawParts"]>;
+
+function rawPartsText(parts: RawParts, locale: string): string {
+  const [a, b] = "open" in parts ? [parts.open, parts.closed] : [parts.commits, parts.pullRequests];
+  return `${a.toLocaleString(locale)}/${b.toLocaleString(locale)}`;
+}
+
 interface Props {
   result: ActivityScoreResult;
   config: ActivityConfig;
@@ -200,7 +207,7 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
                     <>
                       <td>
                         {dimension.rawParts
-                          ? `${dimension.rawParts.open.toLocaleString(locale)}/${dimension.rawParts.closed.toLocaleString(locale)}`
+                          ? rawPartsText(dimension.rawParts, locale)
                           : (dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}
                       </td>
                       <td>
