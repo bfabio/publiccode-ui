@@ -190,7 +190,7 @@ describe('points-pool weight editing', () => {
   it('allows over-allocation and reports a negative pool', () => {
     const over = allocateWeight(DEFAULT_CONFIG.weights, 'stars', 0.8);
     expect(over.stars).toBe(0.8);
-    expect(freeWeightPoints(over)).toBe(-65);
+    expect(freeWeightPoints(over)).toBe(-Math.round((0.8 - DEFAULT_CONFIG.weights.stars) * 100));
   });
 
   it('clamps a single weight to the 0..100 range', () => {
