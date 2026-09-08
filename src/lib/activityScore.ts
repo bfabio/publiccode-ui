@@ -26,12 +26,12 @@ export const DEFAULT_CONFIG: ActivityConfig = {
   weights: {
     contributors: 0.2,
     history: 0.15,
-    activity: 0.25,
-    stars: 0.15,
-    issues: 0.1,
-    forks: 0.15,
+    activity: 0.32,
+    stars: 0.06,
+    issues: 0.15,
+    forks: 0.12,
   },
-  subWeights: { phC: 0.7, phM: 0.3, caC: 0.7, caM: 0.3 },
+  subWeights: { phC: 0.3, phM: 0.7, caC: 0.3, caM: 0.7 },
   issueMode: 'ratio',
   xmaxMode: 'p95',
 };
