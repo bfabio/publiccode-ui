@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type ActivityConfig, type DimensionKey } from "../lib/activityScore";
 import { useActivityDebugVisibility, useGlobalActivityConfig } from "../lib/useActivityConfig";
 import { isDefaultConfig } from "../lib/activityStore";
@@ -72,6 +72,15 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
         <div className={`activity-weights-drawer${ready ? "" : " is-loading"}${animated ? " is-anim" : ""}`} role="dialog" aria-label={L.globalWeights}>
           <div className="activity-weights-drawer-head">
             <h3>{L.globalWeights}</h3>
+            <button
+              type="button"
+              className="activity-weights-close"
+              aria-label={L.popoverClose}
+              title={L.popoverClose}
+              onClick={() => setOpen(false)}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
           </div>
           <p className="settings-intro">{L.settingsIntro}</p>
 

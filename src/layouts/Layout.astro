@@ -380,9 +380,28 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     border-left: 1px solid var(--border-standard, #ddd);
     box-shadow: var(--shadow-dropdown, 0 4px 12px rgba(0,0,0,0.1));
   }
+  .activity-weights-close {
+    display: none;
+    padding: 10px;
+    margin: -10px -10px -10px 0;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--text-tertiary, #666);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .activity-weights-close:hover {
+    color: var(--text-primary, inherit);
+  }
+  /* Below this width the page is not pushed aside, so the drawer covers
+     the header icon that opened it and needs its own close button. */
   @media (max-width: 900px) {
     html[data-activity-drawer] body {
       margin-right: 0;
+    }
+    .activity-weights-close {
+      display: block;
     }
   }
   .activity-weights-drawer.is-loading {
