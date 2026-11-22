@@ -6,6 +6,7 @@ import {
 } from "../lib/useActivityConfig";
 import { LABELS } from "../lib/activityLabels";
 import { sharedConfigUrl } from "../lib/activityStore";
+import { freeWeightPoints } from "../lib/activityScore";
 
 interface PreferenceToggleProps {
   label: string;
@@ -38,7 +39,8 @@ const ShareWeights: React.FC<{ homePath: string; L: (typeof LABELS)["en"] }> = (
   const [copied, setCopied] = useState(false);
   useEffect(() => setCopied(false), [config]);
 
-  const link = ready
+  const overAllocated = freeWeightPoints(config.weights) < 0;
+  const link = ready && !overAllocated
     ? sharedConfigUrl(new URL(homePath, window.location.origin).toString(), config)
     : "";
   const copy = async () => {
@@ -58,10 +60,11 @@ const ShareWeights: React.FC<{ homePath: string; L: (typeof LABELS)["en"] }> = (
           <strong>{L.shareWeights}</strong>
           <small>{L.shareWeightsHelp}</small>
         </span>
-        <button type="button" onClick={copy} disabled={!ready}>
+        <button type="button" onClick={copy} disabled={!link}>
           {copied ? L.linkCopied : L.copyLink}
         </button>
       </div>
+      {overAllocated && <p className="settings-share-notice" role="status">{L.shareOverAllocated}</p>}
       <input
         type="text"
         className="settings-share-link"

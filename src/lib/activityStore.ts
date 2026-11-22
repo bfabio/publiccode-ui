@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, DIMENSION_ORDER, type ActivityConfig } from './activityScore';
+import { DEFAULT_CONFIG, DIMENSION_ORDER, freeWeightPoints, type ActivityConfig } from './activityScore';
 
 export const STORAGE_KEY = 'publiccode-ui:activity';
 export const URL_PARAM = 'activity';
@@ -244,6 +244,9 @@ export function decodeSharedConfig(raw: string | null): ActivityConfig | null {
       subWeights[split[1]] = Math.round((1 - n) * 100) / 100;
     }
   }
+  // An over-allocated pool withholds every score, and the visitor could
+  // only undo it from the settings page, so such a link is refused.
+  if (freeWeightPoints(weights) < 0) return null;
   return mergeConfig(partial);
 }
 

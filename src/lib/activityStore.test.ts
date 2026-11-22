@@ -275,14 +275,14 @@ describe('share link config', () => {
 describe('shared global weights', () => {
   const tuned: ActivityConfig = {
     ...DEFAULT_CONFIG,
-    weights: { ...DEFAULT_CONFIG.weights, stars: 0.2, forks: 0 },
+    weights: { ...DEFAULT_CONFIG.weights, stars: 0.18, forks: 0 },
     subWeights: { ...DEFAULT_CONFIG.subWeights, phC: 0.55, phM: 0.45 },
     issueMode: 'open',
   };
 
   it('encodes only what differs from the defaults', () => {
     expect(encodeSharedConfig(DEFAULT_CONFIG)).toBe('');
-    expect(encodeSharedConfig(tuned)).toBe('stars:20,forks:0,phC:55,issueMode:open');
+    expect(encodeSharedConfig(tuned)).toBe('stars:18,forks:0,phC:55,issueMode:open');
   });
 
   it('decodes back to the same config and derives the paired split', () => {
@@ -290,14 +290,22 @@ describe('shared global weights', () => {
     expect(decodeSharedConfig(null)).toBeNull();
   });
 
-  it('ignores unknown keys and malformed values, and clamps to 100', () => {
-    const c = decodeSharedConfig('stars:abc,bogus:5,forks:-3,history:250,xmaxMode:nope');
-    expect(c).toEqual({ ...DEFAULT_CONFIG, weights: { ...DEFAULT_CONFIG.weights, history: 1 } });
+  it('ignores unknown keys and malformed values', () => {
+    const c = decodeSharedConfig('stars:abc,bogus:5,forks:-3,history:5,xmaxMode:nope');
+    expect(c).toEqual({ ...DEFAULT_CONFIG, weights: { ...DEFAULT_CONFIG.weights, history: 0.05 } });
+  });
+
+  it('refuses weights that exceed 100 points', () => {
+    expect(decodeSharedConfig('history:250')).toBeNull();
+    expect(decodeSharedConfig('stars:100')).toBeNull();
+    expect(decodeSharedConfig('stars:7')).toBeNull();
+    expect(decodeSharedConfig('stars:100,contributors:0,history:0,activity:0,issues:0,forks:0'))
+      .toEqual({ ...DEFAULT_CONFIG, weights: { contributors: 0, history: 0, activity: 0, stars: 1, issues: 0, forks: 0 } });
   });
 
   it('builds a readable link that keeps other parameters', () => {
     expect(sharedConfigUrl('https://example.org/it/?view=table', tuned))
-      .toBe('https://example.org/it/?view=table&weights=stars:20,forks:0,phC:55,issueMode:open');
+      .toBe('https://example.org/it/?view=table&weights=stars:18,forks:0,phC:55,issueMode:open');
     expect(sharedConfigUrl('https://example.org/?weights=stars:1', DEFAULT_CONFIG))
       .toBe('https://example.org/?weights=default');
     expect(decodeSharedConfig('default')).toEqual(DEFAULT_CONFIG);
@@ -305,11 +313,11 @@ describe('shared global weights', () => {
 
   it('applies a shared link for the visit, over the saved weights, without touching them', () => {
     const saved = JSON.stringify({ ...DEFAULT_CONFIG, xmaxMode: 'max' });
-    const { storage, location } = stubWindow('https://example.org/it/?view=table&weights=stars:20,issueMode:open#top');
+    const { storage, location } = stubWindow('https://example.org/it/?view=table&weights=stars:18,forks:0,issueMode:open#top');
     storage.setItem(STORAGE_KEY, saved);
     adoptSharedConfig();
     expect(location.href).toBe('https://example.org/it/?view=table#top');
-    expect(readGlobalConfig().weights.stars).toBe(0.2);
+    expect(readGlobalConfig().weights.stars).toBe(0.18);
     expect(readGlobalConfig().xmaxMode).toBe('p95');
     expect(storage.getItem(STORAGE_KEY)).toBe(saved);
     clearSharedConfig();
@@ -318,12 +326,19 @@ describe('shared global weights', () => {
   });
 
   it('drops the visit copy once the weights are edited', () => {
-    const { session, storage } = stubWindow('https://example.org/?weights=stars:20');
+    const { session, storage } = stubWindow('https://example.org/?weights=stars:18,forks:0');
     adoptSharedConfig();
     expect(session.getItem(SHARED_KEY)).not.toBeNull();
     writeGlobalConfig(readGlobalConfig());
     expect(session.getItem(SHARED_KEY)).toBeNull();
-    expect(parseConfig(storage.getItem(STORAGE_KEY))?.weights.stars).toBe(0.2);
+    expect(parseConfig(storage.getItem(STORAGE_KEY))?.weights.stars).toBe(0.18);
+  });
+
+  it('leaves an over-allocated link out of the visit', () => {
+    const { session, location } = stubWindow('https://example.org/?weights=stars:100');
+    adoptSharedConfig();
+    expect(session.getItem(SHARED_KEY)).toBeNull();
+    expect(location.href).toBe('https://example.org/');
   });
 
   it('applies a link to the defaults over the recipient\'s saved weights', () => {
