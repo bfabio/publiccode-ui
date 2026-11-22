@@ -24,12 +24,19 @@ export async function getStaticPaths() {
   const multiCatalog = catalogs.length > 1;
   const softwareAnalysis = await fetchAllSoftwareAnalysis();
   const openCodeBadges = await fetchAllOpenCodeBadges();
+  // The SPDX list is fetched at build time, so its result goes in the
+  // props: a page rendered while the fetch failed then gets a new key
+  // and renders again once the list is back.
+  const licenses = new Map(await Promise.all(
+    software.map(async (s) => [s.id, await resolveLicense(s.publiccode.legal?.license)]),
+  ));
   const locales = [undefined, 'it'];
   const now = new Date();
   return locales.flatMap((locale) =>
     software.map((s) => {
       const props = {
         software: s,
+        license: licenses.get(s.id),
         catalogName: catalogMap[s.catalogId]?.name ?? null,
         catalogFlag: catalogFlag(catalogMap[s.catalogId]?.slug),
         multiCatalog,
@@ -51,7 +58,7 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges, contract } = Astro.props;
+const { software, license, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges, contract } = Astro.props;
 const pc = software.publiccode;
 
 const { description: desc, lang: descLang } = pickDescription(pc.description, locale);
@@ -59,7 +66,6 @@ const logo = resolveLogoAsset(pc);
 const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription, { topHeadingLevel: 3 }) : null;
 const screenshots = resolveScreenshotAssets(pc, desc);
 const release = formatDate(pc.releaseDate, locale);
-const license = await resolveLicense(pc.legal?.license);
 const features = desc.features ?? [];
 const langNames = new Intl.DisplayNames([locale], { type: 'language' });
 const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
