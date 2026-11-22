@@ -13,6 +13,12 @@ export function relativeDate(dateStr, locale = 'en') {
   return rtf.format(-Math.floor(diffDays / 365), 'year');
 }
 
+// A date without a time, such as a publiccode.yml releaseDate, names a
+// calendar day. new Date() reads it as UTC midnight, so formatting it in the
+// browser time zone shows the previous day west of UTC and makes the client
+// text differ from the text rendered at build time.
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
 export function formatDate(dateStr, locale = 'en') {
   if (!dateStr) return null;
 
@@ -23,6 +29,7 @@ export function formatDate(dateStr, locale = 'en') {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
+    ...(DATE_ONLY.test(dateStr) && { timeZone: 'UTC' }),
   }).format(date);
 
   return {

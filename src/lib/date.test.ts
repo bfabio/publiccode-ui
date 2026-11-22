@@ -31,4 +31,17 @@ describe("formatDate", () => {
     expect(d).toMatchObject({ datetime: "2026-01-15", formatted: "Jan 15, 2026" });
     expect(d).not.toHaveProperty("relative");
   });
+
+  it("keeps the calendar day of a date-only value in every time zone", () => {
+    const tz = process.env.TZ;
+    try {
+      for (const zone of ["America/Los_Angeles", "America/New_York", "UTC", "Europe/Rome", "Pacific/Kiritimati"]) {
+        process.env.TZ = zone;
+        expect(formatDate("2024-03-15", "en")).toEqual({ datetime: "2024-03-15", formatted: "Mar 15, 2024" });
+      }
+    } finally {
+      if (tz === undefined) delete process.env.TZ;
+      else process.env.TZ = tz;
+    }
+  });
 });
