@@ -1,7 +1,7 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
 import { fetchCatalogs, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
-import { base } from '../../../lib/url.js';
+import { localeBase } from '../../../lib/url.js';
 import { t } from '../../../lib/i18n.js';
 import { formatDate } from '../../../lib/date.js';
 import type { StatMetric } from '../../../types/analysis';
@@ -14,6 +14,7 @@ export function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
+const base = localeBase(locale);
 const catalogs = await fetchCatalogs();
 const catalogAnalysis = await fetchAllCatalogAnalysis();
 const rootAnalysis = await fetchRootCatalogAnalysis();

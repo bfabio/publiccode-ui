@@ -3,7 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import SetupRequired from '../../../components/SetupRequired.astro';
 import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis, apiConfigured } from '../../../lib/api.js';
 import { resolveLogoAsset } from '../../../lib/assets.js';
-import { base } from '../../../lib/url.js';
+import { localeBase } from '../../../lib/url.js';
 import { t, pickDescription } from '../../../lib/i18n.js';
 import { SoftwareList } from '../../../components/SoftwareList';
 import { resolveLicense } from '../../../lib/license.js';
@@ -17,6 +17,7 @@ export function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
+const base = localeBase(locale);
 const allSoftware = await fetchAllSoftware();
 const catalogs = await fetchCatalogs();
 const softwareAnalysis = await fetchAllSoftwareAnalysis();
