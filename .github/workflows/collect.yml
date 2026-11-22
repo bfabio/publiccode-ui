@@ -2,8 +2,9 @@ name: Collect activity metrics
 
 on:
   schedule:
-    # Once a day, before the first daytime deploy picks up the fresh data
-    - cron: '0 4 * * *'
+    # Once a day, before the first daytime deploy picks up the fresh data.
+    # Off the hour: GitHub delays or drops scheduled runs at minute 0.
+    - cron: '17 4 * * *'
   workflow_dispatch:
 
 permissions:
