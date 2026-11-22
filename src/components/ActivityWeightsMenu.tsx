@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSliders, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type ActivityConfig, type DimensionKey } from "../lib/activityScore";
@@ -22,6 +22,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
   // A drawer restored at page load must not replay its entrance, so the
   // slide-in only arms once the user toggles it in this page view.
   const [animated, setAnimated] = useState(false);
+  const idBase = useId();
   const {
     config,
     ready,
@@ -101,6 +102,7 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
                       <td>
                         <WeightStepper
                           value={Math.round(config.weights[key] * 100)}
+                          label={`${L.colWeight}: ${L.dim[key]}`}
                           onChange={(pct) => setWeight(key, pct / 100)}
                           decLabel={L.stepDown}
                           incLabel={L.stepUp}
@@ -111,18 +113,22 @@ export const ActivityWeightsMenu: React.FC<{ locale?: string }> = ({ locale = "e
                       <tr className="activity-split-row">
                         <td colSpan={2}>
                           <div className="activity-split">
-                            <label>
+                            <label htmlFor={`${idBase}-${key}-commits`}>
                               <span>{L.commits}</span>
                               <WeightStepper
+                                id={`${idBase}-${key}-commits`}
+                                label={`${L.colWeight}: ${L.dim[key]}, ${L.commits}`}
                                 value={Math.round(config.subWeights[split.c] * 100)}
                                 onChange={(pct) => setSplit(split.c, split.m, pct / 100)}
                                 decLabel={L.stepDown}
                                 incLabel={L.stepUp}
                               />{" %"}
                             </label>
-                            <label>
+                            <label htmlFor={`${idBase}-${key}-merges`}>
                               <span>{L.merges}</span>
                               <WeightStepper
+                                id={`${idBase}-${key}-merges`}
+                                label={`${L.colWeight}: ${L.dim[key]}, ${L.merges}`}
                                 value={Math.round(config.subWeights[split.m] * 100)}
                                 onChange={(pct) => setSplit(split.m, split.c, pct / 100)}
                                 decLabel={L.stepDown}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDown } from "@fortawesome/free-solid-svg-icons";
 import { DIMENSION_ORDER, freeWeightPoints, type DimensionKey, type DimensionState, type ActivityConfig, type ActivityScoreResult } from "../lib/activityScore";
@@ -168,6 +168,7 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
   onIssueMode,
   onXmaxMode,
 }) => {
+  const idBase = useId();
   const [openSplits, setOpenSplits] = useState<Record<string, boolean>>({});
   const toggleSplit = (key: DimensionKey) => setOpenSplits((current) => ({ ...current, [key]: !current[key] }));
   const freePool = freeWeightPoints(config.weights);
@@ -224,6 +225,7 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
                       <td>
                         <WeightStepper
                           value={Math.round(config.weights[dimension.key] * 100)}
+                          label={`${L.colWeight}: ${L.dim[dimension.key]}`}
                           onChange={(pct) => onWeight(dimension.key, pct / 100)}
                           decLabel={L.stepDown}
                           incLabel={L.stepUp}
@@ -241,13 +243,13 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
                   <tr className="activity-split-row">
                     <td colSpan={5}>
                       <div className="activity-split">
-                        <label>
+                        <label htmlFor={`${idBase}-${dimension.key}-commits`}>
                           <span>{L.commits}</span>
-                          <WeightStepper value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => onSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
+                          <WeightStepper id={`${idBase}-${dimension.key}-commits`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.commits}`} value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => onSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                         </label>
-                        <label>
+                        <label htmlFor={`${idBase}-${dimension.key}-merges`}>
                           <span>{L.merges}</span>
-                          <WeightStepper value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => onSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
+                          <WeightStepper id={`${idBase}-${dimension.key}-merges`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.merges}`} value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => onSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
                         </label>
                       </div>
                     </td>
