@@ -213,10 +213,14 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
                           ? rawPartsText(dimension.rawParts, locale)
                           : (dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}
                       </td>
-                      <td>
-                        <span className="bar-track"><span className="bar-fill" style={{ width: `${(dimension.normalized as number) * 100}%` }} /></span>
-                        {(dimension.normalized as number).toFixed(2)}
-                      </td>
+                      {dimension.normalized === null ? (
+                        <td className="is-na">-</td>
+                      ) : (
+                        <td>
+                          <span className="bar-track"><span className="bar-fill" style={{ width: `${dimension.normalized * 100}%` }} /></span>
+                          {dimension.normalized.toFixed(2)}
+                        </td>
+                      )}
                       <td>
                         <WeightStepper
                           value={Math.round(config.weights[dimension.key] * 100)}
