@@ -13,6 +13,7 @@ import { describePlatform } from '../../../lib/platforms.ts';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
+import { documentationLinks } from '../../../lib/documentationLinks.ts';
 import { forgeRepoUrl } from '../../../lib/forgeLinks.ts';
 import { dataCacheKey } from '../../../lib/cacheKey.ts';
 import { contractMaintenance } from '../../../lib/maintenance.ts';
@@ -66,6 +67,7 @@ const { description: desc, lang: descLang } = pickDescription(pc.description, lo
 const logo = resolveLogoAsset(pc);
 const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription, { topHeadingLevel: 3 }) : null;
 const screenshots = resolveScreenshotAssets(pc, desc);
+const docs = documentationLinks(desc);
 const release = formatDate(pc.releaseDate, locale);
 const features = desc.features ?? [];
 const langNames = new Intl.DisplayNames([locale], { type: 'language' });
@@ -158,8 +160,8 @@ const badgeRadar = makeRadar(
         <nav class="software-links" aria-label="Software links">
           {safeUrl(pc.url) && <a href={safeUrl(pc.url)} rel="noopener"><Fragment set:html={faIcon('code-branch')} /> {t(locale, 'source_code')}</a>}
           {safeUrl(pc.landingURL) && <a href={safeUrl(pc.landingURL)} rel="noopener"><Fragment set:html={faIcon('globe')} /> {t(locale, 'website')}</a>}
-          {safeUrl(pc.documentation) && <a href={safeUrl(pc.documentation)} rel="noopener"><Fragment set:html={faIcon('book')} /> {t(locale, 'documentation')}</a>}
-          {safeUrl(pc.apiDocumentation) && <a href={safeUrl(pc.apiDocumentation)} rel="noopener"><Fragment set:html={faIcon('file-code')} /> {t(locale, 'api_documentation')}</a>}
+          {docs.documentation && <a href={docs.documentation} rel="noopener"><Fragment set:html={faIcon('book')} /> {t(locale, 'documentation')}</a>}
+          {docs.apiDocumentation && <a href={docs.apiDocumentation} rel="noopener"><Fragment set:html={faIcon('file-code')} /> {t(locale, 'api_documentation')}</a>}
         </nav>
       </div>
     </header>
