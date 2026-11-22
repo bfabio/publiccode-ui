@@ -71,9 +71,13 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
         i.style.visibility = 'visible';
         const p = i.previousElementSibling;
         if (p) { p.style.display = 'none'; p.style.visibility = 'hidden'; }
+        // Screenshot thumbnails have no .image-shell wrapper: the skeleton
+        // sibling above is their only placeholder.
         const s = i.closest('.image-shell');
-        s.classList.remove('image-loading');
-        s.classList.add('image-loaded');
+        if (s) {
+          s.classList.remove('image-loading');
+          s.classList.add('image-loaded');
+        }
         i.classList.add('image-loaded');
       }, true);
       document.addEventListener('error', function(e) {
@@ -84,7 +88,7 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
         i.style.display = 'none';
         const p = i.previousElementSibling;
         if (p) p.style.display = 'none';
-        i.closest('.image-shell').classList.remove('image-loading');
+        i.closest('.image-shell')?.classList.remove('image-loading');
       }, true);
     </script>
     <link rel="stylesheet" id="theme-css" href={`${base}/themes/${defaultTheme}/index.css`} />
