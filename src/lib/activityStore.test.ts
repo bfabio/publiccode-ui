@@ -49,6 +49,10 @@ describe('parseConfig', () => {
     expect(parseConfig('{not json')).toBeNull();
   });
 
+  it('returns null for JSON that is not an object', () => {
+    for (const raw of ['1', 'true', 'null', '"x"', '[]']) expect(parseConfig(raw)).toBeNull();
+  });
+
   it('parses a serialized config', () => {
     const c = parseConfig(JSON.stringify({ xmaxMode: 'max' }));
     expect(c?.xmaxMode).toBe('max');
