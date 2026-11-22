@@ -326,7 +326,8 @@ describe('composite dimensions blend normalized levels', () => {
     computeActivityScore(activity, blendStats, config).dimensions.find((d) => d.key === 'history')!;
 
   it('weights each sub-metric level by the split, not the raw counts', () => {
-    expect(history().normalized).toBeCloseTo(0.7 * level(500, 14891) + 0.3 * level(34, 1016), 10);
+    const { phC, phM } = DEFAULT_CONFIG.subWeights;
+    expect(history().normalized).toBeCloseTo(phC * level(500, 14891) + phM * level(34, 1016), 10);
   });
 
   it('follows the split all the way to pull requests alone', () => {
