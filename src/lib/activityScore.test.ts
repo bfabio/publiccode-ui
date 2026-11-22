@@ -225,7 +225,8 @@ describe('issues raw display parts', () => {
 
   it('ratio mode scores a never-used tracker (0/0) at zero', () => {
     const ghost = { ...activity, issuesOpen: 0, issuesClosed: 0 } as SoftwareActivity;
-    const r = computeActivityScore(ghost, stats, DEFAULT_CONFIG);
+    const s = { max: 10, min: 0, count: 10, mean: 5, median: 5, p95: 10 };
+    const r = computeActivityScore(ghost, { ...stats, issuesOpen: s, issuesClosed: s }, DEFAULT_CONFIG);
     const issues = r.dimensions.find((d) => d.key === 'issues')!;
     expect(issues.present).toBe(true);
     expect(issues.normalized).toBe(0);
@@ -305,7 +306,12 @@ describe('over-allocated weights refuse the score', () => {
   });
 
   it('stays computable at or under 100', () => {
-    const r = computeActivityScore(activity, stats, DEFAULT_CONFIG);
+    const s = (max: number) => ({ max, min: 0, count: 10, mean: max / 2, median: max / 2, p95: max });
+    const full: CatalogStats = {
+      ...stats, pullRequestsAllTime: s(210), pullRequestsRecent: s(14),
+      stars: s(2000), forks: s(500), issuesOpen: s(50), issuesClosed: s(500),
+    };
+    const r = computeActivityScore(activity, full, DEFAULT_CONFIG);
     expect(r.overAllocated).toBe(false);
     expect(r.score100).not.toBeNull();
   });
@@ -385,5 +391,60 @@ describe('computeActivityScore on a forge the collector does not support', () =>
     );
     expect(failed.forgeUnsupported).toBe(false);
     expect(failed.pending).toBe(true);
+  });
+});
+
+describe('missing reference stats', () => {
+  const s = (max: number) => ({ max, min: 0, count: 10, mean: max / 2, median: max / 2, p95: max });
+  const full: CatalogStats = {
+    contributors: s(30), commitsAllTime: s(4194), commitsRecent: s(485),
+    pullRequestsAllTime: s(210), pullRequestsRecent: s(14),
+    stars: s(2000), forks: s(500), issuesOpen: s(50), issuesClosed: s(500),
+  };
+  const activity = {
+    v: 1, tags: 74, recentDays: 180, contributors: 30,
+    commitsAllTime: 4194, commitsRecent: 485,
+    pullRequestsAllTime: 210, pullRequestsRecent: 14,
+    stars: 2000, forks: 500, issuesOpen: 5, issuesClosed: 140,
+  } as SoftwareActivity;
+
+  it('withholds the score with no stats at all', () => {
+    for (const none of [null, {} as CatalogStats]) {
+      const r = computeActivityScore(activity, none, DEFAULT_CONFIG);
+      expect(r.score100).toBeNull();
+      expect(r.pending).toBe(true);
+      expect(r.covered).toBe(0);
+      for (const d of r.dimensions) expect(d.normalized).toBeNull();
+    }
+  });
+
+  it('does not grade the issues dimension against a missing maximum', () => {
+    const { issuesClosed, ...rest } = full;
+    const r = computeActivityScore(activity, rest, { ...DEFAULT_CONFIG, issueMode: 'open' });
+    const issues = r.dimensions.find((d) => d.key === 'issues')!;
+    expect(issues.present).toBe(true);
+    expect(issues.normalized).toBeNull();
+    expect(issues.contribution).toBe(0);
+    expect(r.unreferenced).toEqual(['issuesClosed']);
+    expect(r.score100).toBeNull();
+  });
+
+  it('grades a composite on its referenced sub-metric and reports the other', () => {
+    const { pullRequestsAllTime, ...rest } = full;
+    const r = computeActivityScore(activity, rest, DEFAULT_CONFIG);
+    const history = r.dimensions.find((d) => d.key === 'history')!;
+    expect(history.normalized).toBeCloseTo(1, 10);
+    expect(history.rawParts).toEqual({ commits: 4194, pullRequests: 210 });
+    expect(r.unreferenced).toEqual(['pullRequestsAllTime']);
+    expect(r.score100).toBeNull();
+    expect(r.pending).toBe(true);
+  });
+
+  it('ignores a missing reference for a metric the software lacks', () => {
+    const { stars, ...rest } = full;
+    const { stars: _, ...noStars } = activity;
+    const r = computeActivityScore({ ...noStars, disabled: ['stars'] } as SoftwareActivity, rest, DEFAULT_CONFIG);
+    expect(r.unreferenced).toEqual([]);
+    expect(r.score100).not.toBeNull();
   });
 });

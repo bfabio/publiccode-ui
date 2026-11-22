@@ -83,11 +83,15 @@ function statValue(
   stats: CatalogStats | null,
   metric: StatMetric,
   field: keyof MetricStats,
-): number {
-  return stats?.[metric]?.[field] ?? 0;
+): number | null {
+  const value = stats?.[metric]?.[field];
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
-function refMax(stats: CatalogStats | null, metric: StatMetric, mode: XmaxMode): number {
+/** The catalog reference for a metric, or null when the catalog has no
+    stat for it. Missing is not zero: a zero reference grades every
+    count as 0, and the issue dimension would read that as evidence. */
+function refMax(stats: CatalogStats | null, metric: StatMetric, mode: XmaxMode): number | null {
   return statValue(stats, metric, mode === 'p95' ? 'p95' : 'max');
 }
 
@@ -128,6 +132,9 @@ export interface ActivityScoreResult {
   /** Weights sum past 100: the config is mid-edit, so the score is
       refused (score100 null) rather than silently renormalized. */
   overAllocated: boolean;
+  /** Metrics the software has a value for but the catalog stats do not
+      cover. They cannot be graded, so they also make the score pending. */
+  unreferenced: StatMetric[];
 }
 
 const isPresent = (v: number | null | undefined): v is number => typeof v === 'number';
@@ -160,15 +167,26 @@ function composite(
   pullRequests: CompositePart,
   stats: CatalogStats | null,
   xmaxMode: XmaxMode,
+  unreferenced: StatMetric[],
 ): CompositeResult {
   const present = [commits, pullRequests].filter((p) => isPresent(p.value));
   if (present.length === 0) return { present: false, raw: null, normalized: null };
 
-  const wSum = present.reduce((acc, p) => acc + p.sub, 0) || 1;
-  const normalized = present.reduce(
-    (acc, p) => acc + (p.sub / wSum) * normalize(p.value as number, refMax(stats, p.metric, xmaxMode)),
-    0,
-  );
+  // A sub-metric without a catalog reference is left out of the blend
+  // like an absent one, and reported so the score is withheld.
+  const graded = present.flatMap((p) => {
+    const xmax = refMax(stats, p.metric, xmaxMode);
+    if (xmax === null) {
+      unreferenced.push(p.metric);
+      return [];
+    }
+    return [{ ...p, xmax }];
+  });
+  const wSum = graded.reduce((acc, p) => acc + p.sub, 0) || 1;
+  const normalized =
+    graded.length === 0
+      ? null
+      : graded.reduce((acc, p) => acc + (p.sub / wSum) * normalize(p.value as number, p.xmax), 0);
   const raw = present.reduce((acc, p) => acc + (p.value as number), 0);
   const rawParts =
     isPresent(commits.value) && isPresent(pullRequests.value)
@@ -193,6 +211,16 @@ export function computeActivityScore(
   const { phC, phM, caC, caM } = subWeights;
 
   const dims: DimensionResult[] = [];
+  const unreferenced: StatMetric[] = [];
+
+  const grade = (value: number, metric: StatMetric): number | null => {
+    const xmax = refMax(stats, metric, xmaxMode);
+    if (xmax === null) {
+      unreferenced.push(metric);
+      return null;
+    }
+    return normalize(value, xmax);
+  };
 
   const push = (
     key: DimensionKey,
@@ -208,9 +236,7 @@ export function computeActivityScore(
     'contributors',
     isPresent(activity.contributors),
     activity.contributors ?? null,
-    isPresent(activity.contributors)
-      ? normalize(activity.contributors, refMax(stats, 'contributors', xmaxMode))
-      : null,
+    isPresent(activity.contributors) ? grade(activity.contributors, 'contributors') : null,
     false,
   );
 
@@ -218,7 +244,7 @@ export function computeActivityScore(
     const h = composite(
       { value: activity.commitsAllTime, sub: phC, metric: 'commitsAllTime' },
       { value: activity.pullRequestsAllTime, sub: phM, metric: 'pullRequestsAllTime' },
-      stats, xmaxMode,
+      stats, xmaxMode, unreferenced,
     );
     push('history', h.present, h.raw, h.normalized, false);
     if (h.rawParts) dims[dims.length - 1].rawParts = h.rawParts;
@@ -228,7 +254,7 @@ export function computeActivityScore(
     const a = composite(
       { value: activity.commitsRecent, sub: caC, metric: 'commitsRecent' },
       { value: activity.pullRequestsRecent, sub: caM, metric: 'pullRequestsRecent' },
-      stats, xmaxMode,
+      stats, xmaxMode, unreferenced,
     );
     push('activity', a.present, a.raw, a.normalized, false);
     if (a.rawParts) dims[dims.length - 1].rawParts = a.rawParts;
@@ -238,7 +264,7 @@ export function computeActivityScore(
     'stars',
     isPresent(activity.stars),
     activity.stars ?? null,
-    isPresent(activity.stars) ? normalize(activity.stars, refMax(stats, 'stars', xmaxMode)) : null,
+    isPresent(activity.stars) ? grade(activity.stars, 'stars') : null,
     false,
   );
 
@@ -248,15 +274,19 @@ export function computeActivityScore(
     const closed = activity.issuesClosed ?? 0;
     // A busy tracker means an alive project, so volume is the base
     // signal. It also zeroes the never-used 0/0 tracker for free.
-    const xmaxVolume = refMax(stats, 'issuesOpen', xmaxMode) + refMax(stats, 'issuesClosed', xmaxMode);
-    const volume = normalize(open + closed, xmaxVolume);
+    const xmaxOpen = refMax(stats, 'issuesOpen', xmaxMode);
+    const xmaxClosed = refMax(stats, 'issuesClosed', xmaxMode);
+    if (present && xmaxOpen === null) unreferenced.push('issuesOpen');
+    if (present && xmaxClosed === null) unreferenced.push('issuesClosed');
+    const volume =
+      xmaxOpen === null || xmaxClosed === null ? null : normalize(open + closed, xmaxOpen + xmaxClosed);
     // Triage discount, ratio mode only: full credit up to one open per
     // two closed, none when nothing was ever closed.
     const factor =
       issueMode === 'ratio'
         ? open === 0 ? 1 : closed === 0 ? 0 : Math.min(1, closed / (2 * open))
         : 1;
-    const score = present ? volume * factor : null;
+    const score = present && volume !== null ? volume * factor : null;
     push('issues', present, present ? open + closed : null, score, true);
     if (present) dims[dims.length - 1].rawParts = { open, closed };
   }
@@ -265,7 +295,7 @@ export function computeActivityScore(
     'forks',
     isPresent(activity.forks),
     activity.forks ?? null,
-    isPresent(activity.forks) ? normalize(activity.forks, refMax(stats, 'forks', xmaxMode)) : null,
+    isPresent(activity.forks) ? grade(activity.forks, 'forks') : null,
     false,
   );
 
@@ -316,10 +346,10 @@ export function computeActivityScore(
   // A metric we still mean to collect (never fetched, or the fetch
   // failed) withholds the score entirely: a partial number would read
   // as a low grade. Known n/a is real evidence, so it only bounds the
-  // claim (the SSL Labs model). An unsupported forge is neither: its
-  // metrics will never arrive, so the score is withheld without being
-  // announced as on its way.
-  const pending = failed.length > 0 || (hasUnknown && !unsupported);
+  // claim (the SSL Labs model). Unsupported forge metrics will never
+  // arrive, so they do not make the score pending. Missing catalog
+  // references still withhold grading until the stats are available.
+  const pending = failed.length > 0 || (hasUnknown && !unsupported) || unreferenced.length > 0;
   const cap: ActivityScoreCap | null =
     !pending && hasDisabled ? { limit: 89, reason: 'disabled' } : null;
 
@@ -346,5 +376,6 @@ export function computeActivityScore(
     pending,
     forgeUnsupported: unsupported,
     overAllocated,
+    unreferenced,
   };
 }
