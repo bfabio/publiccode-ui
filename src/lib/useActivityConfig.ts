@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import {
   readGlobalConfig,
   writeGlobalConfig,
+  readSharedConfig,
+  clearSharedConfig,
   readUrlConfig,
   writeUrlConfig,
   clearUrlConfig,
@@ -42,20 +44,28 @@ function applySplit(c: ActivityConfig, edited: SubKey, other: SubKey, value: num
 
 export function useGlobalActivityConfig() {
   const [config, setConfig] = useState<ActivityConfig>(DEFAULT_CONFIG);
+  const [shared, setShared] = useState(false);
   const [ready, setReady] = useState(false);
   useClientLayoutEffect(() => {
-    const load = () => setConfig(readGlobalConfig());
+    const load = () => {
+      setConfig(readGlobalConfig());
+      setShared(readSharedConfig() !== null);
+    };
     load();
     setReady(true);
     return subscribeStore(load);
   }, []);
   const update = (next: ActivityConfig) => {
     setConfig(next);
+    setShared(false);
     writeGlobalConfig(next);
   };
   return {
     config,
+    shared,
     ready,
+    keepShared: () => update(config),
+    discardShared: clearSharedConfig,
     setWeight: (k: DimensionKey, v: number) => update(applyWeight(config, k, v)),
     setSplit: (e: SubKey, o: SubKey, v: number) => update(applySplit(config, e, o, v)),
     setIssueMode: (m: ActivityConfig['issueMode']) => update({ ...config, issueMode: m }),

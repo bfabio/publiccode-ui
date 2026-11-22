@@ -23,5 +23,5 @@ const locale = Astro.currentLocale ?? 'en';
   ]}
 >
   <h1>{t(locale, 'settings')}</h1>
-  <ActivitySettings client:load locale={locale} />
+  <ActivitySettings client:load locale={locale} homePath={`${base}${locale === 'it' ? '/it' : ''}/`} />
 </Layout>
