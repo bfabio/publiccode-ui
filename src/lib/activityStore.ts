@@ -1,7 +1,9 @@
-import { DEFAULT_CONFIG, type ActivityConfig } from './activityScore';
+import { DEFAULT_CONFIG, DIMENSION_ORDER, type ActivityConfig } from './activityScore';
 
 export const STORAGE_KEY = 'publiccode-ui:activity';
 export const URL_PARAM = 'activity';
+export const SHARED_PARAM = 'weights';
+export const SHARED_KEY = 'publiccode-ui:shared-activity';
 export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
 export const ACTIVITY_DEBUG_VISIBILITY_KEY = 'publiccode-ui:activity-debug';
 
@@ -68,13 +70,29 @@ export function pickConfig(
   return url ?? software ?? global ?? DEFAULT_CONFIG;
 }
 
-export function readGlobalConfig(): ActivityConfig {
-  if (typeof window === 'undefined') return DEFAULT_CONFIG;
-  return parseConfig(window.localStorage.getItem(STORAGE_KEY)) ?? DEFAULT_CONFIG;
+export function readSharedConfig(): ActivityConfig | null {
+  if (typeof window === 'undefined') return null;
+  return parseConfig(window.sessionStorage.getItem(SHARED_KEY));
 }
 
+export function readGlobalConfig(): ActivityConfig {
+  if (typeof window === 'undefined') return DEFAULT_CONFIG;
+  return readSharedConfig()
+    ?? parseConfig(window.localStorage.getItem(STORAGE_KEY))
+    ?? DEFAULT_CONFIG;
+}
+
+export function clearSharedConfig(): void {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(SHARED_KEY);
+  emitStoreChange(STORAGE_KEY);
+}
+
+// Editing the weights is the visitor making the shared config their own,
+// so the edit persists and the visit copy is dropped.
 export function writeGlobalConfig(config: ActivityConfig): void {
   if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(SHARED_KEY);
   if (isDefaultConfig(config)) window.localStorage.removeItem(STORAGE_KEY);
   else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
   emitStoreChange(STORAGE_KEY);
@@ -183,3 +201,76 @@ export function withActivityConfig(path: string, config: ActivityConfig | null):
   params.set(URL_PARAM, JSON.stringify(config));
   return `${pathname}?${params.toString()}${hash ? `#${hash}` : ''}`;
 }
+
+// Each split pair sums to one, so the commit share alone carries it.
+const SPLITS = [['phC', 'phM'], ['caC', 'caM']] as const;
+
+const toPoints = (n: number) => Math.round(n * 100);
+
+// Weights travel as integer hundredths ("stars:20") and only when they
+// differ from the defaults, so a shared link stays short.
+export function encodeSharedConfig(config: ActivityConfig): string {
+  const parts: string[] = [];
+  for (const k of DIMENSION_ORDER) {
+    const v = toPoints(config.weights[k]);
+    if (v !== toPoints(DEFAULT_CONFIG.weights[k])) parts.push(`${k}:${v}`);
+  }
+  for (const [k] of SPLITS) {
+    const v = toPoints(config.subWeights[k]);
+    if (v !== toPoints(DEFAULT_CONFIG.subWeights[k])) parts.push(`${k}:${v}`);
+  }
+  if (config.issueMode !== DEFAULT_CONFIG.issueMode) parts.push(`issueMode:${config.issueMode}`);
+  if (config.xmaxMode !== DEFAULT_CONFIG.xmaxMode) parts.push(`xmaxMode:${config.xmaxMode}`);
+  return parts.join(',');
+}
+
+export function decodeSharedConfig(raw: string | null): ActivityConfig | null {
+  if (raw === null) return null;
+  const weights = { ...DEFAULT_CONFIG.weights };
+  const subWeights = { ...DEFAULT_CONFIG.subWeights };
+  const partial: Partial<ActivityConfig> = { weights, subWeights };
+  for (const part of raw.split(',')) {
+    const [key, value = ''] = part.split(':', 2);
+    if (key === 'issueMode' || key === 'xmaxMode') {
+      partial[key] = value as never;
+      continue;
+    }
+    if (!/^\d{1,3}$/.test(value)) continue;
+    const n = Math.min(100, Number(value)) / 100;
+    if ((DIMENSION_ORDER as string[]).includes(key)) weights[key as keyof typeof weights] = n;
+    const split = SPLITS.find(([edited]) => edited === key);
+    if (split) {
+      subWeights[split[0]] = n;
+      subWeights[split[1]] = Math.round((1 - n) * 100) / 100;
+    }
+  }
+  return mergeConfig(partial);
+}
+
+// A link to the defaults must still carry the parameter: without it the
+// recipient's own saved weights would apply instead of the sender's.
+export const SHARED_DEFAULT = 'default';
+
+export function sharedConfigUrl(baseUrl: string, config: ActivityConfig): string {
+  const url = new URL(baseUrl);
+  url.searchParams.set(SHARED_PARAM, encodeSharedConfig(config) || SHARED_DEFAULT);
+  // URLSearchParams escapes ":" and ",", which are legal in a query and
+  // much easier to read in a pasted link.
+  return url.toString().replace(/%3A/gi, ':').replace(/%2C/gi, ',');
+}
+
+// A shared link applies to this visit only: it lands in sessionStorage so
+// it follows the visitor across pages without overwriting the weights they
+// saved themselves. The parameter leaves the address bar once adopted.
+export function adoptSharedConfig(): void {
+  if (typeof window === 'undefined') return;
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has(SHARED_PARAM)) return;
+  const config = decodeSharedConfig(params.get(SHARED_PARAM));
+  if (config) window.sessionStorage.setItem(SHARED_KEY, JSON.stringify(config));
+  params.delete(SHARED_PARAM);
+  const qs = params.toString();
+  window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`);
+}
+
+adoptSharedConfig();

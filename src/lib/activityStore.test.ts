@@ -7,6 +7,8 @@ import {
   ACTIVITY_DEBUG_VISIBILITY_KEY, readActivityDebugVisibility, writeActivityDebugVisibility,
   withActivityConfig, migrateLegacyConfigs,
   readUrlConfig, writeUrlConfig, clearUrlConfig,
+  SHARED_KEY, encodeSharedConfig, decodeSharedConfig, sharedConfigUrl, adoptSharedConfig,
+  readGlobalConfig, readSharedConfig, clearSharedConfig,
 } from './activityStore.ts';
 import { DEFAULT_CONFIG, type ActivityConfig } from './activityScore.ts';
 
@@ -67,15 +69,20 @@ class FakeStorage {
   clear() { this.m.clear(); }
 }
 
-function stubWindow() {
+function stubWindow(href = 'https://example.org/') {
   const storage = new FakeStorage();
+  const session = new FakeStorage();
   const handlers: ((e: { key: string | null }) => void)[] = [];
+  const location = new URL(href);
   vi.stubGlobal('window', {
     localStorage: storage,
+    sessionStorage: session,
+    location,
+    history: { replaceState: (_s: unknown, _t: string, url: string) => { location.href = new URL(url, location).href; } },
     addEventListener: (_t: string, h: (e: { key: string | null }) => void) => handlers.push(h),
     removeEventListener: vi.fn(),
   });
-  return { storage, fire: (key: string | null) => handlers.forEach((h) => h({ key })) };
+  return { storage, session, location, fire: (key: string | null) => handlers.forEach((h) => h({ key })) };
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -262,5 +269,73 @@ describe('share link config', () => {
     clearUrlConfig();
     expect(replaceState).toHaveBeenCalledWith(null, '', '/software/abc/');
     expect(location.search).toBe('');
+  });
+});
+
+describe('shared global weights', () => {
+  const tuned: ActivityConfig = {
+    ...DEFAULT_CONFIG,
+    weights: { ...DEFAULT_CONFIG.weights, stars: 0.2, forks: 0 },
+    subWeights: { ...DEFAULT_CONFIG.subWeights, phC: 0.55, phM: 0.45 },
+    issueMode: 'open',
+  };
+
+  it('encodes only what differs from the defaults', () => {
+    expect(encodeSharedConfig(DEFAULT_CONFIG)).toBe('');
+    expect(encodeSharedConfig(tuned)).toBe('stars:20,forks:0,phC:55,issueMode:open');
+  });
+
+  it('decodes back to the same config and derives the paired split', () => {
+    expect(decodeSharedConfig(encodeSharedConfig(tuned))).toEqual(tuned);
+    expect(decodeSharedConfig(null)).toBeNull();
+  });
+
+  it('ignores unknown keys and malformed values, and clamps to 100', () => {
+    const c = decodeSharedConfig('stars:abc,bogus:5,forks:-3,history:250,xmaxMode:nope');
+    expect(c).toEqual({ ...DEFAULT_CONFIG, weights: { ...DEFAULT_CONFIG.weights, history: 1 } });
+  });
+
+  it('builds a readable link that keeps other parameters', () => {
+    expect(sharedConfigUrl('https://example.org/it/?view=table', tuned))
+      .toBe('https://example.org/it/?view=table&weights=stars:20,forks:0,phC:55,issueMode:open');
+    expect(sharedConfigUrl('https://example.org/?weights=stars:1', DEFAULT_CONFIG))
+      .toBe('https://example.org/?weights=default');
+    expect(decodeSharedConfig('default')).toEqual(DEFAULT_CONFIG);
+  });
+
+  it('applies a shared link for the visit, over the saved weights, without touching them', () => {
+    const saved = JSON.stringify({ ...DEFAULT_CONFIG, xmaxMode: 'max' });
+    const { storage, location } = stubWindow('https://example.org/it/?view=table&weights=stars:20,issueMode:open#top');
+    storage.setItem(STORAGE_KEY, saved);
+    adoptSharedConfig();
+    expect(location.href).toBe('https://example.org/it/?view=table#top');
+    expect(readGlobalConfig().weights.stars).toBe(0.2);
+    expect(readGlobalConfig().xmaxMode).toBe('p95');
+    expect(storage.getItem(STORAGE_KEY)).toBe(saved);
+    clearSharedConfig();
+    expect(readSharedConfig()).toBeNull();
+    expect(readGlobalConfig().xmaxMode).toBe('max');
+  });
+
+  it('drops the visit copy once the weights are edited', () => {
+    const { session, storage } = stubWindow('https://example.org/?weights=stars:20');
+    adoptSharedConfig();
+    expect(session.getItem(SHARED_KEY)).not.toBeNull();
+    writeGlobalConfig(readGlobalConfig());
+    expect(session.getItem(SHARED_KEY)).toBeNull();
+    expect(parseConfig(storage.getItem(STORAGE_KEY))?.weights.stars).toBe(0.2);
+  });
+
+  it('applies a link to the defaults over the recipient\'s saved weights', () => {
+    const custom = { ...DEFAULT_CONFIG, weights: { ...DEFAULT_CONFIG.weights, stars: 0 } };
+    const link = sharedConfigUrl('https://example.org/', DEFAULT_CONFIG);
+    const { storage, session } = stubWindow(link);
+    storage.setItem(STORAGE_KEY, JSON.stringify(custom));
+    adoptSharedConfig();
+    expect(readGlobalConfig()).toEqual(DEFAULT_CONFIG);
+    expect(parseConfig(storage.getItem(STORAGE_KEY))).toEqual(custom);
+    writeGlobalConfig(readGlobalConfig());
+    expect(session.getItem(SHARED_KEY)).toBeNull();
+    expect(readGlobalConfig()).toEqual(DEFAULT_CONFIG);
   });
 });

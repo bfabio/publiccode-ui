@@ -46,7 +46,12 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
         if (lang && lang !== current && supported.includes(lang)) {
           const rel = location.pathname.slice(base.length).replace(/^\/it(?=\/|$)/, '') || '/';
           const target = `${base}${lang === 'it' ? '/it' : ''}${rel}`;
-          if (target !== location.pathname) location.replace(target);
+          // Keep the other parameters: a shared weights link must survive
+          // the language redirect.
+          const params = new URLSearchParams(location.search);
+          params.delete('lang');
+          const qs = params.toString();
+          if (target !== location.pathname) location.replace(`${target}${qs ? `?${qs}` : ''}${location.hash}`);
         }
       }
     </script>
@@ -695,6 +700,13 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
     margin: 0 0 2rem;
   }
   .activity-settings .activity-preferences .settings-preference { margin: 0; }
+  .settings-share-link {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0.5rem 0 0;
+    font: inherit;
+  }
+  .settings-share-notice { margin: 0.75rem 0 0; }
   output.catalog-result-count {
     position: relative;
   }
