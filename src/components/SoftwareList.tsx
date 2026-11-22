@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import React, { useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo, faDownload, faFilter, faGavel, faHourglassHalf, faList, faPencil, faRotateLeft, faSort, faSortDown, faSortUp, faTable, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
@@ -22,8 +22,10 @@ function highlight(text: string, query: string) {
   return <>{text.slice(0, idx)}<mark>{text.slice(idx, idx + query.length)}</mark>{text.slice(idx + query.length)}</>;
 }
 
-const readParam = (key: string) =>
-  typeof window !== "undefined" ? new URLSearchParams(window.location.search).get(key) ?? "" : "";
+// Layout effects warn during the server render; on the client they
+// apply the URL before the first paint, so a filtered link shows no
+// flash of the unfiltered list after hydration
+const useClientLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 const writeParams = (params: Record<string, string>) => {
   const url = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -111,19 +113,39 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const { enabled: debugEnabled } = useActivityDebugVisibility();
   const l = labels ?? { allCategories: "All categories", allStatuses: "All statuses", allAudiences: "All audiences", sortNameAsc: "Name A-Z", sortNameDesc: "Name Z-A", sortReleaseDesc: "Newest release", sortReleaseAsc: "Oldest release", results: "results", noResults: "No software found", clearFilters: "Clear filters", allTypes: "All types", searchPlaceholder: "Search software...", filters: "Filters", sortBy: "Sort by", showMore: "Show more" };
   const weightLabels = ACTIVITY_LABELS[locale === "it" ? "it" : "en"];
-  const [inputValue, setInputValue] = useState(() => readParam("q"));
+  // The static page is built without a query string, so every filter
+  // starts empty to hydrate the server HTML; the URL is applied below
+  const [inputValue, setInputValue] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState(() => readParam("q"));
-  const [sortBy, setSortBy] = useState<ListSortBy | "">(() => readParam("sort_by") as ListSortBy | "");
-  const [category, setCategory] = useState(() => readParam("category"));
-  const [status, setStatus] = useState(() => readParam("status"));
-  const [softwareType, setSoftwareType] = useState(() => readParam("type"));
-  const [audience, setAudience] = useState(() => readParam("audience"));
-  const [catalog, setCatalog] = useState(() => readParam("catalog"));
-  const [onlyActivity, setOnlyActivity] = useState(() => readParam("activity") === "1");
-  const [view, setView] = useState<"list" | "table">(() => readParam("view") === "table" ? "table" : "list");
-  const [filtersOpen, setFiltersOpen] = useState(() =>
-    Boolean(readParam("category") || readParam("status") || readParam("type") || readParam("audience") || readParam("catalog") || readParam("activity") === "1"));
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<ListSortBy | "">("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+  const [softwareType, setSoftwareType] = useState("");
+  const [audience, setAudience] = useState("");
+  const [catalog, setCatalog] = useState("");
+  const [onlyActivity, setOnlyActivity] = useState(false);
+  const [view, setView] = useState<"list" | "table">("list");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [urlApplied, setUrlApplied] = useState(false);
+  useClientLayoutEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const param = (key: string) => params.get(key) ?? "";
+    // Text typed into the static field before hydration wins over the URL
+    const q = searchRef.current?.value || param("q");
+    setInputValue(q);
+    setQuery(q);
+    setSortBy(param("sort_by") as ListSortBy | "");
+    setCategory(param("category"));
+    setStatus(param("status"));
+    setSoftwareType(param("type"));
+    setAudience(param("audience"));
+    setCatalog(param("catalog"));
+    setOnlyActivity(param("activity") === "1");
+    setView(param("view") === "table" ? "table" : "list");
+    setFiltersOpen(["category", "status", "type", "audience", "catalog"].some((key) => param(key)) || param("activity") === "1");
+    setUrlApplied(true);
+  }, []);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ITEMS);
   const [openScoreId, setOpenScoreId] = useState<string | null>(null);
   const [dataInfoOpen, setDataInfoOpen] = useState(false);
@@ -145,8 +167,9 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
+    if (!urlApplied) return;
     writeParams({ q: searchQuery, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy && sortBy !== defaultSort ? sortBy : "", view: view === "table" ? "table" : "" });
-  }, [searchQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy, defaultSort, view]);
+  }, [urlApplied, searchQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy, defaultSort, view]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
@@ -171,9 +194,10 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [openScoreId]);
 
   useEffect(() => {
+    if (!urlApplied) return;
     document.documentElement.dataset.catalogView = view;
     document.documentElement.dataset.catalogHydrated = "1";
-  }, [view]);
+  }, [urlApplied, view]);
 
   useEffect(() => {
     if (!dataInfoOpen) return;
