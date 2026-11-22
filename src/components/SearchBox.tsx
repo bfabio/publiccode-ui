@@ -57,6 +57,19 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
   useEffect(() => {
     if (document.activeElement === inputRef.current) loadItems();
   }, [loadItems]);
+
+  // Going back restores the page from the back/forward cache with the state
+  // it had while leaving, so the field would stay disabled behind the spinner.
+  useEffect(() => {
+    const reset = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setNavigating(false);
+      setShowSuggestions(false);
+      setSelectedIdx(-1);
+    };
+    window.addEventListener("pageshow", reset);
+    return () => window.removeEventListener("pageshow", reset);
+  }, []);
   const softwareHref = useCallback((id: string) =>
     withActivityConfig(`${base}/software/${id}`, readSoftwareConfig(id)),
   [base]);
