@@ -316,13 +316,21 @@ function descriptionLang(language, locale) {
   return tag.split("-")[0] === locale ? undefined : tag;
 }
 
+// Match regional and differently cased tags after checking the exact key.
+function descriptionKey(description, language) {
+  if (description[language] != null) return language;
+  return Object.keys(description).find(
+    (key) => key.split("-")[0].toLowerCase() === language && description[key] != null,
+  );
+}
+
 // The localized description along with the lang attribute its text needs,
 // since the fallback can pick a language other than the page one.
 export function pickDescription(description, locale) {
   const language = description
-    ? [locale, "en", Object.keys(description)[0]].find(
-        (k) => k !== undefined && description[k] != null,
-      )
+    ? descriptionKey(description, locale) ??
+      descriptionKey(description, "en") ??
+      Object.keys(description)[0]
     : undefined;
   if (language === undefined) return { description: {}, lang: undefined };
   return {

@@ -60,3 +60,43 @@ describe('pickDescription', () => {
     expect(pickDescription({}, 'en')).toEqual({ description: {}, lang: undefined });
   });
 });
+
+describe('description language selection', () => {
+  const it_ = { shortDescription: 'Italiano' };
+  const en = { shortDescription: 'English' };
+  const de = { shortDescription: 'Deutsch' };
+
+  it('picks the exact locale key', () => {
+    expect(pickDescription({ en, it: it_ }, 'it').description).toBe(it_);
+  });
+
+  it('matches a regional tag on the primary language subtag', () => {
+    expect(pickDescription({ en, 'it-IT': it_ }, 'it').description).toBe(it_);
+  });
+
+  it('matches the language subtag case insensitively', () => {
+    expect(pickDescription({ en, IT: it_ }, 'it').description).toBe(it_);
+  });
+
+  it('prefers the exact key over a regional one', () => {
+    const regional = { shortDescription: 'Svizzera' };
+    expect(pickDescription({ 'it-CH': regional, it: it_ }, 'it').description).toBe(it_);
+  });
+
+  it('falls back to English keyed by a regional tag', () => {
+    expect(pickDescription({ de, 'en-US': en }, 'it').description).toBe(en);
+    expect(pickDescription({ de, EN: en }, 'it').description).toBe(en);
+  });
+
+  it('falls back to the first key when there is no match', () => {
+    expect(pickDescription({ de, fr: en }, 'it').description).toBe(de);
+  });
+
+  it('does not match a tag that only starts with the language', () => {
+    expect(pickDescription({ de, ita: it_ }, 'it').description).toBe(de);
+  });
+
+  it('returns an empty object without a description', () => {
+    expect(pickDescription(undefined, 'it').description).toEqual({});
+  });
+});
