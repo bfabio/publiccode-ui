@@ -30,6 +30,8 @@ interface SearchBoxProps {
 
 const MAX_SUGGESTIONS = 7;
 
+const suggestionId = (index: number) => `search-suggestion-${index}`;
+
 export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholder = "Search...", clearLabel = "Clear search", value, onChange }) => {
   const [internalValue, setInternalValue] = useState("");
   const inputValue = value ?? internalValue;
@@ -124,6 +126,11 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
     }
   }, [showSuggestions, suggestions, selectedIdx, base, inputValue, update, softwareHref]);
 
+  const listOpen = showSuggestions && suggestions.length > 0;
+  const activeOption = listOpen && selectedIdx >= 0 && selectedIdx < suggestions.length
+    ? suggestionId(selectedIdx)
+    : undefined;
+
   return (
     <search className="catalog-search">
       <input
@@ -141,9 +148,10 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
         onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
         placeholder={placeholder}
         role="combobox"
-        aria-expanded={showSuggestions && suggestions.length > 0}
+        aria-expanded={listOpen}
         aria-autocomplete="list"
         aria-controls="search-suggestions"
+        aria-activedescendant={activeOption}
         style={navigating ? { opacity: 0.6, cursor: "wait" } : undefined}
       />
       {inputValue && !navigating && (
@@ -176,11 +184,12 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
           />
         </>
       )}
-      {showSuggestions && suggestions.length > 0 && (
+      {listOpen && (
         <ul id="search-suggestions" role="listbox" className="suggestions">
           {suggestions.map((s, i) => (
             <li
               key={s.id}
+              id={suggestionId(i)}
               role="option"
               aria-selected={i === selectedIdx}
               className={i === selectedIdx ? "selected" : ""}
