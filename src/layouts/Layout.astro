@@ -3,7 +3,7 @@ import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
 import { readdirSync } from 'node:fs';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
-import { base } from '../lib/url.js';
+import { base, localeBase } from '../lib/url.js';
 import { faIcon } from '../lib/icons.js';
 import { t, routePathname } from '../lib/i18n.js';
 import { localeRedirectScript } from '../lib/localeRedirect.js';
@@ -32,7 +32,7 @@ const enUrl = getAbsoluteLocaleUrl('en', routePath);
 const itUrl = getAbsoluteLocaleUrl('it', routePath);
 const enSwitchUrl = getRelativeLocaleUrl('en', routePath);
 const itSwitchUrl = getRelativeLocaleUrl('it', routePath);
-const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings`;
+const settingsHref = `${localeBase(locale)}/settings`;
 ---
 
 <html lang={locale}>

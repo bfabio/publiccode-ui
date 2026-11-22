@@ -41,6 +41,18 @@ describe('localeRedirect', () => {
     expect(page('/software/x', 'en', 'it-IT', 'fr', '?lang=xx')).toEqual({ store: null, target: '/it/software/x' });
   });
 
+  it('keeps the search query and filters', () => {
+    expect(page('/software/', 'en', 'it-IT', null, '?q=anpr').target).toBe('/it/software/?q=anpr');
+    expect(page('/it/software', 'it', 'en-US', null, '?category=it-security&q=a%20b').target)
+      .toBe('/software?category=it-security&q=a+b');
+  });
+
+  it('drops ?lang= and keeps the other params and the hash', () => {
+    expect(localeRedirect({
+      pathname: '/it/software/', search: '?lang=en&q=anpr', hash: '#top', current: 'it', navLang: 'it', stored: null, base: '',
+    })).toEqual({ store: 'en', target: '/software/?q=anpr#top' });
+  });
+
   it('keeps the base path', () => {
     expect(localeRedirect({
       pathname: '/ui/it/software/x', search: '', current: 'it', navLang: 'it', stored: 'en', base: '/ui',
@@ -75,6 +87,10 @@ describe('localeRedirectScript', () => {
       .toBe('/ui/it/software/x?activity=shared#metrics');
     expect(run('/ui/it/software/x', '?activity=shared', 'it', 'en-US', {}))
       .toBe('/ui/software/x?activity=shared');
+  });
+
+  it('carries the query string through the inline script', () => {
+    expect(run('/ui/software/', '?q=anpr', 'en', 'it-IT', {})).toBe('/ui/it/software/?q=anpr');
   });
 
   it('still redirects when storage is unavailable', () => {

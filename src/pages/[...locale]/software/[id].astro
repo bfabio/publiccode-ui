@@ -5,7 +5,7 @@ import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllOpen
 import { SoftwareMetrics } from '../../../components/SoftwareMetrics';
 import { ActivityRadar } from '../../../components/ActivityRadar';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
-import { base } from '../../../lib/url.js';
+import { localeBase } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
 import { t, pickDescription } from '../../../lib/i18n.js';
 import { catalogFlag } from '../../../lib/catalogFlags.ts';
@@ -58,6 +58,7 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
+const base = localeBase(locale);
 const { software, license, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges, contract } = Astro.props;
 const pc = software.publiccode;
 
@@ -71,7 +72,7 @@ const langNames = new Intl.DisplayNames([locale], { type: 'language' });
 const languages = Object.keys(pc.description ?? {}).map(k => langNames.of(k) ?? k);
 const platforms = (pc.platforms ?? []).map(describePlatform);
 const repoUrl = forgeRepoUrl(software.url, pc.url);
-const activityOverview = { href: `${base}${locale === 'it' ? '/it' : ''}/software/activity/`, label: t(locale, 'activity_overview') };
+const activityOverview = { href: `${base}/software/activity/`, label: t(locale, 'activity_overview') };
 
 const medalEmoji = { gold: '\u{1F947}', silver: '\u{1F948}', bronze: '\u{1F949}' };
 const levels = ['gold', 'silver', 'bronze'];
