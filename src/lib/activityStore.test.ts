@@ -173,6 +173,27 @@ describe('migrateLegacyConfigs', () => {
     expect(storage.getItem('publiccode-ui:vitality:abc')).toBeNull();
   });
 
+  it('preserves legacy configs when copying fails and retries later', () => {
+    const { storage } = stubWindow();
+    const custom = JSON.stringify({ ...DEFAULT_CONFIG, issueMode: 'open' });
+    const legacyKeys = ['publiccode-ui:vitality', 'publiccode-ui:vitality:abc'];
+    for (const key of legacyKeys) storage.setItem(key, custom);
+    const write = vi.spyOn(storage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    });
+
+    expect(() => migrateLegacyConfigs()).not.toThrow();
+    for (const key of legacyKeys) expect(storage.getItem(key)).toBe(custom);
+    expect(storage.getItem(STORAGE_KEY)).toBeNull();
+    expect(storage.getItem(softwareKey('abc'))).toBeNull();
+
+    write.mockRestore();
+    migrateLegacyConfigs();
+    expect(readGlobalConfig().issueMode).toBe('open');
+    expect(readSoftwareConfig('abc')?.issueMode).toBe('open');
+    for (const key of legacyKeys) expect(storage.getItem(key)).toBeNull();
+  });
+
   it('keeps an already written activity key over the old value', () => {
     const { storage } = stubWindow();
     storage.setItem('publiccode-ui:vitality', 'old');
@@ -390,5 +411,77 @@ describe('shared global weights', () => {
     writeGlobalConfig(readGlobalConfig());
     expect(session.getItem(SHARED_KEY)).toBeNull();
     expect(readGlobalConfig()).toEqual(DEFAULT_CONFIG);
+  });
+});
+
+describe('blocked site storage', () => {
+  function stubBlockedWindow() {
+    const win = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    };
+    Object.defineProperty(win, 'sessionStorage', {
+      get() { throw new DOMException('The operation is insecure.', 'SecurityError'); },
+    });
+    Object.defineProperty(win, 'localStorage', {
+      get() { throw new DOMException('The operation is insecure.', 'SecurityError'); },
+    });
+    vi.stubGlobal('window', win);
+  }
+
+  it('falls back to the defaults without throwing', () => {
+    stubBlockedWindow();
+    expect(() => migrateLegacyConfigs()).not.toThrow();
+    expect(readGlobalConfig()).toEqual(DEFAULT_CONFIG);
+    expect(readSoftwareConfig('blocked-default')).toBeNull();
+    expect(readOpenCodeBadgeVisibility()).toBe(true);
+    expect(readActivityDebugVisibility()).toBe(true);
+  });
+
+  it('keeps writes for the page view and notifies the other islands', () => {
+    stubBlockedWindow();
+    const custom: ActivityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
+    const cb = vi.fn();
+    const unsubscribe = subscribeStore(cb);
+    writeGlobalConfig(custom);
+    writeSoftwareConfig('blocked-write', custom);
+    writeOpenCodeBadgeVisibility(false);
+    expect(cb).toHaveBeenCalledWith(STORAGE_KEY);
+    expect(readGlobalConfig().issueMode).toBe('open');
+    expect(readAllSoftwareConfigs().get('blocked-write')?.issueMode).toBe('open');
+    expect(readOpenCodeBadgeVisibility()).toBe(false);
+    writeGlobalConfig(DEFAULT_CONFIG);
+    clearSoftwareConfig('blocked-write');
+    writeOpenCodeBadgeVisibility(true);
+    expect(readGlobalConfig()).toEqual(DEFAULT_CONFIG);
+    expect(readSoftwareConfig('blocked-write')).toBeNull();
+    unsubscribe();
+  });
+
+  it('adopts and clears shared weights when session storage is blocked', () => {
+    const { location } = stubWindow('https://example.org/?weights=issueMode:open');
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get() { throw new DOMException('Blocked', 'SecurityError'); },
+    });
+    expect(() => adoptSharedConfig()).not.toThrow();
+    expect(location.search).toBe('');
+    expect(readSharedConfig()?.issueMode).toBe('open');
+    expect(readGlobalConfig().issueMode).toBe('open');
+    clearSharedConfig();
+    expect(readSharedConfig()).toBeNull();
+    location.search = '?weights=issueMode:open';
+    adoptSharedConfig();
+    writeGlobalConfig(DEFAULT_CONFIG);
+    expect(readSharedConfig()).toBeNull();
+  });
+
+  it('ignores a write the store refuses', () => {
+    const { storage } = stubWindow();
+    vi.spyOn(storage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Quota exceeded', 'QuotaExceededError');
+    });
+    expect(() => writeSoftwareConfig('full', { ...DEFAULT_CONFIG, issueMode: 'open' })).not.toThrow();
+    expect(readSoftwareConfig('full')).toBeNull();
   });
 });

@@ -7,9 +7,62 @@ export const SHARED_KEY = 'publiccode-ui:shared-activity';
 export const OPENCODE_BADGES_VISIBILITY_KEY = 'publiccode-ui:opencode-badges';
 export const ACTIVITY_DEBUG_VISIBILITY_KEY = 'publiccode-ui:activity-debug';
 
+type KeyValueStore = Pick<Storage, 'length' | 'key' | 'getItem' | 'setItem' | 'removeItem'>;
+
+// Browsers that block site storage throw a SecurityError as soon as
+// window.localStorage is read. Preferences then live in memory for the
+// page view, so the islands still hydrate and follow each other.
+class MemoryStore implements KeyValueStore {
+  private m = new Map<string, string>();
+  get length() { return this.m.size; }
+  key(i: number) { return [...this.m.keys()][i] ?? null; }
+  getItem(k: string) { return this.m.get(k) ?? null; }
+  setItem(k: string, v: string) { this.m.set(k, v); }
+  removeItem(k: string) { this.m.delete(k); }
+}
+
+const memoryStore = new MemoryStore();
+const sessionMemoryStore = new MemoryStore();
+type StoreKind = 'localStorage' | 'sessionStorage';
+
+function store(kind: StoreKind = 'localStorage'): KeyValueStore {
+  try {
+    const s = window[kind];
+    if (s) return s;
+  } catch {
+    // fall through to the in-memory store
+  }
+  return kind === 'sessionStorage' ? sessionMemoryStore : memoryStore;
+}
+
+function getItem(key: string, kind: StoreKind = 'localStorage'): string | null {
+  try {
+    return store(kind).getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setItem(key: string, value: string, kind: StoreKind = 'localStorage'): boolean {
+  try {
+    store(kind).setItem(key, value);
+    return true;
+  } catch {
+    return false; // quota exceeded: the preference is not saved
+  }
+}
+
+function removeItem(key: string, kind: StoreKind = 'localStorage'): void {
+  try {
+    store(kind).removeItem(key);
+  } catch {
+    // nothing to remove from a store we cannot reach
+  }
+}
+
 export function readOpenCodeBadgeVisibility(): boolean {
   if (typeof window === 'undefined') return true;
-  return window.localStorage.getItem(OPENCODE_BADGES_VISIBILITY_KEY) !== '0';
+  return getItem(OPENCODE_BADGES_VISIBILITY_KEY) !== '0';
 }
 
 // "storage" events fire only in other tabs, so islands on the same page
@@ -23,20 +76,20 @@ function emitStoreChange(key: string): void {
 
 export function writeOpenCodeBadgeVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
-  if (enabled) window.localStorage.removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
-  else window.localStorage.setItem(OPENCODE_BADGES_VISIBILITY_KEY, '0');
+  if (enabled) removeItem(OPENCODE_BADGES_VISIBILITY_KEY);
+  else setItem(OPENCODE_BADGES_VISIBILITY_KEY, '0');
   emitStoreChange(OPENCODE_BADGES_VISIBILITY_KEY);
 }
 
 export function readActivityDebugVisibility(): boolean {
   if (typeof window === 'undefined') return true;
-  return window.localStorage.getItem(ACTIVITY_DEBUG_VISIBILITY_KEY) !== '0';
+  return getItem(ACTIVITY_DEBUG_VISIBILITY_KEY) !== '0';
 }
 
 export function writeActivityDebugVisibility(enabled: boolean): void {
   if (typeof window === 'undefined') return;
-  if (enabled) window.localStorage.removeItem(ACTIVITY_DEBUG_VISIBILITY_KEY);
-  else window.localStorage.setItem(ACTIVITY_DEBUG_VISIBILITY_KEY, '0');
+  if (enabled) removeItem(ACTIVITY_DEBUG_VISIBILITY_KEY);
+  else setItem(ACTIVITY_DEBUG_VISIBILITY_KEY, '0');
   emitStoreChange(ACTIVITY_DEBUG_VISIBILITY_KEY);
 }
 
@@ -92,19 +145,19 @@ export function pickConfig(
 
 export function readSharedConfig(): ActivityConfig | null {
   if (typeof window === 'undefined') return null;
-  return parseConfig(window.sessionStorage.getItem(SHARED_KEY));
+  return parseConfig(getItem(SHARED_KEY, 'sessionStorage'));
 }
 
 export function readGlobalConfig(): ActivityConfig {
   if (typeof window === 'undefined') return DEFAULT_CONFIG;
   return readSharedConfig()
-    ?? parseConfig(window.localStorage.getItem(STORAGE_KEY))
+    ?? parseConfig(getItem(STORAGE_KEY))
     ?? DEFAULT_CONFIG;
 }
 
 export function clearSharedConfig(): void {
   if (typeof window === 'undefined') return;
-  window.sessionStorage.removeItem(SHARED_KEY);
+  removeItem(SHARED_KEY, 'sessionStorage');
   emitStoreChange(STORAGE_KEY);
 }
 
@@ -112,9 +165,9 @@ export function clearSharedConfig(): void {
 // so the edit persists and the visit copy is dropped.
 export function writeGlobalConfig(config: ActivityConfig): void {
   if (typeof window === 'undefined') return;
-  window.sessionStorage.removeItem(SHARED_KEY);
-  if (isDefaultConfig(config)) window.localStorage.removeItem(STORAGE_KEY);
-  else window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  removeItem(SHARED_KEY, 'sessionStorage');
+  if (isDefaultConfig(config)) removeItem(STORAGE_KEY);
+  else setItem(STORAGE_KEY, JSON.stringify(config));
   emitStoreChange(STORAGE_KEY);
 }
 
@@ -130,17 +183,21 @@ const LEGACY_KEY = 'publiccode-ui:vitality';
 
 export function migrateLegacyConfigs(): void {
   if (typeof window === 'undefined') return;
-  const store = window.localStorage;
+  const s = store();
   const legacy: string[] = [];
-  for (let i = 0; i < store.length; i++) {
-    const key = store.key(i);
-    if (key === LEGACY_KEY || key?.startsWith(`${LEGACY_KEY}:`)) legacy.push(key);
+  try {
+    for (let i = 0; i < s.length; i++) {
+      const key = s.key(i);
+      if (key === LEGACY_KEY || key?.startsWith(`${LEGACY_KEY}:`)) legacy.push(key);
+    }
+  } catch {
+    return;
   }
   for (const key of legacy) {
-    const value = store.getItem(key);
+    const value = getItem(key);
     const target = STORAGE_KEY + key.slice(LEGACY_KEY.length);
-    if (value !== null && store.getItem(target) === null) store.setItem(target, value);
-    store.removeItem(key);
+    if (value !== null && getItem(target) === null && !setItem(target, value)) continue;
+    removeItem(key);
   }
 }
 
@@ -148,30 +205,34 @@ migrateLegacyConfigs();
 
 export function readSoftwareConfig(id: string): ActivityConfig | null {
   if (typeof window === 'undefined') return null;
-  return parseConfig(window.localStorage.getItem(softwareKey(id)));
+  return parseConfig(getItem(softwareKey(id)));
 }
 
 export function writeSoftwareConfig(id: string, config: ActivityConfig): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(softwareKey(id), JSON.stringify(config));
+  setItem(softwareKey(id), JSON.stringify(config));
   emitStoreChange(softwareKey(id));
 }
 
 export function clearSoftwareConfig(id: string): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.removeItem(softwareKey(id));
+  removeItem(softwareKey(id));
   emitStoreChange(softwareKey(id));
 }
 
 export function readAllSoftwareConfigs(): Map<string, ActivityConfig> {
   const map = new Map<string, ActivityConfig>();
   if (typeof window === 'undefined') return map;
-  const store = window.localStorage;
-  for (let i = 0; i < store.length; i++) {
-    const key = store.key(i);
-    if (!key || !key.startsWith(SOFTWARE_PREFIX)) continue;
-    const config = parseConfig(store.getItem(key));
-    if (config) map.set(key.slice(SOFTWARE_PREFIX.length), config);
+  const s = store();
+  try {
+    for (let i = 0; i < s.length; i++) {
+      const key = s.key(i);
+      if (!key || !key.startsWith(SOFTWARE_PREFIX)) continue;
+      const config = parseConfig(s.getItem(key));
+      if (config) map.set(key.slice(SOFTWARE_PREFIX.length), config);
+    }
+  } catch {
+    // keep the configs read so far
   }
   return map;
 }
@@ -290,7 +351,7 @@ export function adoptSharedConfig(): void {
   const params = new URLSearchParams(window.location.search);
   if (!params.has(SHARED_PARAM)) return;
   const config = decodeSharedConfig(params.get(SHARED_PARAM));
-  if (config) window.sessionStorage.setItem(SHARED_KEY, JSON.stringify(config));
+  if (config) setItem(SHARED_KEY, JSON.stringify(config), 'sessionStorage');
   params.delete(SHARED_PARAM);
   const qs = params.toString();
   window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`);
