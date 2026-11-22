@@ -4,8 +4,10 @@ on:
   push:
     branches: [main]
   schedule:
-    # Every 3 hours during European daytime (UTC, shifts 1h with DST)
-    - cron: '0 5-20/3 * * *'
+    # Every 3 hours during European daytime (UTC, shifts 1h with DST),
+    # after the collect run. Off the hour: GitHub delays or drops
+    # scheduled runs at minute 0.
+    - cron: '47 5-20/3 * * *'
   workflow_dispatch:
   repository_dispatch:
     # The sender must POST this event_type verbatim, anything else
