@@ -5,8 +5,43 @@ import DOMPurify from 'isomorphic-dompurify';
 // `cid:`, `data:`, `javascript:`, `vbscript:`, etc. are blocked.
 const ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i;
 
+// Descriptions come from any indexed publiccode.yml and are inserted into the
+// software page, so they must not be able to restyle the page, cover it or
+// collect input. class and id would let them pick up the page's own rules, such
+// as the fixed full-height weights drawer, and an open dialog is positioned over
+// the page by the browser stylesheet. SVG and MathML can draw outside their own
+// box, so only HTML elements are kept. Inputs stay only as the disabled
+// checkboxes marked emits for task lists, see the hook below.
 DOMPurify.setConfig({
   ALLOWED_URI_REGEXP,
+  USE_PROFILES: { html: true },
+  FORBID_TAGS: [
+    'style',
+    'dialog',
+    'form',
+    'button',
+    'select',
+    'option',
+    'optgroup',
+    'textarea',
+    'datalist',
+    'fieldset',
+    'legend',
+    'label',
+    'output',
+  ],
+  FORBID_ATTR: ['style', 'class', 'id'],
+});
+
+// Whatever an <input> said, it leaves as a disabled checkbox, checked or not,
+// so task lists keep their state and nothing can take input.
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.nodeName !== 'INPUT') return;
+  const checked = node.hasAttribute('checked');
+  for (const { name } of Array.from(node.attributes)) node.removeAttribute(name);
+  node.setAttribute('type', 'checkbox');
+  node.setAttribute('disabled', '');
+  if (checked) node.setAttribute('checked', '');
 });
 
 const HEADING = /^H([1-6])$/;

@@ -120,6 +120,77 @@ describe('renderMarkdown', () => {
       expect(html).not.toContain('<style');
     });
 
+    it('strips <style> tags after inline text', () => {
+      const html = renderMarkdown('hi <style>header{display:none}</style>');
+      expect(html).not.toContain('<style');
+      expect(html).not.toContain('display:none');
+    });
+
+    it('strips style attributes', () => {
+      const html = renderMarkdown('<a href="https://x" style="position:fixed;inset:0">x</a>');
+      expect(html).not.toContain('style=');
+      expect(html).toContain('href="https://x"');
+    });
+
+    it('strips class and id attributes', () => {
+      const html = renderMarkdown(
+        '<div class="activity-weights-drawer" id="activity-weights-drawer"><a href="https://evil.example/">Sign in</a></div>',
+      );
+      expect(html).not.toContain('class=');
+      expect(html).not.toContain('id=');
+      expect(html).not.toContain('activity-weights-drawer');
+      expect(html).toContain('href="https://evil.example/"');
+    });
+
+    it('strips forms and form controls', () => {
+      const html = renderMarkdown(
+        '<form action="https://evil.example/"><input type="password"><button>Login</button></form>',
+      );
+      expect(html).not.toContain('<form');
+      expect(html).not.toContain('password');
+      expect(html).not.toContain('<button');
+      expect(html).not.toContain('evil.example');
+    });
+
+    it('keeps task list checkboxes disabled', () => {
+      const html = renderMarkdown('- [x] done\n- [ ] todo');
+      expect(html).toContain('<li><input type="checkbox" disabled="" checked=""> done</li>');
+      expect(html).toContain('<li><input type="checkbox" disabled=""> todo</li>');
+    });
+
+    it('turns any other input into a disabled checkbox', () => {
+      const html = renderMarkdown(
+        '<input type="text" name="user" value="x" formaction="https://evil.example/" autofocus>',
+      );
+      expect(html).toBe('<input type="checkbox" disabled="">');
+    });
+
+    it('strips dialogs but keeps their content inline', () => {
+      const html = renderMarkdown(
+        '<dialog open><a href="https://evil.example/"><img width="3000" height="3000" src="https://evil.example/x.png"></a></dialog>',
+      );
+      expect(html).not.toContain('<dialog');
+      expect(html).not.toContain('open=');
+      expect(html).toContain('href="https://evil.example/"');
+    });
+
+    it('strips SVG and MathML', () => {
+      const html = renderMarkdown(
+        '<svg width="1" height="1" overflow="visible"><a href="https://evil.example/"><rect x="-5000" y="-5000" width="10000" height="10000" fill="white"/></a></svg>' +
+          '<math><mpadded voffset="-5000px"><mtext>x</mtext></mpadded></math>',
+      );
+      expect(html).not.toContain('<svg');
+      expect(html).not.toContain('<rect');
+      expect(html).not.toContain('overflow=');
+      expect(html).not.toContain('<math');
+      expect(html).not.toContain('<mpadded');
+    });
+
+    it('keeps open details blocks', () => {
+      const html = renderMarkdown('<details open><summary>More</summary>text</details>');
+      expect(html).toContain('<details open="">');
+    });
+
     it('does not execute javascript: in image src', () => {
       const html = renderMarkdown('![alt](javascript:alert(1))');
       expect(html).not.toContain('javascript:');
