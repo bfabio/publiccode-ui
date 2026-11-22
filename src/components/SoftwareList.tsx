@@ -497,11 +497,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       <td className="catalog-table-score">
                         {v && (
                           v.overAllocated
-                            ? <span className="activity-badge is-over-allocated" title={weightLabels.overAllocatedTitle}>?</span>
+                            ? <span className="activity-badge is-over-allocated" title={weightLabels.overAllocatedTitle}><span aria-hidden="true">?</span><span className="visually-hidden">{weightLabels.overAllocatedTitle}</span></span>
                             : v.forgeUnsupported
-                              ? <span className="activity-badge is-na" title={weightLabels.scoreUnsupported}>{weightLabels.stateDisabled}</span>
+                              ? <span className="activity-badge is-na" title={weightLabels.scoreUnsupported}>{weightLabels.stateDisabled}<span className="visually-hidden">{weightLabels.scoreUnsupported}</span></span>
                             : v.score100 === null
-                              ? <span className="activity-badge is-na" title={weightLabels.scorePendingTitle}><FontAwesomeIcon icon={faHourglassHalf} /></span>
+                              ? <span className="activity-badge is-na" title={weightLabels.scorePendingTitle}><FontAwesomeIcon icon={faHourglassHalf} /><span className="visually-hidden">{weightLabels.scorePendingTitle}</span></span>
                               : <span className="activity-badge">{Math.round(v.score100)}</span>
                         )}
                       </td>
@@ -643,14 +643,16 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                 </div>
               ) : null;
               if (v.score100 === null) {
+                const pendingText = v.overAllocated ? weightLabels.overAllocatedTitle : v.forgeUnsupported ? l.activityScoreUnsupported ?? weightLabels.scoreUnsupported : l.activityScorePending ?? "Activity score on its way";
                 return (
                   <div className="activity-index">
                     <div className="activity-index-label">
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                     </div>
                     <div className="activity-index-value">
-                      <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : v.forgeUnsupported ? l.activityScoreUnsupported ?? weightLabels.scoreUnsupported : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
-                        {v.overAllocated ? "?" : v.forgeUnsupported ? weightLabels.stateDisabled : <FontAwesomeIcon icon={faHourglassHalf} />}
+                      <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${pendingText}${customNote}`}>
+                        {v.overAllocated ? <span aria-hidden="true">?</span> : v.forgeUnsupported ? <span aria-hidden="true">{weightLabels.stateDisabled}</span> : <FontAwesomeIcon icon={faHourglassHalf} />}
+                        <span className="visually-hidden">{`${pendingText}${customNote}`}</span>
                       </span>
                       {customWeightTrigger}
                     </div>
@@ -674,6 +676,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                     <div className="activity-index-value">
                       <span className={`activity-badge${custom ? " is-custom" : ""}${capped ? " is-capped-unknown" : ""}${activityConfigReady ? "" : " is-loading"}`} title={`${l.activityScore ?? "Activity score"}${scope}${capNote}${customNote}`}>
                         {Math.round(v.score100)}
+                        {(scope || capNote || customNote) && <span className="visually-hidden">{`${scope}${capNote}${customNote}`}</span>}
                       </span>
                       {customWeightTrigger}
                     </div>
