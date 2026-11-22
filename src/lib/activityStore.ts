@@ -67,7 +67,12 @@ export function mergeConfig(c: Partial<ActivityConfig> | null): ActivityConfig {
 export function parseConfig(raw: string | null): ActivityConfig | null {
   if (!raw) return null;
   try {
-    return mergeConfig(JSON.parse(raw));
+    const parsed: unknown = JSON.parse(raw);
+    // The list filter writes ?activity=1 into the same param, so only
+    // an object is a config: any other JSON would merge to the defaults
+    // and pass for a shared override.
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+    return mergeConfig(parsed as Partial<ActivityConfig>);
   } catch {
     return null;
   }
