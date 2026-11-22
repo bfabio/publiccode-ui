@@ -369,19 +369,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-toolbar select:focus {
   border-color: var(--accent);
 }
-.catalog-filters .filter-check {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 510;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-.catalog-filters .filter-check input {
-  accent-color: var(--accent);
-  cursor: pointer;
-}
 .catalog-toolbar output {
   color: var(--text-quaternary);
   font-size: 13px;
@@ -894,26 +881,11 @@ nav[aria-label="Breadcrumb"] li + li::before {
     color: #c0bfbc;
   }
 }
-.activity-unavailable {
-  margin: 0;
-  color: var(--text-tertiary);
-  font-style: italic;
-}
-.activity-scope {
-  margin: 0 0 4px;
-  color: var(--text-tertiary);
-  font-size: 0.85em;
-}
 .activity-scope.activity-cap-warning {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   color: #c86e66;
-}
-.activity-settings .settings-intro {
-  margin: 0 0 1rem;
-  color: var(--text-tertiary);
-  font-size: 14px;
 }
 .settings-preference {
   display: flex;
@@ -1166,28 +1138,6 @@ nav[aria-label="Breadcrumb"] li + li::before {
   margin-right: 0.4em;
   opacity: 0.5;
 }
-.software-metrics-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-}
-.software-detail section .software-metrics-head h2 {
-  flex: 1;
-  min-width: 0;
-  margin-top: 0;
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-.software-metrics-overview {
-  font-size: 13px;
-  font-weight: 510;
-  color: var(--accent-bright);
-  white-space: nowrap;
-}
 .software-detail section ul {
   margin: 0.5rem 0;
   padding-left: 20px;
@@ -1381,162 +1331,11 @@ dialog nav button:hover {
 
 /* ── detail: activity metrics & score ── */
 
-.software-metrics .metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-.metrics-group {
-  background: var(--surface-btn);
-  border: 1px solid var(--border-standard);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
-}
-.metrics-group h3 {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-quaternary);
-  font-weight: 510;
-  margin: 0 0 0.75rem;
-}
-.metrics-group dl {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 6px 1rem;
-  margin: 0;
-}
-.metrics-group dt {
-  font-size: 13px;
-  color: var(--text-tertiary);
-}
-.metrics-group dd {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 510;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-.metrics-group dd.is-na {
-  color: var(--text-quaternary);
-  font-weight: 400;
-}
-.metrics-group dd a {
-  color: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--text-quaternary);
-  text-underline-offset: 2px;
-}
-.metrics-group dd a:hover,
-.metrics-group dd a:focus-visible {
-  color: var(--accent-bright);
-  text-decoration-color: currentColor;
-}
-.activity-catalog {
-  margin-bottom: 2rem;
-}
-.activity-meta {
-  font-size: 13px;
-  color: var(--text-tertiary);
-}
-.activity-distribution {
-  width: 100%;
-}
-
-.activity-score-badge {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  column-gap: 1.25rem;
-  margin-top: 1.25rem;
-  padding: 1rem 1.25rem;
-  background: var(--surface-btn);
-  border: 1px solid var(--border-standard);
-  border-radius: var(--radius-lg);
-}
-.activity-score-badge.is-expanded {
-  row-gap: 0;
-}
-.activity-label {
-  grid-column: 1 / -1;
-  font-size: 10px;
-  font-weight: 510;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  color: var(--text-quaternary);
-}
-.activity-score {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-.activity-value {
-  font-size: 2.5rem;
-  font-weight: 590;
-  letter-spacing: -0.704px;
-  color: var(--accent-bright);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-.activity-max {
-  font-size: 0.9rem;
-  color: var(--text-quaternary);
-}
-.activity-score-meta {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.activity-title {
-  font-size: 13px;
-  font-weight: 510;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.activity-title abbr {
-  color: var(--text-quaternary);
-  text-decoration: none;
-  cursor: help;
-}
-.activity-weights-toggle {
-  display: flex;
-  grid-column: 1 / -1;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 510;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border-standard);
-  padding: 0.75rem 0 0;
-  cursor: pointer;
-}
-.activity-weights-toggle:hover,
-.activity-weights-toggle:focus-visible {
-  color: var(--accent-bright);
-}
 .activity-value.is-custom {
   color: #c0bfbc;
 }
 .activity-value.is-capped-unknown {
   color: #c86e66;
-}
-.activity-weights-toggle svg {
-  transition: transform 0.15s;
-}
-.activity-weights-toggle svg.rot {
-  transform: rotate(180deg);
-}
-.activity-weights-panel {
-  grid-column: 1 / -1;
-  padding-top: 0.75rem;
 }
 .activity-score-badge.is-loading,
 .activity-settings.is-loading {
@@ -1544,10 +1343,6 @@ dialog nav button:hover {
 }
 .activity-weights-panel .activity-debug {
   margin-top: 0;
-}
-.activity-collected-at {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
 }
 
 .activity-debug {
@@ -1578,22 +1373,6 @@ dialog nav button:hover {
   font-weight: 510;
   font-variant-numeric: normal;
 }
-.activity-debug .bar-track {
-  display: inline-block;
-  vertical-align: middle;
-  width: 60px;
-  height: 8px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  margin-right: 8px;
-}
-.activity-debug .bar-fill {
-  display: block;
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-pill);
-}
 .activity-debug tr.is-excluded td,
 .activity-debug .is-na {
   color: var(--text-quaternary);
@@ -1622,196 +1401,6 @@ dialog nav button:hover {
 }
 .activity-debug .weight-input:focus {
   border-color: var(--accent);
-}
-.activity-split-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font: inherit;
-  font-weight: 510;
-  color: var(--text-primary);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-.activity-split-toggle svg {
-  font-size: 10px;
-  color: var(--text-quaternary);
-  transition: transform 0.15s;
-}
-.activity-split-toggle svg.rot {
-  transform: rotate(180deg);
-}
-.activity-split-row td {
-  padding: 0;
-}
-.activity-split {
-  display: flex;
-  gap: 16px;
-  padding: 10px 8px 12px 28px;
-  background: var(--bg-elevated);
-}
-.activity-split label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-.activity-split input {
-  width: 64px;
-  font: inherit;
-  font-size: 13px;
-  color: var(--text-primary);
-  background: var(--surface-btn);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-md);
-  padding: 4px 6px;
-  font-variant-numeric: tabular-nums;
-  outline: none;
-}
-.activity-split input:focus {
-  border-color: var(--accent);
-}
-
-.activity-config {
-  margin-top: 1rem;
-  padding: 1.25rem;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-standard);
-  border-radius: var(--radius-lg);
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.activity-config fieldset {
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 1rem 1rem;
-  margin: 0;
-}
-.activity-config legend {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: var(--text-quaternary);
-  font-weight: 510;
-  padding: 0 6px;
-}
-.activity-config .weight-sum {
-  text-transform: none;
-  color: var(--text-tertiary);
-  margin-left: 8px;
-}
-.config-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-.config-grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-.config-grid input,
-.config-grid select {
-  font: inherit;
-  font-size: 13px;
-  color: var(--text-primary);
-  background: var(--surface-btn);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-md);
-  padding: 6px 8px;
-  outline: none;
-}
-.config-grid input:focus,
-.config-grid select:focus {
-  border-color: var(--accent);
-}
-.activity-reset {
-  font: inherit;
-  font-size: 12px;
-  font-weight: 510;
-  color: var(--text-tertiary);
-  background: transparent;
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-pill);
-  padding: 5px 14px;
-  cursor: pointer;
-}
-.activity-reset:hover {
-  color: var(--text-primary);
-  border-color: var(--text-quaternary);
-}
-.activity-override {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
-  margin: 0;
-  font-size: 12px;
-  font-weight: 510;
-  color: var(--accent-bright);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-pill);
-  padding: 3px 6px 3px 10px;
-}
-.activity-override button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  font-size: 11px;
-  color: var(--accent-bright);
-  background: transparent;
-  border: none;
-  border-left: 1px solid var(--accent);
-  padding: 0 0 0 6px;
-  cursor: pointer;
-  opacity: 0.55;
-  transition: opacity 0.15s;
-}
-.activity-override:hover button,
-.activity-override button:focus-visible {
-  opacity: 1;
-}
-.weight-stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.weight-stepper button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  flex: none;
-  font-size: 10px;
-  color: var(--text-secondary);
-  background: var(--surface-btn);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-.weight-stepper button:hover {
-  color: var(--text-primary);
-  border-color: var(--text-quaternary);
-}
-.weight-stepper .weight-input {
-  width: 44px;
-  text-align: center;
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-.weight-stepper .weight-input::-webkit-outer-spin-button,
-.weight-stepper .weight-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
 }
 
 .catalog-flag {

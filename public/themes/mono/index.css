@@ -643,7 +643,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .activity-score-panel .is-na {
   color: var(--text-quaternary);
 }
-.activity-score-panel .weight-input {
+.activity-score-panel input.weight-input {
   width: 40px;
   padding: 3px 5px;
   font: inherit;
@@ -994,6 +994,25 @@ nav[aria-label="Breadcrumb"] li + li::before {
   overflow-wrap: break-word;
 }
 .software-meta dd a { color: var(--accent); }
+.software-meta .platform-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em 1em;
+}
+.software-meta .platform {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  white-space: nowrap;
+}
+.software-meta .platform svg {
+  width: 1em;
+  height: 1em;
+  opacity: 0.7;
+}
+.catalog-flag {
+  margin-right: 0.35em;
+}
 
 .software-detail section {
   margin-top: 0;
