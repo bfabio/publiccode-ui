@@ -109,7 +109,7 @@ const errorCount = entries.reduce(
         ? entry.repoUrl.replace(/\.git$/, '').replace(/^https?:\/\//, '')
         : entry.softwareId;
       return (
-        <details>
+        <details id={entry.softwareId}>
           <summary>
             <a href={entry.repoUrl?.replace(/\.git$/, '') ?? '#'} rel="noopener">
               {repoDisplay}
@@ -148,6 +148,21 @@ const errorCount = entries.reduce(
     })
   )}
 </Layout>
+
+<script>
+  // Entries are collapsed, so a link to one from the stats page would
+  // land on its summary line only.
+  const openTarget = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = id ? document.getElementById(id) : null;
+    if (target instanceof HTMLDetailsElement) {
+      target.open = true;
+      target.scrollIntoView();
+    }
+  };
+  openTarget();
+  window.addEventListener('hashchange', openTarget);
+</script>
 
 <style>
   h1 {
