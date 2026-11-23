@@ -1,6 +1,6 @@
 ---
 import Layout from '../../../layouts/Layout.astro';
-import { fetchCatalogs, fetchAllCatalogAnalysis } from '../../../lib/api.js';
+import { fetchCatalogs, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis } from '../../../lib/api.js';
 import { base } from '../../../lib/url.js';
 import { t } from '../../../lib/i18n.js';
 import { formatDate } from '../../../lib/date.js';
@@ -16,10 +16,16 @@ export function getStaticPaths() {
 const locale = Astro.currentLocale ?? 'en';
 const catalogs = await fetchCatalogs();
 const catalogAnalysis = await fetchAllCatalogAnalysis();
+const rootAnalysis = await fetchRootCatalogAnalysis();
 const multiCatalog = catalogs.length > 1;
 
-const blocks = catalogs
-  .map((c) => ({ catalog: c, activity: catalogAnalysis.get(c.id) }))
+const catalogBlocks = catalogs
+  .map((c) => ({ name: c.name, activity: catalogAnalysis.get(c.id) }))
+  .filter((b) => b.activity);
+// The aggregate covers every catalog and is the activity score
+// reference. With a single catalog it would repeat that catalog.
+const rootBlock = { name: t(locale, 'all_catalogs'), activity: rootAnalysis };
+const blocks = (multiCatalog || catalogBlocks.length === 0 ? [rootBlock, ...catalogBlocks] : catalogBlocks)
   .filter((b) => b.activity);
 
 const METRIC_ORDER: StatMetric[] = [
@@ -44,12 +50,12 @@ const fmtNum = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 
 
   {blocks.length === 0 && <p>{t(locale, 'no_activity_data')}</p>}
 
-  {blocks.map(({ catalog, activity }) => {
+  {blocks.map(({ name, activity }) => {
     const updated = formatDate(activity.updatedAt, locale);
     const metrics = METRIC_ORDER.filter((m) => activity.stats[m]);
     return (
       <section class="activity-catalog">
-        {multiCatalog && <h2>{catalog.name}</h2>}
+        {multiCatalog && <h2>{name}</h2>}
         <p class="activity-meta">
           {updated && (
             <Fragment>
