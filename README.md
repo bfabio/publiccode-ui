@@ -35,10 +35,11 @@ npm run typecheck  # type check without emitting
 
 ## Configuration
 
-| Variable    | Default   | Description    |
-|-------------|-----------|----------------|
-| `BASE_PATH` | `/`       | URL base path  |
-| `THEME`     | `default` | UI theme       |
+| Variable    | Default                     | Description                                  |
+|-------------|-----------------------------|----------------------------------------------|
+| `SITE_URL`  | `https://bfabio.github.io`  | Origin of the deployment, for hreflang links |
+| `BASE_PATH` | `/`                         | URL base path                                |
+| `THEME`     | `default`                   | UI theme                                     |
 
 ## Themes
 

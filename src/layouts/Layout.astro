@@ -1,5 +1,5 @@
 ---
-import { getAbsoluteLocaleUrl } from 'astro:i18n';
+import { getAbsoluteLocaleUrl, getRelativeLocaleUrl } from 'astro:i18n';
 import { readdirSync } from 'node:fs';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -25,8 +25,12 @@ const defaultTheme = import.meta.env.THEME || 'default';
 const { title, description, breadcrumbs = [] } = Astro.props;
 const locale = Astro.currentLocale ?? 'en';
 const routePath = routePathname(Astro.url.pathname, base);
+// hreflang alternates must be absolute. The language switch stays on
+// the host that served the page, whatever SITE_URL says.
 const enUrl = getAbsoluteLocaleUrl('en', routePath);
 const itUrl = getAbsoluteLocaleUrl('it', routePath);
+const enSwitchUrl = getRelativeLocaleUrl('en', routePath);
+const itSwitchUrl = getRelativeLocaleUrl('it', routePath);
 const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings`;
 ---
 
@@ -142,8 +146,8 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
             <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}<Fragment set:html={faIcon('check')} /></button></li>
           ))}
           <li class="settings-menu-label" role="presentation">{t(locale, 'language')}</li>
-          <li role="none"><a href={enUrl} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English<Fragment set:html={faIcon('check')} /></a></li>
-          <li role="none"><a href={itUrl} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano<Fragment set:html={faIcon('check')} /></a></li>
+          <li role="none"><a href={enSwitchUrl} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English<Fragment set:html={faIcon('check')} /></a></li>
+          <li role="none"><a href={itSwitchUrl} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano<Fragment set:html={faIcon('check')} /></a></li>
         </ul>
       </div>
       <ActivityWeightsMenu client:load locale={locale} />

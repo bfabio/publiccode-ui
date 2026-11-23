@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 const hoistedNodeModules = path.join(path.dirname(require.resolve("@astrojs/react/package.json")), "..", "..");
 
 export default defineConfig({
-  site: "https://bfabio.github.io",
+  site: process.env.SITE_URL || "https://bfabio.github.io",
   base: process.env.BASE_PATH ?? "/",
   // The incremental cache silently disables (with a WARN) at any
   // concurrency above 1.
