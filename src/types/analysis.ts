@@ -13,6 +13,8 @@ export interface SoftwareActivity {
   tags: number;
   recentDays: number;
   disabled?: string[];
+  // The catalog API stamps every analysis namespace it stores with t.
+  t?: string;
   updatedAt?: string;
 }
 

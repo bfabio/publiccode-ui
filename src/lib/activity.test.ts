@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSoftwareActivity, parseCatalogActivity, fieldState, statsByCatalog, usableStats } from './activity.ts';
+import { collectedAt, parseSoftwareActivity, parseCatalogActivity, fieldState, statsByCatalog, usableStats } from './activity.ts';
 
 describe('parseSoftwareActivity', () => {
   it('returns the activity namespace for v1', () => {
@@ -14,6 +14,26 @@ describe('parseSoftwareActivity', () => {
 
   it('returns null for an unsupported version', () => {
     expect(parseSoftwareActivity({ activity: { v: 2, contributors: 3 } })).toBeNull();
+  });
+});
+
+describe('collectedAt', () => {
+  const base = { v: 1, contributors: 1, commitsAllTime: 1, commitsRecent: 0, tags: 0, recentDays: 90 };
+
+  it('reads the t stamp of the software activity', () => {
+    expect(collectedAt({ ...base, t: '2026-11-22T12:04:31Z' })).toBe('2026-11-22T12:04:31Z');
+  });
+
+  it('prefers t over updatedAt', () => {
+    expect(collectedAt({ ...base, t: '2026-11-22T12:04:31Z', updatedAt: '2026-05-31T08:21:44Z' })).toBe('2026-11-22T12:04:31Z');
+  });
+
+  it('falls back to updatedAt', () => {
+    expect(collectedAt({ ...base, updatedAt: '2026-05-31T08:21:44Z' })).toBe('2026-05-31T08:21:44Z');
+  });
+
+  it('is undefined without a timestamp', () => {
+    expect(collectedAt(base)).toBeUndefined();
   });
 });
 
