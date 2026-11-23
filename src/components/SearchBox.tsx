@@ -1,17 +1,8 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { readSoftwareConfig, withActivityConfig } from "../lib/activityStore";
-
-interface SearchItem {
-  id: string;
-  name: string;
-  shortDescription: string;
-  searchText: string;
-  nameLower: string;
-  logo: string | null;
-  logoFallback: string | null;
-}
+import { loadSearchIndex, type SearchItem } from "../lib/searchIndex";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -28,7 +19,7 @@ function rankMatch(item: SearchItem, q: string): number {
 }
 
 interface SearchBoxProps {
-  items: SearchItem[];
+  indexUrl: string;
   base: string;
   placeholder?: string;
   clearLabel?: string;
@@ -38,7 +29,7 @@ interface SearchBoxProps {
 
 const MAX_SUGGESTIONS = 7;
 
-export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder = "Search...", clearLabel = "Clear search", value, onChange }) => {
+export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholder = "Search...", clearLabel = "Clear search", value, onChange }) => {
   const [internalValue, setInternalValue] = useState("");
   const inputValue = value ?? internalValue;
   const update = useCallback((v: string) => {
@@ -49,6 +40,22 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const [navigating, setNavigating] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [items, setItems] = useState<SearchItem[]>([]);
+  const requested = useRef(false);
+  // The index is fetched on first focus or input rather than shipped
+  // in the page, so the box hydrates before the catalog arrives.
+  const loadItems = useCallback(() => {
+    if (requested.current) return;
+    requested.current = true;
+    loadSearchIndex(indexUrl).then((loaded) => {
+      if (loaded) setItems(loaded);
+      else requested.current = false;
+    });
+  }, [indexUrl]);
+  // A field focused before hydration fires no focus event.
+  useEffect(() => {
+    if (document.activeElement === inputRef.current) loadItems();
+  }, [loadItems]);
   const softwareHref = useCallback((id: string) =>
     withActivityConfig(`${base}/software/${id}`, readSoftwareConfig(id)),
   [base]);
@@ -114,9 +121,9 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ items, base, placeholder =
         disabled={navigating}
         // eslint-disable-next-line jsx-a11y/no-autofocus -- the home page exists to be searched, so the field takes focus on load
         autoFocus
-        onChange={(e) => { update(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
+        onChange={(e) => { loadItems(); update(e.target.value); setShowSuggestions(true); setSelectedIdx(-1); }}
         onKeyDown={handleKeyDown}
-        onFocus={() => setShowSuggestions(true)}
+        onFocus={() => { loadItems(); setShowSuggestions(true); }}
         onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
         placeholder={placeholder}
         role="combobox"
