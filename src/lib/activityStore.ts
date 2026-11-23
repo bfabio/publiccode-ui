@@ -40,10 +40,25 @@ export function writeActivityDebugVisibility(enabled: boolean): void {
   emitStoreChange(ACTIVITY_DEBUG_VISIBILITY_KEY);
 }
 
+// Configs also come from shared links and storage, so a weight that is
+// not a number between 0 and 1 falls back to its default instead of
+// skewing the score.
+function pickWeights<T extends Record<string, number>>(defaults: T, given: unknown): T {
+  const source = typeof given === 'object' && given !== null ? (given as Record<string, unknown>) : {};
+  const out = { ...defaults };
+  for (const key of Object.keys(defaults) as (keyof T & string)[]) {
+    const value = source[key];
+    if (typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1) {
+      out[key] = value as T[typeof key];
+    }
+  }
+  return out;
+}
+
 export function mergeConfig(c: Partial<ActivityConfig> | null): ActivityConfig {
   return {
-    weights: { ...DEFAULT_CONFIG.weights, ...(c?.weights ?? {}) },
-    subWeights: { ...DEFAULT_CONFIG.subWeights, ...(c?.subWeights ?? {}) },
+    weights: pickWeights(DEFAULT_CONFIG.weights, c?.weights),
+    subWeights: pickWeights(DEFAULT_CONFIG.subWeights, c?.subWeights),
     issueMode: c?.issueMode === 'open' ? 'open' : 'ratio',
     xmaxMode: c?.xmaxMode === 'max' ? 'max' : 'p95',
   };

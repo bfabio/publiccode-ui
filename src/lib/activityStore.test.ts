@@ -25,6 +25,21 @@ describe('mergeConfig', () => {
     expect(c.issueMode).toBe('ratio');
     expect(c.xmaxMode).toBe('p95');
   });
+
+  it('falls back to the default for weights that are not numbers between 0 and 1', () => {
+    const c = mergeConfig({
+      weights: { stars: -0.5, forks: '0.06', issues: 1.5, history: Infinity, activity: 0.4 } as never,
+      subWeights: { phC: NaN, phM: null, caC: 1, caM: 0 } as never,
+    });
+    expect(c.weights).toEqual({ ...DEFAULT_CONFIG.weights, activity: 0.4 });
+    expect(c.subWeights).toEqual({ ...DEFAULT_CONFIG.subWeights, caC: 1, caM: 0 });
+  });
+
+  it('drops unknown weight keys and ignores weights that are not objects', () => {
+    const c = mergeConfig({ weights: { bogus: 0.5 } as never, subWeights: 'x' as never });
+    expect(c.weights).toEqual(DEFAULT_CONFIG.weights);
+    expect(c.subWeights).toEqual(DEFAULT_CONFIG.subWeights);
+  });
 });
 
 describe('parseConfig', () => {
@@ -37,6 +52,11 @@ describe('parseConfig', () => {
   it('parses a serialized config', () => {
     const c = parseConfig(JSON.stringify({ xmaxMode: 'max' }));
     expect(c?.xmaxMode).toBe('max');
+  });
+
+  it('sanitizes the weights of a shared link', () => {
+    const c = parseConfig('{"weights":{"stars":"0.06","forks":-1}}');
+    expect(c?.weights).toEqual(DEFAULT_CONFIG.weights);
   });
 });
 
