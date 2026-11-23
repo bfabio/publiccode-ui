@@ -29,6 +29,11 @@ const translations = {
     website: "Website",
     categories: "Categories",
     screenshots: "Screenshots",
+    screenshots_of: "Screenshots of {name}",
+    screenshot_label: "{name}, screenshot {index} of {total}",
+    previous_screenshot: "Previous screenshot",
+    next_screenshot: "Next screenshot",
+    close: "Close",
     description: "Description",
     contacts: "Contacts",
     features: "Features",
@@ -178,6 +183,11 @@ const translations = {
     website: "Sito web",
     categories: "Categorie",
     screenshots: "Screenshot",
+    screenshots_of: "Screenshot di {name}",
+    screenshot_label: "{name}, screenshot {index} di {total}",
+    previous_screenshot: "Screenshot precedente",
+    next_screenshot: "Screenshot successivo",
+    close: "Chiudi",
     description: "Descrizione",
     contacts: "Contatti",
     features: "Funzionalità",
@@ -299,8 +309,11 @@ const translations = {
   },
 };
 
-export function t(locale, key) {
-  return translations[locale]?.[key] ?? translations.en[key] ?? key;
+export function t(locale, key, values = {}) {
+  const text = translations[locale]?.[key] ?? translations.en[key] ?? key;
+  return text.replace(/\{(\w+)\}/g, (match, name) =>
+    Object.hasOwn(values, name) ? String(values[name]) : match,
+  );
 }
 
 // The lang attribute of a description taken from the key `language`, or
