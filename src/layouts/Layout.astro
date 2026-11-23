@@ -125,14 +125,14 @@ const settingsHref = `${localeBase(locale)}/settings`;
           <Fragment set:html={faIcon('gear')} />
         </button>
         <ul id="settings-menu" role="menu" hidden>
-          <li role="none"><a href={settingsHref} role="menuitem">{t(locale, 'settings')}</a></li>
+          <li role="none"><a href={settingsHref} role="menuitem" tabindex="-1">{t(locale, 'settings')}</a></li>
           <li class="settings-menu-label" role="presentation">{t(locale, 'theme')}</li>
           {themes.map((t) => (
-            <li role="none"><button type="button" role="menuitemradio" aria-checked="false" data-theme={t}>{t}<Fragment set:html={faIcon('check')} /></button></li>
+            <li role="none"><button type="button" role="menuitemradio" aria-checked="false" tabindex="-1" data-theme={t}>{t}<Fragment set:html={faIcon('check')} /></button></li>
           ))}
           <li class="settings-menu-label" role="presentation">{t(locale, 'language')}</li>
-          <li role="none"><a href={`${enSwitchUrl}?lang=en`} role="menuitemradio" aria-checked={String(locale === 'en')} hreflang="en" lang="en">English<Fragment set:html={faIcon('check')} /></a></li>
-          <li role="none"><a href={`${itSwitchUrl}?lang=it`} role="menuitemradio" aria-checked={String(locale === 'it')} hreflang="it" lang="it">Italiano<Fragment set:html={faIcon('check')} /></a></li>
+          <li role="none"><a href={`${enSwitchUrl}?lang=en`} role="menuitemradio" aria-checked={String(locale === 'en')} tabindex="-1" hreflang="en" lang="en">English<Fragment set:html={faIcon('check')} /></a></li>
+          <li role="none"><a href={`${itSwitchUrl}?lang=it`} role="menuitemradio" aria-checked={String(locale === 'it')} tabindex="-1" hreflang="it" lang="it">Italiano<Fragment set:html={faIcon('check')} /></a></li>
         </ul>
       </div>
       <ActivityWeightsMenu client:load locale={locale} />
@@ -165,14 +165,73 @@ const settingsHref = `${localeBase(locale)}/settings`;
     });
   }
 
-  btn.addEventListener('click', () => {
-    if (menu.hidden) {
-      let saved = null;
-      try { saved = localStorage.getItem('theme'); } catch {}
-      markActive(themes.includes(saved) ? saved : defaultTheme);
+  function items() {
+    return Array.from(menu.querySelectorAll('[role^="menuitem"]'));
+  }
+
+  function open() {
+    let saved = null;
+    try { saved = localStorage.getItem('theme'); } catch {}
+    markActive(themes.includes(saved) ? saved : defaultTheme);
+    menu.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function close(refocus) {
+    if (menu.hidden) return;
+    const hadFocus = menu.contains(document.activeElement);
+    menu.hidden = true;
+    btn.setAttribute('aria-expanded', 'false');
+    if (refocus || hadFocus) btn.focus();
+  }
+
+  btn.addEventListener('click', (e) => {
+    if (!menu.hidden) {
+      close(false);
+      return;
     }
-    menu.hidden = !menu.hidden;
-    btn.setAttribute('aria-expanded', String(!menu.hidden));
+    open();
+    // Enter and Space fire a click with detail 0: move focus into the menu.
+    if (e.detail === 0) items()[0].focus();
+  });
+
+  btn.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    if (menu.hidden) open();
+    const all = items();
+    all[e.key === 'ArrowDown' ? 0 : all.length - 1].focus();
+  });
+
+  menu.addEventListener('keydown', (e) => {
+    const all = items();
+    const i = all.indexOf(document.activeElement);
+    if (e.key === ' ' && e.target instanceof HTMLAnchorElement) {
+      e.preventDefault();
+      e.target.click();
+      return;
+    }
+    let next;
+    if (e.key === 'ArrowDown') next = (i + 1) % all.length;
+    else if (e.key === 'ArrowUp') next = (i - 1 + all.length) % all.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = all.length - 1;
+    else return;
+    e.preventDefault();
+    all[next].focus();
+  });
+
+  document.querySelector('.settings-menu').addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || menu.hidden) return;
+    e.preventDefault();
+    close(true);
+  });
+
+  // Tabbing out closes the menu. A click on a non-focusable part of the
+  // menu also blurs with no related target: the document click handler
+  // below decides those.
+  document.querySelector('.settings-menu').addEventListener('focusout', (e) => {
+    if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) close(false);
   });
 
   menu.querySelectorAll('a[hreflang]').forEach((a) => {
@@ -192,15 +251,11 @@ const settingsHref = `${localeBase(locale)}/settings`;
     link.href = `${base}/themes/${theme}/index.css`;
     try { localStorage.setItem('theme', theme); } catch {}
     markActive(theme);
-    menu.hidden = true;
-    btn.setAttribute('aria-expanded', 'false');
+    close(false);
   });
 
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.settings-menu')) {
-      menu.hidden = true;
-      btn.setAttribute('aria-expanded', 'false');
-    }
+    if (!e.target.closest('.settings-menu')) close(false);
   });
 </script>
 
@@ -265,7 +320,9 @@ const settingsHref = `${localeBase(locale)}/settings`;
     white-space: nowrap;
   }
   #settings-menu button:hover,
-  #settings-menu a:hover {
+  #settings-menu a:hover,
+  #settings-menu button:focus-visible,
+  #settings-menu a:focus-visible {
     background: var(--surface-btn-hover, rgba(0,0,0,0.05));
   }
   #settings-menu [role="menuitemradio"] {
