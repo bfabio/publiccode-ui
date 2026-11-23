@@ -1374,6 +1374,10 @@ dialog nav button:hover {
   from { background-position: 120% 0; }
   to { background-position: -120% 0; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .image-loading::after,
+  .image-skeleton { animation: none; }
+}
 
 /* ── detail: activity metrics & score ── */
 
