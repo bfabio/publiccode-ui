@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { readSoftwareConfig, withActivityConfig } from "../lib/activityStore";
 import { loadSearchIndex, type SearchItem } from "../lib/searchIndex";
+import { normalizeQuery } from "../lib/searchQuery";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -61,8 +62,8 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
   [base]);
 
   const suggestions = useMemo(() => {
-    if (!inputValue || inputValue.length < 2) return [];
-    const q = inputValue.toLowerCase();
+    const q = normalizeQuery(inputValue);
+    if (q.length < 2) return [];
     const top: Array<{ item: SearchItem; rank: number }> = [];
 
     for (const item of items) {
@@ -178,7 +179,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
                 {s.logo && <img className="image-fallback" src={s.logo} data-fallback={s.logoFallback ?? undefined} alt="" />}
               </span>
               <span className="suggestion-text">
-                <strong>{highlight(s.name, inputValue)}</strong>{" "}
+                <strong>{highlight(s.name, inputValue.trim())}</strong>{" "}
                 <span className="suggestion-desc" lang={s.lang}>{s.shortDescription}</span>
               </span>
             </li>

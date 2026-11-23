@@ -13,6 +13,7 @@ import { LABELS as ACTIVITY_LABELS } from "../lib/activityLabels";
 import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
 import { catalogFlag } from "../lib/catalogFlags";
 import { catalogSearchText } from "../lib/catalogSearch";
+import { normalizeQuery } from "../lib/searchQuery";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -128,7 +129,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   // hydration so the first client render matches the server HTML
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
-  const deferredQuery = useDeferredValue(query);
+  const searchQuery = query.trim();
+  const deferredQuery = useDeferredValue(searchQuery);
   const defaultSort: ListSortBy = view === "table" ? "activity_desc" : "release_date_desc";
   const effectiveSort: ListSortBy = sortBy || defaultSort;
   // While a query is active, relevance leads and the picked order only
@@ -141,8 +143,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [inputValue]);
 
   useEffect(() => {
-    writeParams({ q: query, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy && sortBy !== defaultSort ? sortBy : "", view: view === "table" ? "table" : "" });
-  }, [query, category, status, softwareType, audience, catalog, onlyActivity, sortBy, defaultSort, view]);
+    writeParams({ q: searchQuery, category, status, type: softwareType, audience, catalog, activity: onlyActivity ? "1" : "", sort_by: sortBy && sortBy !== defaultSort ? sortBy : "", view: view === "table" ? "table" : "" });
+  }, [searchQuery, category, status, softwareType, audience, catalog, onlyActivity, sortBy, defaultSort, view]);
 
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
@@ -209,7 +211,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   const filtered = useMemo(() => {
     let result = items;
     if (deferredQuery) {
-      const q = deferredQuery.toLowerCase();
+      const q = normalizeQuery(deferredQuery);
       result = result.filter((i) => searchTexts.get(i)?.includes(q));
     }
     if (category) result = result.filter((i) => i.categories.includes(category));
@@ -273,7 +275,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   };
   const activeFilterCount =
     [category, status, softwareType, audience, catalog].filter(Boolean).length + (onlyActivity ? 1 : 0);
-  const hasActiveCriteria = Boolean(query) || activeFilterCount > 0;
+  const hasActiveCriteria = Boolean(searchQuery) || activeFilterCount > 0;
   const clearAll = () => {
     setInputValue(""); setQuery(""); setCategory(""); setStatus(""); setSoftwareType(""); setAudience(""); setCatalog(""); setOnlyActivity(false);
   };
@@ -476,7 +478,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                         window.location.assign(detailHref);
                       }}
                     >
-                      <td><a href={detailHref}>{highlight(item.name, query)}</a></td>
+                      <td><a href={detailHref}>{highlight(item.name, searchQuery)}</a></td>
                       <td className="catalog-table-score">
                         {v && (
                           v.overAllocated
@@ -533,8 +535,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               )}
             </figure>
             <header>
-              <h2><a href={detailHref}>{highlight(item.name, query)}</a></h2>
-              <p lang={item.lang}>{highlight(item.shortDescription, query)}</p>
+              <h2><a href={detailHref}>{highlight(item.name, searchQuery)}</a></h2>
+              <p lang={item.lang}>{highlight(item.shortDescription, searchQuery)}</p>
             </header>
             <footer>
               <ul className="categories" aria-label="Categories">
