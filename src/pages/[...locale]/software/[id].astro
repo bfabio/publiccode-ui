@@ -56,7 +56,7 @@ const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
 const logo = resolveLogoAsset(pc);
-const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription) : null;
+const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription, { topHeadingLevel: 3 }) : null;
 const screenshots = resolveScreenshotAssets(pc, desc);
 const release = formatDate(pc.releaseDate, locale);
 const license = await resolveLicense(pc.legal?.license);

@@ -12,6 +12,58 @@ describe('renderMarkdown', () => {
     expect(renderMarkdown('')).toBe('');
   });
 
+  describe('topHeadingLevel', () => {
+    it('keeps heading levels without the option', () => {
+      expect(renderMarkdown('# Title\n\n## Part')).toMatch(/<h1[^>]*>Title<\/h1>[\s\S]*<h2[^>]*>Part<\/h2>/);
+    });
+
+    it('moves the highest heading to the given level and keeps the distance of the others', () => {
+      const html = renderMarkdown('# Title\n\n## Part\n\n#### Detail', { topHeadingLevel: 3 });
+      expect(html).toMatch(/<h3[^>]*>Title<\/h3>/);
+      expect(html).toMatch(/<h4[^>]*>Part<\/h4>/);
+      expect(html).toMatch(/<h6[^>]*>Detail<\/h6>/);
+      expect(html).not.toMatch(/<h[12][\s>]/);
+    });
+
+    it('starts from the highest heading the text uses', () => {
+      const html = renderMarkdown('## Part\n\n### Detail', { topHeadingLevel: 3 });
+      expect(html).toMatch(/<h3[^>]*>Part<\/h3>/);
+      expect(html).toMatch(/<h4[^>]*>Detail<\/h4>/);
+    });
+
+    it('stops at h6', () => {
+      const html = renderMarkdown('# Top\n\n##### Deep\n\n###### Deeper', { topHeadingLevel: 3 });
+      expect(html).toMatch(/<h6[^>]*>Deep<\/h6>/);
+      expect(html).toMatch(/<h6[^>]*>Deeper<\/h6>/);
+    });
+
+    it('leaves headings already below the level in place', () => {
+      const html = renderMarkdown('#### Detail', { topHeadingLevel: 3 });
+      expect(html).toMatch(/<h4[^>]*>Detail<\/h4>/);
+    });
+
+    it('moves raw HTML headings and keeps their content and attributes', () => {
+      const html = renderMarkdown('<h1 title="t">Hello <em>there</em></h1>\n\nText', { topHeadingLevel: 3 });
+      expect(html).toContain('<h3 title="t">Hello <em>there</em></h3>');
+      expect(html).not.toContain('<h1');
+    });
+
+    it('still sanitizes the content of moved headings', () => {
+      const html = renderMarkdown('<h1 onclick="alert(1)">A <img src=x onerror=alert(2)></h1>', { topHeadingLevel: 3 });
+      expect(html).toMatch(/<h3>A <img src="x"><\/h3>/);
+      expect(html).not.toContain('alert');
+    });
+
+    it('leaves text without headings unchanged', () => {
+      expect(renderMarkdown('**hi**', { topHeadingLevel: 3 })).toBe(renderMarkdown('**hi**'));
+    });
+
+    it('does not shift the next call without the option', () => {
+      renderMarkdown('# A', { topHeadingLevel: 3 });
+      expect(renderMarkdown('# B')).toMatch(/<h1[^>]*>B<\/h1>/);
+    });
+  });
+
   describe('XSS protection', () => {
     it('strips raw <script> tags', () => {
       const html = renderMarkdown('hello\n\n<script>alert(1)</script>');

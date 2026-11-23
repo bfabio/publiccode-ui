@@ -523,6 +523,10 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .software-description img {
   max-width: 100%;
 }
+.software-description :is(h3, h4, h5, h6) {
+  font-size: 13px;
+  margin: 8px 0 4px;
+}
 
 /* lightbox */
 .screenshot-grid {
