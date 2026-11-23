@@ -1,5 +1,5 @@
-import type { SoftwareActivity, CatalogStats, MetricStats, StatMetric, ForgeMetric } from '../types/analysis';
-import { FEATURE_OF } from './activity';
+import type { SoftwareActivity, CatalogStats, MetricStats, StatMetric } from '../types/analysis';
+import { FEATURE_OF, FORGE_METRICS, forgeUnsupported } from './activity';
 
 /** 'open' is the overall-issues mode: plain open+closed volume with no
     triage discount. The key predates the rename and survives in stored
@@ -43,15 +43,6 @@ export const DIMENSION_ORDER: DimensionKey[] = [
   'stars',
   'issues',
   'forks',
-];
-
-const FORGE_METRICS: ForgeMetric[] = [
-  'stars',
-  'forks',
-  'issuesOpen',
-  'issuesClosed',
-  'pullRequestsAllTime',
-  'pullRequestsRecent',
 ];
 
 export interface ActivityScoreCap {
@@ -100,7 +91,7 @@ function refMax(stats: CatalogStats | null, metric: StatMetric, mode: XmaxMode):
   return statValue(stats, metric, mode === 'p95' ? 'p95' : 'max');
 }
 
-export type DimensionState = 'ok' | 'failed' | 'unknown' | 'disabled';
+export type DimensionState = 'ok' | 'failed' | 'unknown' | 'disabled' | 'unsupported';
 
 export interface DimensionResult {
   key: DimensionKey;
@@ -111,7 +102,8 @@ export interface DimensionResult {
   contribution: number;
   approximated: boolean;
   /** Why a dimension has no value: collector error (failed), forge not
-      inspected (unknown), or feature turned off on the forge (disabled). */
+      inspected (unknown), feature turned off on the forge (disabled), or
+      a forge the collector cannot read (unsupported). */
   state: DimensionState;
   /** Real counts behind a derived raw, so the UI can show "open/closed"
       or "commits/pull requests" instead of the total. */
@@ -130,6 +122,9 @@ export interface ActivityScoreResult {
   /** Data we still mean to collect (a metric unknown or a fetch that
       failed): the score is withheld and the UI shows it as on its way. */
   pending: boolean;
+  /** No forge metric at all: the forge is one the collector cannot
+      read, so the score is withheld without promising it. */
+  forgeUnsupported: boolean;
   /** Weights sum past 100: the config is mid-edit, so the score is
       refused (score100 null) rather than silently renormalized. */
   overAllocated: boolean;
@@ -298,6 +293,7 @@ export function computeActivityScore(
     .map(([k]) => k);
 
   const disabledFeatures = activity.disabled ?? [];
+  const unsupported = forgeUnsupported(activity);
   const missing = FORGE_METRICS.filter((m) => !(m in activity));
   const hasUnknown = missing.some((m) => !disabledFeatures.includes(FEATURE_OF[m]));
   const hasDisabled = missing.some((m) => disabledFeatures.includes(FEATURE_OF[m]));
@@ -310,21 +306,26 @@ export function computeActivityScore(
     else if (d.present) d.state = 'ok';
     else {
       const feature = FEATURE_OF_DIM[d.key];
-      d.state = feature && disabledFeatures.includes(feature as (typeof disabledFeatures)[number]) ? 'disabled' : 'unknown';
+      d.state = !feature ? 'unknown'
+        : disabledFeatures.includes(feature as (typeof disabledFeatures)[number]) ? 'disabled'
+        : unsupported ? 'unsupported'
+        : 'unknown';
     }
   }
 
   // A metric we still mean to collect (never fetched, or the fetch
   // failed) withholds the score entirely: a partial number would read
   // as a low grade. Known n/a is real evidence, so it only bounds the
-  // claim (the SSL Labs model).
-  const pending = failed.length > 0 || hasUnknown;
+  // claim (the SSL Labs model). An unsupported forge is neither: its
+  // metrics will never arrive, so the score is withheld without being
+  // announced as on its way.
+  const pending = failed.length > 0 || (hasUnknown && !unsupported);
   const cap: ActivityScoreCap | null =
     !pending && hasDisabled ? { limit: 89, reason: 'disabled' } : null;
 
   const overAllocated = freeWeightPoints(weights) < 0;
   const score100 =
-    pending || overAllocated
+    pending || unsupported || overAllocated
       ? null
       : Math.min(
           presentDims.reduce((acc, d) => acc + d.contribution, 0),
@@ -343,6 +344,7 @@ export function computeActivityScore(
     total: DIMENSION_ORDER.length,
     cap,
     pending,
+    forgeUnsupported: unsupported,
     overAllocated,
   };
 }

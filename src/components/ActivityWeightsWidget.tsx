@@ -172,7 +172,10 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
   const toggleSplit = (key: DimensionKey) => setOpenSplits((current) => ({ ...current, [key]: !current[key] }));
   const freePool = freeWeightPoints(config.weights);
   const stateTitleOf = (state: DimensionState) =>
-    state === "failed" ? L.stateFailedTitle : state === "disabled" ? L.rowDisabled : L.stateUnknownTitle;
+    state === "failed" ? L.stateFailedTitle
+      : state === "disabled" ? L.rowDisabled
+      : state === "unsupported" ? L.rowUnsupported
+      : L.stateUnknownTitle;
 
   return (
     <>
@@ -261,6 +264,8 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
             <td>
               {result.overAllocated
                 ? <span title={L.overAllocatedTitle}>?</span>
+                : result.forgeUnsupported
+                  ? <span title={L.scoreUnsupported}>{L.stateDisabled}</span>
                 : result.score100 === null
                   ? <span title={L.scorePendingTitle}>{L.stateUnknown}</span>
                   : result.score100.toFixed(1)}

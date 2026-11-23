@@ -109,6 +109,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
                       {fs.state === "value" ? forgeValue(row.key, fs.value)
                         : fs.state === "unavailable" ? L.unavailable
                         : fs.state === "disabled" ? L.rowDisabled
+                        : fs.state === "unsupported" ? L.rowUnsupported
                         : L.rowUnknown}
                     </dd>
                   </React.Fragment>
@@ -135,6 +136,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
                     {fs.state === "value" ? forgeValue(key, fs.value)
                       : fs.state === "unavailable" ? L.unavailable
                       : fs.state === "disabled" ? L.rowDisabled
+                      : fs.state === "unsupported" ? L.rowUnsupported
                       : L.rowUnknown}
                   </dd>
                 </React.Fragment>
@@ -151,6 +153,8 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
             <span className="activity-value is-over-allocated">?</span>
             <span className="activity-max">/ 100</span>
           </div>
+        ) : result.forgeUnsupported ? (
+          <p className="activity-unavailable">{L.scoreUnsupported}</p>
         ) : result.score100 === null ? (
           <p className="activity-unavailable"><FontAwesomeIcon icon={faHourglassHalf} /> {L.scorePending}</p>
         ) : (

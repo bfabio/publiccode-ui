@@ -59,6 +59,12 @@ describe('fieldState', () => {
     expect(fieldState(base as never, 'stars').state).toBe('unknown');
   });
 
+  it('reports unsupported when no forge field is present', () => {
+    const { pullRequestsAllTime, pullRequestsRecent, ...gitOnly } = base;
+    expect(fieldState(gitOnly as never, 'stars').state).toBe('unsupported');
+    expect(fieldState(gitOnly as never, 'pullRequestsRecent').state).toBe('unsupported');
+  });
+
   it('reports disabled when the feature is in the disabled list', () => {
     expect(
       fieldState({ ...base, disabled: ['issues'] } as never, 'issuesOpen').state,
