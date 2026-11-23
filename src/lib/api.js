@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import { parseSoftwareActivity, parseCatalogActivity } from './activity.ts';
+import { parseCatalogs, ROOT_CATALOG_SLUG } from './catalogs.ts';
 
 const API_URL = process.env.API_URL;
 
@@ -88,11 +89,7 @@ export async function fetchCatalogs() {
     const res = await fetch(`${API_URL}/catalogs`);
     if (!res.ok) return [];
     const json = await res.json();
-    catalogsCache = (json.data ?? []).map((c) => ({
-      id: c.id,
-      name: c.name,
-      slug: c.alternativeId ?? c.id,
-    }));
+    catalogsCache = parseCatalogs(json.data);
   } catch {
     catalogsCache = [];
   }
@@ -162,7 +159,7 @@ export async function fetchAllOpenCodeBadges() {
 export async function fetchRootCatalogAnalysis() {
   if (!API_URL) return null;
   if (rootCatalogAnalysisCache !== undefined) return rootCatalogAnalysisCache;
-  rootCatalogAnalysisCache = await fetchActivity('/catalogs/%E2%88%85/analysis', parseCatalogActivity);
+  rootCatalogAnalysisCache = await fetchActivity(`/catalogs/${encodeURIComponent(ROOT_CATALOG_SLUG)}/analysis`, parseCatalogActivity);
   return rootCatalogAnalysisCache;
 }
 
