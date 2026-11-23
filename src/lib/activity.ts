@@ -8,6 +8,13 @@ export function parseSoftwareActivity(analysis: unknown): SoftwareActivity | nul
   return activity;
 }
 
+// The collector writes updatedAt only on the catalog aggregate. A
+// software activity carries the t the catalog API adds when it stores
+// the namespace, and that t stays put while the metrics do not change.
+export function collectedAt(activity: SoftwareActivity): string | undefined {
+  return activity.t ?? activity.updatedAt;
+}
+
 export function parseCatalogActivity(analysis: unknown): CatalogActivity | null {
   const activity = (analysis as { activity?: CatalogActivity } | null)?.activity;
   if (!activity || activity.v !== SUPPORTED_VERSION) return null;

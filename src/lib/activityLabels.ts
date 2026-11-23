@@ -173,6 +173,6 @@ export const LABELS = {
     rowUnsupported: "forge non supportata",
     scoreUnsupported: "Nessun punteggio attività: non raccogliamo dati dalla forge che ospita questo software",
     capDisabled: "Limitato a 89: una funzione della forge è disattivata",
-    dataAsOf: "Dati aggiornati al",
+    dataAsOf: "Dati aggiornati:",
   },
 };

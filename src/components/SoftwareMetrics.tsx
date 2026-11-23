@@ -4,7 +4,7 @@ import { faChartColumn, faAngleDown, faHourglassHalf, faRotateLeft } from "@fort
 import { computeActivityScore } from "../lib/activityScore";
 import { formatDate, relativeDate } from "../lib/date.js";
 import type { ForgeMetric } from "../types/analysis";
-import { fieldState } from "../lib/activity.ts";
+import { collectedAt, fieldState } from "../lib/activity.ts";
 import { forgeMetricUrl } from "../lib/forgeLinks";
 import { useActivityData } from "../lib/useActivityData";
 import { useActivityDebugVisibility, usePageActivityConfig } from "../lib/useActivityConfig";
@@ -52,7 +52,8 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
 
   const capped = result.score100 !== null && result.cap !== null && result.score100 === result.cap.limit;
 
-  const collectedDate = activity.updatedAt ? formatDate(activity.updatedAt, locale) : null;
+  const collected = collectedAt(activity);
+  const collectedDate = collected ? formatDate(collected, locale) : null;
 
   const win = activity.recentDays ?? 180;
   const code: CodeRow[] = [
@@ -179,7 +180,7 @@ export const SoftwareMetrics: React.FC<Props> = ({ softwareId, catalogId, locale
           )}
           {collectedDate && (
             <small className="activity-collected-at">
-              {L.dataAsOf} <time dateTime={collectedDate.datetime} title={hydrated ? collectedDate.formatted : undefined}>{hydrated ? relativeDate(activity.updatedAt, locale) : collectedDate.formatted}</time>
+              {L.dataAsOf} <time dateTime={collectedDate.datetime} title={hydrated ? collectedDate.formatted : undefined}>{hydrated ? relativeDate(collected, locale) : collectedDate.formatted}</time>
             </small>
           )}
         </div>
