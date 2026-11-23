@@ -47,7 +47,12 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     shortDescription,
     categories,
     releaseDate,
-    license: license ? { id: license.id, url: license.url } : null,
+    license: license ? {
+      id: license.id,
+      url: license.url,
+      // Only expressions with a known id need their parts on the card.
+      ...(!license.url && license.parts.some((p) => p.url) ? { parts: license.parts } : {}),
+    } : null,
     logo: logo?.src ?? null,
     logoFallback: logo?.fallback ?? null,
     developmentStatus: pc.developmentStatus ?? '',

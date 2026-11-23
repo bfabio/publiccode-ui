@@ -864,6 +864,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   color: var(--text-tertiary);
   font-weight: 500;
 }
+.catalog-results .license a { color: inherit; }
 .catalog-results .card-date {
   display: inline-flex;
   align-items: center;

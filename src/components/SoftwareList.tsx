@@ -38,7 +38,7 @@ interface SoftwareItem {
   shortDescription: string;
   categories: string[];
   releaseDate: string;
-  license: { id: string; url: string | null } | null;
+  license: { id: string; url: string | null; parts?: { text: string; url: string | null }[] } | null;
   logo: string | null;
   logoFallback: string | null;
   developmentStatus: string;
@@ -546,7 +546,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
               {item.license && (
                 item.license.url
                   ? <a href={item.license.url} className="license" target="_blank" rel="noopener noreferrer"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</a>
-                  : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.id}</span>
+                  : <span className="license"><FontAwesomeIcon icon={faGavel} /> {item.license.parts
+                      ? item.license.parts.map((p, i) => p.url
+                        ? <a key={i} href={p.url} target="_blank" rel="noopener noreferrer">{p.text}</a>
+                        : p.text)
+                      : item.license.id}</span>
               )}
             </footer>
             {item.activity && (() => {
