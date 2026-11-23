@@ -19,7 +19,7 @@ jobs:
       contents: read
     name: publiccode.yml validation
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
       - uses: italia/publiccode-parser-action@21086c73ec0563e14c6748787efa1b34b025ad8c # v1
         with:
