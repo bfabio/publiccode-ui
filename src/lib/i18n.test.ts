@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickDescription, routePathname } from './i18n.js';
+import { pickDescription, routePathname, t } from './i18n.js';
 
 describe('routePathname', () => {
   it('keeps the path as is with no base and no locale prefix', () => {
@@ -98,5 +98,15 @@ describe('description language selection', () => {
 
   it('returns an empty object without a description', () => {
     expect(pickDescription(undefined, 'it').description).toEqual({});
+  });
+});
+
+describe('t', () => {
+  it('fills the placeholders it is given', () => {
+    expect(t('it', 'screenshot_label', { name: 'App', index: 2, total: 5 })).toBe('App, screenshot 2 di 5');
+  });
+
+  it('keeps placeholders without a value for the caller to fill', () => {
+    expect(t('en', 'activity_score_scope')).toBe('based on {covered} of {total} metrics');
   });
 });

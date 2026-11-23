@@ -271,20 +271,24 @@ const badgeRadar = makeRadar(
       <section class="software-screenshots">
         <h2><Fragment set:html={faIcon('images')} /> {t(locale, 'screenshots')}</h2>
         <div class="screenshot-grid">
-          {screenshots.map((asset) => (
-            <button type="button" class="screenshot-thumb">
+          {screenshots.map((asset, i) => (
+            <button
+              type="button"
+              class="screenshot-thumb"
+              aria-label={t(locale, 'screenshot_label', { name: pc.name, index: i + 1, total: screenshots.length })}
+            >
               <span class="image-skeleton" aria-hidden="true"></span>
               <img src={asset.src} data-fallback={asset.fallback} class="image-fallback" alt="" loading="lazy" />
             </button>
           ))}
         </div>
-        <dialog id="lightbox">
+        <dialog id="lightbox" aria-label={t(locale, 'screenshots_of', { name: pc.name })}>
           <img id="lightbox-img" src="" alt="" />
           <nav>
-            <button type="button" id="lightbox-prev" aria-label="Previous">&larr;</button>
-            <button type="button" id="lightbox-next" aria-label="Next">&rarr;</button>
+            <button type="button" id="lightbox-prev" aria-label={t(locale, 'previous_screenshot')}>&larr;</button>
+            <button type="button" id="lightbox-next" aria-label={t(locale, 'next_screenshot')}>&rarr;</button>
           </nav>
-          <button type="button" id="lightbox-close" aria-label="Close">&times;</button>
+          <button type="button" id="lightbox-close" aria-label={t(locale, 'close')}>&times;</button>
         </dialog>
       </section>
     )}
@@ -356,6 +360,7 @@ const badgeRadar = makeRadar(
         (url, i, all): url is string => !!url && all.indexOf(url) === i,
       );
       img.src = candidates.shift() ?? '';
+      img.alt = thumb.getAttribute('aria-label') ?? '';
     };
 
     // Steps from the current thumbnail in grid order, so moving on from
