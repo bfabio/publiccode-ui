@@ -15,6 +15,7 @@ import { catalogFlag } from "../lib/catalogFlags";
 import { catalogSearchText } from "../lib/catalogSearch";
 import { normalizeQuery } from "../lib/searchQuery";
 import { filterOptions } from "../lib/filterOptions";
+import { hasTextSelection, ROW_NAVIGATION_DELAY_MS, rowClickAction } from "../lib/rowClick";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -156,6 +157,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   // hydration so the first client render matches the server HTML
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+  const pendingRowNavigation = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(pendingRowNavigation.current), []);
   const searchQuery = query.trim();
   const deferredQuery = useDeferredValue(searchQuery);
   const defaultSort: ListSortBy = view === "table" ? "activity_desc" : "release_date_desc";
@@ -350,6 +353,26 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     anchor.click();
     URL.revokeObjectURL(url);
   };
+  const handleRowClick = (e: React.MouseEvent<HTMLTableRowElement>, href: string) => {
+    window.clearTimeout(pendingRowNavigation.current);
+    const action = rowClickAction({
+      button: e.button,
+      detail: e.detail,
+      ctrlKey: e.ctrlKey,
+      metaKey: e.metaKey,
+      shiftKey: e.shiftKey,
+      altKey: e.altKey,
+      insideLink: (e.target as Element).closest("a") !== null,
+      hasSelection: hasTextSelection(window.getSelection()),
+    });
+    if (action === "new-tab") {
+      window.open(href, "_blank", "noopener");
+    } else if (action === "same-tab") {
+      pendingRowNavigation.current = window.setTimeout(() => {
+        if (!hasTextSelection(window.getSelection())) window.location.assign(href);
+      }, ROW_NAVIGATION_DELAY_MS);
+    }
+  };
   const sortableHeader = (col: TableColumn, label: string) => {
     const direction = tableSortDirection(col);
     return (
@@ -515,10 +538,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                   return (
                     <tr
                       key={item.id}
-                      onClick={(e) => {
-                        if ((e.target as Element).closest("a")) return;
-                        window.location.assign(detailHref);
+                      onMouseDown={(e) => {
+                        if (e.detail > 1) window.clearTimeout(pendingRowNavigation.current);
                       }}
+                      onClick={(e) => handleRowClick(e, detailHref)}
+                      onAuxClick={(e) => handleRowClick(e, detailHref)}
                     >
                       <td><a href={detailHref}>{highlight(item.name, searchQuery)}</a></td>
                       <td className="catalog-table-score">
