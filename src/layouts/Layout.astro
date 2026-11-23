@@ -95,13 +95,29 @@ const settingsHref = `${localeBase(locale)}/settings`;
         const saved = localStorage.getItem('theme');
         const activeTheme = themes.includes(saved) ? saved : defaultTheme;
         document.getElementById('theme-css').href = `${base}/themes/${activeTheme}/index.css`;
-        if (localStorage.getItem('publiccode-ui:opencode-badges') === '0') {
-          document.documentElement.setAttribute('data-opencode-badges-hidden', '');
-        }
-        if (localStorage.getItem('publiccode-ui:activity-debug') === '0') {
-          document.documentElement.setAttribute('data-activity-debug-hidden', '');
-        }
       } catch {}
+      // The settings page changes these keys while other pages stay open,
+      // in another tab or in the back/forward cache, so reapply them then.
+      // Without site storage the settings live in memory on their own page,
+      // so the attributes that page set are left alone.
+      const hiddenBy = {
+        'publiccode-ui:opencode-badges': 'data-opencode-badges-hidden',
+        'publiccode-ui:activity-debug': 'data-activity-debug-hidden',
+      };
+      const applyHidden = () => {
+        try {
+          for (const key in hiddenBy) {
+            document.documentElement.toggleAttribute(hiddenBy[key], localStorage.getItem(key) === '0');
+          }
+        } catch {}
+      };
+      applyHidden();
+      addEventListener('storage', (e) => {
+        if (e.key === null || e.key in hiddenBy) applyHidden();
+      });
+      addEventListener('pageshow', (e) => {
+        if (e.persisted) applyHidden();
+      });
       document.documentElement.dataset.catalogView =
         new URLSearchParams(location.search).get('view') === 'table' ? 'table' : 'list';
     </script>

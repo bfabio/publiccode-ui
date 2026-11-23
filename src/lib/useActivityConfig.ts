@@ -9,6 +9,7 @@ import {
   clearUrlConfig,
   pickConfig,
   subscribeStore,
+  onPageRestore,
   readSoftwareConfig,
   writeSoftwareConfig,
   clearSoftwareConfig,
@@ -33,6 +34,17 @@ type SubKey = keyof ActivityConfig['subWeights'];
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
+// Reloads on a back/forward cache restore with the full load, not the
+// storage callback: that one treats a null key as a cleared store.
+function subscribeAndRestore(load: () => void, onStore: (key: string | null) => void): () => void {
+  const unsubscribe = subscribeStore(onStore);
+  const unrestore = onPageRestore(load);
+  return () => {
+    unsubscribe();
+    unrestore();
+  };
+}
+
 function applyWeight(c: ActivityConfig, key: DimensionKey, value: number): ActivityConfig {
   return { ...c, weights: allocateWeight(c.weights, key, value) };
 }
@@ -53,7 +65,7 @@ export function useGlobalActivityConfig() {
     };
     load();
     setReady(true);
-    return subscribeStore(load);
+    return subscribeAndRestore(load, load);
   }, []);
   const update = (next: ActivityConfig) => {
     setConfig(next);
@@ -90,7 +102,7 @@ export function usePageActivityConfig(softwareId: string) {
     };
     load();
     setReady(true);
-    return subscribeStore((key) => {
+    return subscribeAndRestore(load, (key) => {
         if (key === STORAGE_KEY) {
           if (!overriddenRef.current) setConfig(readGlobalConfig());
           return;
@@ -147,7 +159,7 @@ export function useActivityConfigs() {
     };
     load();
     setReady(true);
-    return subscribeStore(load);
+    return subscribeAndRestore(load, load);
   }, []);
 
   const updateFor = (id: string, next: ActivityConfig) => {
@@ -194,7 +206,7 @@ export function useOpenCodeBadgeVisibility() {
     const load = () => setEnabled(readOpenCodeBadgeVisibility());
     load();
     setReady(true);
-    return subscribeStore((key) => {
+    return subscribeAndRestore(load, (key) => {
       if (key === null || key === OPENCODE_BADGES_VISIBILITY_KEY) load();
     });
   }, []);
@@ -216,7 +228,7 @@ export function useActivityDebugVisibility() {
     const load = () => setEnabled(readActivityDebugVisibility());
     load();
     setReady(true);
-    return subscribeStore((key) => {
+    return subscribeAndRestore(load, (key) => {
       if (key === null || key === ACTIVITY_DEBUG_VISIBILITY_KEY) load();
     });
   }, []);
