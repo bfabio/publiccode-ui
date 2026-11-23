@@ -21,14 +21,14 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: bfabio/activity-metrics-collector
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
           key: cargo-${{ hashFiles('Cargo.lock') }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/activity-metrics-collector
           key: amc-data-${{ github.run_id }}
