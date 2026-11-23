@@ -12,6 +12,7 @@ import type { SoftwareActivity, CatalogStats } from "../types/analysis";
 import { LABELS as ACTIVITY_LABELS } from "../lib/activityLabels";
 import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
 import { catalogFlag } from "../lib/catalogFlags";
+import { catalogSearchText } from "../lib/catalogSearch";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -37,7 +38,7 @@ interface SoftwareItem {
   shortDescription: string;
   categories: string[];
   releaseDate: string;
-  license: { id: string; name: string; url: string | null } | null;
+  license: { id: string; url: string | null } | null;
   logo: string | null;
   logoFallback: string | null;
   developmentStatus: string;
@@ -47,8 +48,6 @@ interface SoftwareItem {
   catalogName: string | null;
   catalogId: string;
   activity: SoftwareActivity | null;
-  searchText: string;
-  nameLower: string;
 }
 
 interface CatalogInfo {
@@ -203,11 +202,13 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     .replace("{missing}", incompleteDataCount.toLocaleString(locale))
     .replace("{percentage}", String(incompleteDataPercentage));
 
+  const searchTexts = useMemo(() => new Map(items.map((i) => [i, catalogSearchText(i)])), [items]);
+
   const filtered = useMemo(() => {
     let result = items;
     if (deferredQuery) {
       const q = deferredQuery.toLowerCase();
-      result = result.filter((i) => i.searchText.includes(q));
+      result = result.filter((i) => searchTexts.get(i)?.includes(q));
     }
     if (category) result = result.filter((i) => i.categories.includes(category));
     if (status) result = result.filter((i) => i.developmentStatus === status);
@@ -216,7 +217,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     if (catalog) result = result.filter((i) => i.catalogSlug === catalog);
     if (onlyActivity) result = result.filter((i) => i.activity != null);
     return result;
-  }, [items, deferredQuery, category, status, softwareType, audience, catalog, onlyActivity]);
+  }, [items, searchTexts, deferredQuery, category, status, softwareType, audience, catalog, onlyActivity]);
 
   const anyActivity = useMemo(() => items.some((i) => i.activity != null), [items]);
 
