@@ -38,6 +38,7 @@ export function statsByCatalog(
 
 export type FieldState =
   | { state: 'disabled' }
+  | { state: 'unsupported' }
   | { state: 'unknown' }
   | { state: 'unavailable' }
   | { state: 'value'; value: number };
@@ -51,11 +52,21 @@ export const FEATURE_OF: Record<ForgeMetric, string> = {
   pullRequestsRecent: 'pullRequests',
 };
 
+export const FORGE_METRICS = Object.keys(FEATURE_OF) as ForgeMetric[];
+
+/** The collector writes stars, forks and pull requests for every forge
+    it reads, as null when the fetch fails. A document with no forge
+    field at all comes from a forge it cannot read (the
+    forge-unsupported fixture of the analysis contract), so those
+    metrics are not coming on a later run. */
+export function forgeUnsupported(activity: SoftwareActivity): boolean {
+  return FORGE_METRICS.every((m) => !(m in activity));
+}
+
 export function fieldState(activity: SoftwareActivity, key: ForgeMetric): FieldState {
   if (!(key in activity)) {
-    return (activity.disabled ?? []).includes(FEATURE_OF[key])
-      ? { state: 'disabled' }
-      : { state: 'unknown' };
+    if ((activity.disabled ?? []).includes(FEATURE_OF[key])) return { state: 'disabled' };
+    return forgeUnsupported(activity) ? { state: 'unsupported' } : { state: 'unknown' };
   }
   const value = activity[key];
   if (value === null) return { state: 'unavailable' };

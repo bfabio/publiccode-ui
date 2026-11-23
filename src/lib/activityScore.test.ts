@@ -12,6 +12,7 @@ describe('computeActivityScore with missing pull requests', () => {
   const activity = {
     v: 1, tags: 74, recentDays: 180, contributors: 30,
     commitsAllTime: 4194, commitsRecent: 485,
+    stars: 12, forks: 3,
   } as SoftwareActivity;
 
   const result = computeActivityScore(activity, stats, DEFAULT_CONFIG);
@@ -33,7 +34,7 @@ describe('computeActivityScore with missing pull requests', () => {
 
 describe('computeActivityScore with no commit or pull request data', () => {
   it('excludes the composite dimensions and suppresses the score', () => {
-    const activity = { v: 1, tags: 0, recentDays: 180, contributors: 5 } as SoftwareActivity;
+    const activity = { v: 1, tags: 0, recentDays: 180, contributors: 5, stars: 0 } as SoftwareActivity;
     const result = computeActivityScore(activity, stats, DEFAULT_CONFIG);
     const history = result.dimensions.find((d) => d.key === 'history')!;
     expect(history.present).toBe(false);
@@ -74,7 +75,7 @@ describe('computeActivityScore with absent forge metrics', () => {
   it('suppresses the score, reports pending and the coverage', () => {
     const activity = {
       v: 1, tags: 74, recentDays: 180, contributors: 30,
-      commitsAllTime: 4194, commitsRecent: 485,
+      commitsAllTime: 4194, commitsRecent: 485, pullRequestsAllTime: 210,
     } as SoftwareActivity;
     const result = computeActivityScore(activity, stats, DEFAULT_CONFIG);
     expect(result.score100).toBeNull();
@@ -343,5 +344,46 @@ describe('composite dimensions blend normalized levels', () => {
 
   it('is exact, with no approximated reference maximum', () => {
     expect(history().approximated).toBe(false);
+  });
+});
+
+describe('computeActivityScore on a forge the collector does not support', () => {
+  const activity = {
+    v: 1, tags: 74, recentDays: 180, contributors: 178,
+    commitsAllTime: 29297, commitsRecent: 485,
+  } as SoftwareActivity;
+  const r = computeActivityScore(activity, stats, DEFAULT_CONFIG);
+
+  it('withholds the score without reporting it as on its way', () => {
+    expect(r.forgeUnsupported).toBe(true);
+    expect(r.pending).toBe(false);
+    expect(r.score100).toBeNull();
+    expect(r.cap).toBeNull();
+  });
+
+  it('marks the forge dimensions unsupported and keeps the git ones', () => {
+    const state = Object.fromEntries(r.dimensions.map((d) => [d.key, d.state]));
+    expect(state).toEqual({
+      contributors: 'ok', history: 'ok', activity: 'ok',
+      stars: 'unsupported', issues: 'unsupported', forks: 'unsupported',
+    });
+  });
+
+  it('is not triggered by a forge that answered with some fields', () => {
+    const partial = computeActivityScore({ ...activity, stars: 4 } as SoftwareActivity, stats, DEFAULT_CONFIG);
+    expect(partial.forgeUnsupported).toBe(false);
+    expect(partial.pending).toBe(true);
+  });
+
+  it('is not triggered by a failed forge fetch', () => {
+    const failed = computeActivityScore(
+      {
+        ...activity, stars: null, forks: null, issuesOpen: null, issuesClosed: null,
+        pullRequestsAllTime: null, pullRequestsRecent: null,
+      } as SoftwareActivity,
+      stats, DEFAULT_CONFIG,
+    );
+    expect(failed.forgeUnsupported).toBe(false);
+    expect(failed.pending).toBe(true);
   });
 });

@@ -80,6 +80,7 @@ interface Labels {
   hasActivityData?: string;
   activityScore?: string;
   activityScorePending?: string;
+  activityScoreUnsupported?: string;
   activityScoreScope?: string;
   activityCapDisabled?: string;
   activityCustomWeights?: string;
@@ -479,6 +480,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                         {v && (
                           v.overAllocated
                             ? <span className="activity-badge is-over-allocated" title={weightLabels.overAllocatedTitle}>?</span>
+                            : v.forgeUnsupported
+                              ? <span className="activity-badge is-na" title={weightLabels.scoreUnsupported}>{weightLabels.stateDisabled}</span>
                             : v.score100 === null
                               ? <span className="activity-badge is-na" title={weightLabels.scorePendingTitle}><FontAwesomeIcon icon={faHourglassHalf} /></span>
                               : <span className="activity-badge">{Math.round(v.score100)}</span>
@@ -489,10 +492,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                         const points = dim && dim.present && dim.normalized !== null ? Math.round(dim.contribution) : null;
                         const state = dim?.state ?? "unknown";
                         const token = state === "failed" ? weightLabels.stateFailed
-                          : state === "disabled" ? weightLabels.stateDisabled
+                          : state === "disabled" || state === "unsupported" ? weightLabels.stateDisabled
                           : weightLabels.stateUnknown;
                         const stateTitle = state === "failed" ? weightLabels.stateFailedTitle
                           : state === "disabled" ? undefined
+                          : state === "unsupported" ? weightLabels.rowUnsupported
                           : weightLabels.stateUnknownTitle;
                         return (
                           <td key={key} className={`catalog-table-score${points === null ? " is-na" : ""}`} title={points === null ? stateTitle : undefined}>
@@ -604,7 +608,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       </button>
                     </div>
                   </div>
-                  {v.score100 === null && !v.overAllocated && <p>{weightLabels.scorePending}</p>}
+                  {v.score100 === null && !v.overAllocated && <p>{v.forgeUnsupported ? weightLabels.scoreUnsupported : weightLabels.scorePending}</p>}
                   <ActivityWeightsWidget
                     result={v}
                     config={activityConfig}
@@ -627,8 +631,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
                       <span className="activity-index-label-text">{l.activityScore ?? "Activity score"}</span>
                     </div>
                     <div className="activity-index-value">
-                      <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
-                        {v.overAllocated ? "?" : <FontAwesomeIcon icon={faHourglassHalf} />}
+                      <span className={`activity-badge ${v.overAllocated ? "is-over-allocated" : "is-na"}${activityConfigReady ? "" : " is-loading"}`} title={`${v.overAllocated ? weightLabels.overAllocatedTitle : v.forgeUnsupported ? l.activityScoreUnsupported ?? weightLabels.scoreUnsupported : l.activityScorePending ?? "Activity score on its way"}${customNote}`}>
+                        {v.overAllocated ? "?" : v.forgeUnsupported ? weightLabels.stateDisabled : <FontAwesomeIcon icon={faHourglassHalf} />}
                       </span>
                       {customWeightTrigger}
                     </div>

@@ -37,11 +37,11 @@ describe('software activity contract', () => {
     }
   });
 
-  it('reports every forge metric unknown for the forge-unsupported fixture', () => {
+  it('reports every forge metric unsupported for the forge-unsupported fixture', () => {
     const a = parseSoftwareActivity({ activity: fixture('software/forge-unsupported') });
     expect(a).not.toBeNull();
     for (const metric of forgeMetrics) {
-      expect(fieldState(a!, metric).state).toBe('unknown');
+      expect(fieldState(a!, metric).state).toBe('unsupported');
     }
   });
 
