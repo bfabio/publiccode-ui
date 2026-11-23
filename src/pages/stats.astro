@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { fetchAllSoftware, fetchLogs, apiConfigured } from '../lib/api.js';
 import SetupRequired from '../components/SetupRequired.astro';
 import { base } from '../lib/url.js';
+import { parseLogMessage } from '../lib/crawlerLog';
 
 function countBy(items, keyFn) {
   const map = new Map();
@@ -15,24 +16,6 @@ function countBy(items, keyFn) {
 
 function pct(n, total) {
   return total === 0 ? 0 : Math.round((n / total) * 100);
-}
-
-const LINE_RE = /^publiccode\.yml:(\d+):(\d+): (error|warning): (.+)$/;
-
-function parseDiagnostics(message) {
-  const diagnostics = [];
-  for (const line of message.split('\n')) {
-    const m = line.match(LINE_RE);
-    if (m) {
-      diagnostics.push({ level: m[3], message: m[4] });
-      continue;
-    }
-    const badMatch = line.match(/\[.+\] BAD publiccode\.yml: (.+)/);
-    if (badMatch) {
-      diagnostics.push({ level: 'error', message: badMatch[1] });
-    }
-  }
-  return diagnostics;
 }
 
 const allSoftware = await fetchAllSoftware();
@@ -66,7 +49,7 @@ const repoErrorCounts = [];
 let reposWithErrors = 0;
 
 for (const [entity, log] of latestByEntity) {
-  const diagnostics = parseDiagnostics(log.message);
+  const { diagnostics } = parseLogMessage(log.message);
   if (diagnostics.length === 0) continue;
 
   reposWithErrors++;
