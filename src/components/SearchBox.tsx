@@ -179,7 +179,7 @@ export const SearchBox: React.FC<SearchBoxProps> = ({ indexUrl, base, placeholde
               </span>
               <span className="suggestion-text">
                 <strong>{highlight(s.name, inputValue)}</strong>{" "}
-                <span className="suggestion-desc">{s.shortDescription}</span>
+                <span className="suggestion-desc" lang={s.lang}>{s.shortDescription}</span>
               </span>
             </li>
           ))}

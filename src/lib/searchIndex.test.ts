@@ -4,9 +4,10 @@ import { loadSearchIndex, toSearchItems } from "./searchIndex";
 const entry = { id: "a", name: "Foo App", shortDescription: "Does BAR", logo: null, logoFallback: null };
 
 describe("toSearchItems", () => {
-  it("derives the lowercase name and search text", () => {
-    expect(toSearchItems([entry])).toEqual([
-      { ...entry, nameLower: "foo app", searchText: "foo app does bar" },
+  it.each([undefined, "it", "en-US", ""])("preserves language %j while deriving search fields", (lang) => {
+    const localized = { ...entry, ...(lang !== undefined ? { lang } : {}) };
+    expect(toSearchItems([localized])).toEqual([
+      { ...localized, nameLower: "foo app", searchText: "foo app does bar" },
     ]);
   });
 });

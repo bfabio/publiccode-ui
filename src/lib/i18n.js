@@ -301,14 +301,32 @@ export function t(locale, key) {
   return translations[locale]?.[key] ?? translations.en[key] ?? key;
 }
 
-export function localizeDescription(description, locale) {
-  if (!description) return {};
-  return (
-    description[locale] ??
-    description.en ??
-    description[Object.keys(description)[0]] ??
-    {}
-  );
+// The lang attribute of a description taken from the key `language`, or
+// undefined when it is in the page language. A key that is not a valid
+// language tag gives "", which marks the language as unknown.
+function descriptionLang(language, locale) {
+  let tag;
+  try {
+    [tag] = Intl.getCanonicalLocales(language);
+  } catch {
+    return "";
+  }
+  return tag.split("-")[0] === locale ? undefined : tag;
+}
+
+// The localized description along with the lang attribute its text needs,
+// since the fallback can pick a language other than the page one.
+export function pickDescription(description, locale) {
+  const language = description
+    ? [locale, "en", Object.keys(description)[0]].find(
+        (k) => k !== undefined && description[k] != null,
+      )
+    : undefined;
+  if (language === undefined) return { description: {}, lang: undefined };
+  return {
+    description: description[language],
+    lang: descriptionLang(language, locale),
+  };
 }
 
 const localePrefix = new RegExp(`^/(${Object.keys(translations).join("|")})(?=/|$)`);

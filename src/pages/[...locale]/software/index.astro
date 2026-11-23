@@ -4,7 +4,7 @@ import SetupRequired from '../../../components/SetupRequired.astro';
 import { fetchAllSoftware, fetchCatalogs, fetchAllSoftwareAnalysis, fetchAllCatalogAnalysis, fetchRootCatalogAnalysis, apiConfigured } from '../../../lib/api.js';
 import { resolveLogoAsset } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
-import { t, localizeDescription } from '../../../lib/i18n.js';
+import { t, pickDescription } from '../../../lib/i18n.js';
 import { SoftwareList } from '../../../components/SoftwareList';
 import { resolveLicense } from '../../../lib/license.js';
 import { statsByCatalog as buildStatsByCatalog } from '../../../lib/activity.ts';
@@ -28,7 +28,7 @@ const catalogMap = Object.fromEntries(catalogs.map((c) => [c.id, c]));
 
 const items = await Promise.all(allSoftware.map(async (s) => {
   const pc = s.publiccode;
-  const desc = localizeDescription(pc.description, locale);
+  const { description: desc, lang } = pickDescription(pc.description, locale);
   const license = await resolveLicense(pc.legal?.license);
   const cat = catalogMap[s.catalogId];
   const logo = resolveLogoAsset(pc);
@@ -45,6 +45,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     id: s.id,
     name: pc.name,
     shortDescription,
+    ...(lang !== undefined ? { lang } : {}),
     categories,
     releaseDate,
     license: license ? {
