@@ -6,6 +6,7 @@ import {
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   ACTIVITY_DEBUG_VISIBILITY_KEY, readActivityDebugVisibility, writeActivityDebugVisibility,
   withActivityConfig, migrateLegacyConfigs,
+  readUrlConfig, writeUrlConfig, clearUrlConfig,
 } from './activityStore.ts';
 import { DEFAULT_CONFIG, type ActivityConfig } from './activityScore.ts';
 
@@ -205,5 +206,61 @@ describe('withActivityConfig', () => {
 
   it('leaves regular software links untouched', () => {
     expect(withActivityConfig('/software/abc', null)).toBe('/software/abc');
+  });
+});
+
+function stubLocation(search: string, pathname = '/software/abc/') {
+  const location = { pathname, search };
+  const replaceState = vi.fn((_state: unknown, _title: string, url: string) => {
+    location.search = url.startsWith('?') ? url : '';
+    if (!url.startsWith('?')) location.pathname = url;
+  });
+  vi.stubGlobal('window', { location, history: { replaceState } });
+  return { location, replaceState };
+}
+
+describe('share link config', () => {
+  const custom: ActivityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
+
+  it('does nothing without a window', () => {
+    expect(readUrlConfig()).toBeNull();
+    expect(() => writeUrlConfig(custom)).not.toThrow();
+    expect(() => clearUrlConfig()).not.toThrow();
+  });
+
+  it('reads the activity param', () => {
+    stubLocation(`?${new URLSearchParams({ activity: JSON.stringify(custom) })}`);
+    expect(readUrlConfig()).toEqual(custom);
+  });
+
+  it('returns null without the param or with a broken one', () => {
+    stubLocation('?tab=metrics');
+    expect(readUrlConfig()).toBeNull();
+    stubLocation('?activity=%7Bnot%20json');
+    expect(readUrlConfig()).toBeNull();
+  });
+
+  it('writes the config and keeps unrelated params', () => {
+    const { location, replaceState } = stubLocation('?tab=metrics&activity=old');
+    writeUrlConfig(custom);
+    expect(replaceState).toHaveBeenCalledTimes(1);
+    const params = new URLSearchParams(location.search);
+    expect(params.get('tab')).toBe('metrics');
+    expect(params.getAll('activity')).toHaveLength(1);
+    expect(readUrlConfig()).toEqual(custom);
+  });
+
+  it('clears only the activity param', () => {
+    const { location } = stubLocation(`?tab=metrics&activity=${encodeURIComponent(JSON.stringify(custom))}`);
+    clearUrlConfig();
+    expect(location.search).toBe('?tab=metrics');
+    expect(location.pathname).toBe('/software/abc/');
+  });
+
+  it('falls back to the bare path when no param is left', () => {
+    const { location, replaceState } = stubLocation(`?activity=${encodeURIComponent(JSON.stringify(custom))}`);
+    clearUrlConfig();
+    expect(replaceState).toHaveBeenCalledWith(null, '', '/software/abc/');
+    expect(location.search).toBe('');
   });
 });

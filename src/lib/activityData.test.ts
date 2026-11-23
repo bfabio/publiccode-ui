@@ -39,4 +39,27 @@ describe("fetch helpers", () => {
     expect(await fetchSoftwareActivity("missing-id")).toBeNull();
     expect(await fetchStatsIndex()).toBeNull();
   });
+
+  it("retries a URL whose previous fetch failed", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }))
+      .mockResolvedValueOnce(Response.json({ activity: { v: 2 } }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await fetchSoftwareActivity("retry-id")).toBeNull();
+    expect(await fetchSoftwareActivity("retry-id")).toEqual({ v: 2 });
+    expect(await fetchSoftwareActivity("retry-id")).toEqual({ v: 2 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries after a network error", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError("offline"))
+      .mockResolvedValueOnce(Response.json({ activity: { v: 3 } }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await fetchSoftwareActivity("offline-id")).toBeNull();
+    expect(await fetchSoftwareActivity("offline-id")).toEqual({ v: 3 });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
