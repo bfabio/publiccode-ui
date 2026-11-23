@@ -1206,6 +1206,10 @@ dialog nav button:hover {
   from { background-position: 120% 0, 0 0; }
   to { background-position: -120% 0, 0 0; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .image-loading::after,
+  .image-skeleton { animation: none; }
+}
 
 @media (max-width: 640px) {
   .catalog-results article,
