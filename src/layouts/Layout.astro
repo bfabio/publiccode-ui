@@ -88,6 +88,17 @@ const settingsHref = locale === 'it' ? `${base}/it/settings` : `${base}/settings
         i.style.display = 'none';
         const p = i.previousElementSibling;
         if (p) p.style.display = 'none';
+        // A screenshot with no working URL would stay an empty button:
+        // drop it, and the whole section once no screenshot is left.
+        const t = i.closest('.screenshot-thumb');
+        if (t) {
+          t.style.display = 'none';
+          const g = t.closest('.software-screenshots');
+          if (g && ![...g.querySelectorAll('.screenshot-thumb')].some((b) => b.style.display !== 'none')) {
+            g.style.display = 'none';
+          }
+          return;
+        }
         i.closest('.image-shell')?.classList.remove('image-loading');
       }, true);
     </script>
