@@ -13,6 +13,7 @@ import { describePlatform } from '../../../lib/platforms.ts';
 import { formatDate } from '../../../lib/date.js';
 import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
+import { contactMailto } from '../../../lib/contacts.ts';
 import { documentationLinks } from '../../../lib/documentationLinks.ts';
 import { forgeRepoUrl } from '../../../lib/forgeLinks.ts';
 import { dataCacheKey } from '../../../lib/cacheKey.ts';
@@ -301,7 +302,7 @@ const badgeRadar = makeRadar(
         <ul>
           {pc.maintenance.contacts.map((c) => (
             <li>
-              {safeUrl(`mailto:${c.email}`) ? <a href={`mailto:${c.email}`}>{c.name}</a> : c.name}
+              {contactMailto(c.email) ? <a href={contactMailto(c.email)}>{c.name}</a> : c.name}
               {c.phone && <> {c.phone}</>}
             </li>
           ))}
