@@ -69,35 +69,37 @@ const fmtNum = (n: number) => n.toLocaleString(locale, { maximumFractionDigits: 
           {' · '}
           {t(locale, 'recent_window')}: <strong>{activity.recentDays} {t(locale, 'days')}</strong>
         </p>
-        <table class="activity-debug activity-distribution">
-          <thead>
-            <tr>
-              <th>{t(locale, 'col_metric')}</th>
-              <th>{t(locale, 'col_min')}</th>
-              <th>{t(locale, 'col_median')}</th>
-              <th>{t(locale, 'col_mean')}</th>
-              <th>{t(locale, 'col_p95')}</th>
-              <th>{t(locale, 'col_max')}</th>
-              <th>{t(locale, 'col_count')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {metrics.map((m) => {
-              const s = activity.stats[m]!;
-              return (
-                <tr>
-                  <td>{t(locale, 'metric_' + m)}</td>
-                  <td>{fmtNum(s.min)}</td>
-                  <td>{fmtNum(s.median)}</td>
-                  <td>{fmtNum(s.mean)}</td>
-                  <td>{fmtNum(s.p95)}</td>
-                  <td>{fmtNum(s.max)}</td>
-                  <td>{s.count.toLocaleString(locale)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div class="activity-debug-scroll">
+          <table class="activity-debug activity-distribution">
+            <thead>
+              <tr>
+                <th>{t(locale, 'col_metric')}</th>
+                <th>{t(locale, 'col_min')}</th>
+                <th>{t(locale, 'col_median')}</th>
+                <th>{t(locale, 'col_mean')}</th>
+                <th>{t(locale, 'col_p95')}</th>
+                <th>{t(locale, 'col_max')}</th>
+                <th>{t(locale, 'col_count')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.map((m) => {
+                const s = activity.stats[m]!;
+                return (
+                  <tr>
+                    <td>{t(locale, 'metric_' + m)}</td>
+                    <td>{fmtNum(s.min)}</td>
+                    <td>{fmtNum(s.median)}</td>
+                    <td>{fmtNum(s.mean)}</td>
+                    <td>{fmtNum(s.p95)}</td>
+                    <td>{fmtNum(s.max)}</td>
+                    <td>{s.count.toLocaleString(locale)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
     );
   })}
