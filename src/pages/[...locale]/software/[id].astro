@@ -15,6 +15,7 @@ import { resolveLicense } from '../../../lib/license.js';
 import { safeUrl } from '../../../lib/sanitize.js';
 import { forgeRepoUrl } from '../../../lib/forgeLinks.ts';
 import { dataCacheKey } from '../../../lib/cacheKey.ts';
+import { contractMaintenance } from '../../../lib/maintenance.ts';
 
 export async function getStaticPaths() {
   const software = await fetchAllSoftware();
@@ -24,6 +25,7 @@ export async function getStaticPaths() {
   const softwareAnalysis = await fetchAllSoftwareAnalysis();
   const openCodeBadges = await fetchAllOpenCodeBadges();
   const locales = [undefined, 'it'];
+  const now = new Date();
   return locales.flatMap((locale) =>
     software.map((s) => {
       const props = {
@@ -35,6 +37,9 @@ export async function getStaticPaths() {
         // islands fetch, so metric churn leaves this page cached.
         hasActivity: (softwareAnalysis.get(s.id) ?? null) !== null,
         badges: openCodeBadges.get(s.id) ?? null,
+        // Resolved here so the cache key changes on the day a
+        // contract ends, even when the software data does not.
+        contract: contractMaintenance(s.publiccode?.maintenance, locale ?? 'en', now),
       };
       return {
         params: { locale, id: s.id },
@@ -46,7 +51,7 @@ export async function getStaticPaths() {
 }
 
 const locale = Astro.currentLocale ?? 'en';
-const { software, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges } = Astro.props;
+const { software, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges, contract } = Astro.props;
 const pc = software.publiccode;
 
 const desc = localizeDescription(pc.description, locale);
@@ -158,7 +163,23 @@ const badgeRadar = makeRadar(
       {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} data-relative>{release.formatted}</time></dd></>}
       {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
       {pc.softwareType && <><dt>{t(locale, 'software_type')}</dt><dd>{t(locale, 'type_' + pc.softwareType)}</dd></>}
-      {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{t(locale, 'maintenance_' + pc.maintenance.type)}</dd></>}
+      {pc.maintenance?.type && <><dt>{t(locale, 'maintenance_type')}</dt><dd>{t(locale, contract?.ended ? 'maintenance_contract_ended' : 'maintenance_' + pc.maintenance.type)}</dd></>}
+      {contract && (
+        <>
+          <dt>{t(locale, 'contractors')}</dt>
+          <dd>
+            <ul class="contractor-list">
+              {contract.contractors.map((c) => (
+                <li>
+                  {c.website ? <a href={c.website} rel="noopener">{c.name}</a> : c.name}
+                  {c.until && <> <span class="contract-until">{t(locale, c.ended ? 'contract_ended_on' : 'contract_until')} <time datetime={c.until.datetime}>{c.until.formatted}</time></span></>}
+                  {c.email && <> <a href={`mailto:${c.email}`}>{c.email}</a></>}
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </>
+      )}
       {platforms.length > 0 && <><dt>{t(locale, 'platforms')}</dt><dd class="platform-list">{platforms.map((p) => <span class="platform">{p.icon && <Fragment set:html={faIcon(p.icon.name, p.icon.prefix)} />}{p.label}</span>)}</dd></>}
       {languages.length > 0 && <><dt>{t(locale, 'languages')}</dt><dd>{languages.join(', ')}</dd></>}
     </dl>
@@ -336,3 +357,14 @@ const badgeRadar = makeRadar(
     });
   }
 </script>
+
+<style>
+  .contractor-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .contractor-list li + li {
+    margin-top: 4px;
+  }
+</style>

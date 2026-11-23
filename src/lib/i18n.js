@@ -44,6 +44,10 @@ const translations = {
     maintenance_internal: "Maintained internally",
     maintenance_community: "Community maintained",
     maintenance_contract: "Maintained under contract",
+    maintenance_contract_ended: "Maintenance contract ended",
+    contractors: "Contractors",
+    contract_until: "until",
+    contract_ended_on: "ended on",
     maintenance_none: "Not actively maintained",
 
     type_standalone: "Standalone application",
@@ -187,6 +191,10 @@ const translations = {
     maintenance_internal: "Mantenuto internamente",
     maintenance_community: "Mantenuto dalla comunita'",
     maintenance_contract: "Mantenuto tramite contratto",
+    maintenance_contract_ended: "Contratto di manutenzione scaduto",
+    contractors: "Manutentori a contratto",
+    contract_until: "fino al",
+    contract_ended_on: "scaduto il",
     maintenance_none: "Non mantenuto attivamente",
 
     type_standalone: "Applicazione standalone",
