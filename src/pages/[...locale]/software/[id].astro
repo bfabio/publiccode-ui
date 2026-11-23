@@ -261,8 +261,8 @@ const badgeRadar = makeRadar(
       <section class="software-screenshots">
         <h2><Fragment set:html={faIcon('images')} /> {t(locale, 'screenshots')}</h2>
         <div class="screenshot-grid">
-          {screenshots.map((asset, i) => (
-            <button type="button" data-index={i} class="screenshot-thumb">
+          {screenshots.map((asset) => (
+            <button type="button" class="screenshot-thumb">
               <span class="image-skeleton" aria-hidden="true"></span>
               <img src={asset.src} data-fallback={asset.fallback} class="image-fallback" alt="" loading="lazy" />
             </button>
@@ -330,30 +330,70 @@ const badgeRadar = makeRadar(
   const dialog = document.getElementById('lightbox') as HTMLDialogElement | null;
   const img = document.getElementById('lightbox-img') as HTMLImageElement | null;
   if (dialog && img) {
-    const thumbs = document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb');
-    let current = 0;
+    const thumbs = Array.from(document.querySelectorAll<HTMLButtonElement>('.screenshot-thumb'));
+    // Thumbnails whose URLs all failed: the layout error handler hides
+    // them, and the lightbox records the ones it found broken first.
+    const failed = new Set<HTMLButtonElement>();
+    const usable = () => thumbs.filter((t) => t.style.display !== 'none' && !failed.has(t));
+    let current: HTMLButtonElement | undefined;
+    let step: 1 | -1 = 1;
+    let candidates: string[] = [];
 
-    const src = (i: number) => thumbs[i]?.querySelector('img')?.src ?? '';
-
-    const show = (i: number) => {
-      current = (i + thumbs.length) % thumbs.length;
-      img.src = src(current);
+    const load = (thumb: HTMLButtonElement) => {
+      current = thumb;
+      const thumbImg = thumb.querySelector('img');
+      candidates = [thumbImg?.src, thumbImg?.dataset.fallback].filter(
+        (url, i, all): url is string => !!url && all.indexOf(url) === i,
+      );
+      img.src = candidates.shift() ?? '';
     };
 
-    thumbs.forEach(t => t.addEventListener('click', () => {
-      show(Number(t.dataset.index));
+    // Steps from the current thumbnail in grid order, so moving on from
+    // one that just dropped out lands on its old neighbour.
+    const show = (dir: 1 | -1) => {
+      const list = usable();
+      if (list.length === 0) {
+        dialog.close();
+        return;
+      }
+      step = dir;
+      const from = current ? thumbs.indexOf(current) : -1;
+      for (let k = 1; k <= thumbs.length; k++) {
+        const thumb = thumbs[(((from + dir * k) % thumbs.length) + thumbs.length) % thumbs.length];
+        if (list.includes(thumb)) {
+          load(thumb);
+          return;
+        }
+      }
+    };
+
+    img.addEventListener('error', () => {
+      const next = candidates.shift();
+      if (next) {
+        img.src = next;
+        return;
+      }
+      if (current) failed.add(current);
+      if (dialog.open) show(step);
+    });
+
+    thumbs.forEach((t) => t.addEventListener('click', () => {
+      // Load the remaining thumbnails, so that the broken ones drop out
+      // of the grid before the lightbox reaches them.
+      thumbs.forEach((other) => other.querySelector('img')?.setAttribute('loading', 'eager'));
+      load(t);
       dialog.showModal();
     }));
 
-    document.getElementById('lightbox-prev')?.addEventListener('click', () => show(current - 1));
-    document.getElementById('lightbox-next')?.addEventListener('click', () => show(current + 1));
+    document.getElementById('lightbox-prev')?.addEventListener('click', () => show(-1));
+    document.getElementById('lightbox-next')?.addEventListener('click', () => show(1));
     document.getElementById('lightbox-close')?.addEventListener('click', () => dialog.close());
     dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
     document.addEventListener('keydown', (e) => {
       if (!dialog.open) return;
-      if (e.key === 'ArrowLeft') show(current - 1);
-      if (e.key === 'ArrowRight') show(current + 1);
+      if (e.key === 'ArrowLeft') show(-1);
+      if (e.key === 'ArrowRight') show(1);
     });
   }
 </script>
