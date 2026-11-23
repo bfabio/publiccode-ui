@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { fetchLogs, fetchAllSoftware } from '../../lib/api.js';
+import { parseLogMessage } from '../../lib/crawlerLog';
 
 const logs = await fetchLogs({ days: 7 });
 const software = await fetchAllSoftware();
@@ -15,44 +16,6 @@ for (const log of logs) {
   if (!existing || log.createdAt > existing.createdAt) {
     latestByEntity.set(log.entity, log);
   }
-}
-
-const LINE_RE = /^publiccode\.yml:(\d+):(\d+): (error|warning): (.+)$/;
-
-function parseLogMessage(message) {
-  const repoMatch = message.match(/^\[([^\]]+)\]/);
-  const repoUrl = repoMatch?.[1]?.replace(/\.git$/, '') ?? null;
-
-  const nameMatch = message.match(/\[([^\]]+)\] BAD /);
-  const repoName = nameMatch?.[1] ?? null;
-
-  const diagnostics = [];
-  for (const line of message.split('\n')) {
-    const m = line.match(LINE_RE);
-    if (m) {
-      diagnostics.push({
-        line: parseInt(m[1], 10),
-        column: parseInt(m[2], 10),
-        level: m[3],
-        message: m[4],
-      });
-      continue;
-    }
-
-    const badMatch = line.match(
-      /\[.+\] BAD publiccode\.yml: (.+)/
-    );
-    if (badMatch) {
-      diagnostics.push({
-        line: null,
-        column: null,
-        level: 'error',
-        message: badMatch[1],
-      });
-    }
-  }
-
-  return { repoUrl, repoName, diagnostics };
 }
 
 function fileUrl(repoUrl, line) {
