@@ -5,7 +5,7 @@ import {
   clearSoftwareConfig, readAllSoftwareConfigs, subscribeStore, writeGlobalConfig,
   STORAGE_KEY, SOFTWARE_PREFIX, OPENCODE_BADGES_VISIBILITY_KEY, readOpenCodeBadgeVisibility, writeOpenCodeBadgeVisibility,
   ACTIVITY_DEBUG_VISIBILITY_KEY, readActivityDebugVisibility, writeActivityDebugVisibility,
-  withActivityConfig, migrateLegacyConfigs,
+  withActivityConfig, migrateLegacyConfigs, onPageRestore,
   readUrlConfig, writeUrlConfig, clearUrlConfig,
   SHARED_KEY, encodeSharedConfig, decodeSharedConfig, sharedConfigUrl, adoptSharedConfig,
   readGlobalConfig, readSharedConfig, clearSharedConfig,
@@ -231,6 +231,25 @@ describe('subscribeStore', () => {
     unsubscribe();
     writeGlobalConfig(DEFAULT_CONFIG);
     expect(seen).toHaveLength(4);
+  });
+});
+
+describe('onPageRestore', () => {
+  it('fires only for pages restored from the back/forward cache', () => {
+    const listeners = new Map<string, (e: { persisted: boolean }) => void>();
+    const removed: string[] = [];
+    vi.stubGlobal('window', {
+      addEventListener: (t: string, h: (e: { persisted: boolean }) => void) => listeners.set(t, h),
+      removeEventListener: (t: string) => removed.push(t),
+    });
+    let calls = 0;
+    const stop = onPageRestore(() => calls++);
+    listeners.get('pageshow')?.({ persisted: false });
+    expect(calls).toBe(0);
+    listeners.get('pageshow')?.({ persisted: true });
+    expect(calls).toBe(1);
+    stop();
+    expect(removed).toEqual(['pageshow']);
   });
 });
 

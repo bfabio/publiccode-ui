@@ -250,6 +250,17 @@ export function subscribeStore(callback: (key: string | null) => void): () => vo
   };
 }
 
+// A page restored from the back/forward cache keeps the state it had
+// when the user left, so settings changed meanwhile must be read again.
+export function onPageRestore(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {};
+  const handler = (e: PageTransitionEvent) => {
+    if (e.persisted) callback();
+  };
+  window.addEventListener('pageshow', handler);
+  return () => window.removeEventListener('pageshow', handler);
+}
+
 export function readUrlConfig(): ActivityConfig | null {
   if (typeof window === 'undefined') return null;
   return parseConfig(new URLSearchParams(window.location.search).get(URL_PARAM));
