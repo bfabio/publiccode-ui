@@ -16,6 +16,7 @@ import { catalogSearchText } from "../lib/catalogSearch";
 import { normalizeQuery } from "../lib/searchQuery";
 import { filterOptions } from "../lib/filterOptions";
 import { hasTextSelection, ROW_NAVIGATION_DELAY_MS, rowClickAction } from "../lib/rowClick";
+import { viewportShift } from "../lib/viewportClamp";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -180,6 +181,28 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   useEffect(() => {
     setVisibleCount(INITIAL_VISIBLE_ITEMS);
   }, [deferredQuery, category, status, softwareType, audience, catalog, onlyActivity, effectiveSort]);
+
+  // Each theme anchors the panel to the score differently, so move it
+  // back inside the viewport when it opens or the window is resized. The
+  // pointer moves the other way to keep pointing at the score.
+  useClientLayoutEffect(() => {
+    if (!openScoreId) return;
+    const place = () => {
+      const panel = document.getElementById(`activity-score-${openScoreId}`);
+      if (!panel) return;
+      const pointer = panel.querySelector<SVGElement>(".activity-score-pointer");
+      panel.style.translate = "";
+      if (pointer) pointer.style.translate = "";
+      const rect = panel.getBoundingClientRect();
+      const shift = viewportShift(rect.left, rect.width, document.documentElement.clientWidth);
+      if (shift === 0) return;
+      panel.style.translate = `${shift}px 0`;
+      if (pointer) pointer.style.translate = `${-shift}px 0`;
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [openScoreId]);
 
   useEffect(() => {
     if (!openScoreId) return;

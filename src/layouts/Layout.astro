@@ -1263,6 +1263,11 @@ const settingsHref = `${localeBase(locale)}/settings`;
     font-size: 0.75rem;
     color: var(--text-secondary, #555);
   }
+  /* the five columns of the weights table are wider than a phone, so
+     they scroll inside the panel instead of widening the page */
+  .activity-debug-scroll {
+    overflow-x: auto;
+  }
   .activity-debug .bar-track {
     display: inline-block;
     vertical-align: middle;

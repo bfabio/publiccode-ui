@@ -1341,8 +1341,13 @@ dialog nav button:hover {
 .activity-settings.is-loading {
   visibility: hidden;
 }
-.activity-weights-panel .activity-debug {
+.activity-weights-panel .activity-debug,
+.activity-weights-panel .activity-debug-scroll,
+.activity-debug-scroll > .activity-debug {
   margin-top: 0;
+}
+.activity-debug-scroll {
+  margin-top: 1rem;
 }
 
 .activity-debug {

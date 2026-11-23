@@ -228,7 +228,8 @@ nav[aria-label="Breadcrumb"] li + li::before {
   position: absolute;
   z-index: 10;
   top: calc(100% + 7px);
-  right: 0;
+  left: 0;
+  box-sizing: border-box;
   width: min(760px, calc(100vw - 16px));
   margin: 0;
   padding: 8px;
@@ -250,7 +251,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-results .activity-score-pointer {
   position: absolute;
   top: -7px;
-  right: 8px;
+  left: 8px;
   width: 12px;
   height: 7px;
   display: block;

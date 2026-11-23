@@ -182,103 +182,105 @@ export const ActivityWeightsWidget: React.FC<Props> = ({
     <>
       <ActivityWeightDistribution config={config} labels={L} result={result} />
 
-      <table className="activity-debug">
-        <thead>
-          <tr>
-            <th>{L.colDimension}</th>
-            <th>{L.colRaw}</th>
-            <th>{L.colNorm}</th>
-            <th>{L.colWeight}</th>
-            <th>{L.colContribution}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {result.dimensions.map((dimension) => {
-            const split = dimension.present ? SPLIT[dimension.key] : undefined;
-            const open = split && openSplits[dimension.key];
-            return (
-              <React.Fragment key={dimension.key}>
-                <tr className={dimension.present ? undefined : "is-excluded"}>
-                  <td>
-                    {split ? (
-                      <button type="button" className="activity-split-toggle" aria-expanded={!!open} onClick={() => toggleSplit(dimension.key)}>
-                        <FontAwesomeIcon icon={faAngleDown} className={open ? "rot" : undefined} />
-                        {L.dim[dimension.key]}
-                      </button>
-                    ) : L.dim[dimension.key]}
-                  </td>
-                  {dimension.present ? (
-                    <>
-                      <td>
-                        {dimension.rawParts
-                          ? rawPartsText(dimension.rawParts, locale)
-                          : (dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}
-                      </td>
-                      {dimension.normalized === null ? (
-                        <td className="is-na">-</td>
-                      ) : (
+      <div className="activity-debug-scroll">
+        <table className="activity-debug">
+          <thead>
+            <tr>
+              <th>{L.colDimension}</th>
+              <th>{L.colRaw}</th>
+              <th>{L.colNorm}</th>
+              <th>{L.colWeight}</th>
+              <th>{L.colContribution}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {result.dimensions.map((dimension) => {
+              const split = dimension.present ? SPLIT[dimension.key] : undefined;
+              const open = split && openSplits[dimension.key];
+              return (
+                <React.Fragment key={dimension.key}>
+                  <tr className={dimension.present ? undefined : "is-excluded"}>
+                    <td>
+                      {split ? (
+                        <button type="button" className="activity-split-toggle" aria-expanded={!!open} onClick={() => toggleSplit(dimension.key)}>
+                          <FontAwesomeIcon icon={faAngleDown} className={open ? "rot" : undefined} />
+                          {L.dim[dimension.key]}
+                        </button>
+                      ) : L.dim[dimension.key]}
+                    </td>
+                    {dimension.present ? (
+                      <>
                         <td>
-                          <span className="bar-track"><span className="bar-fill" style={{ width: `${dimension.normalized * 100}%` }} /></span>
-                          {dimension.normalized.toFixed(2)}
+                          {dimension.rawParts
+                            ? rawPartsText(dimension.rawParts, locale)
+                            : (dimension.raw as number).toLocaleString(locale, { maximumFractionDigits: 2 })}
                         </td>
-                      )}
-                      <td>
-                        <WeightStepper
-                          value={Math.round(config.weights[dimension.key] * 100)}
-                          label={`${L.colWeight}: ${L.dim[dimension.key]}`}
-                          onChange={(pct) => onWeight(dimension.key, pct / 100)}
-                          decLabel={L.stepDown}
-                          incLabel={L.stepUp}
-                        />{" %"}
+                        {dimension.normalized === null ? (
+                          <td className="is-na">-</td>
+                        ) : (
+                          <td>
+                            <span className="bar-track"><span className="bar-fill" style={{ width: `${dimension.normalized * 100}%` }} /></span>
+                            {dimension.normalized.toFixed(2)}
+                          </td>
+                        )}
+                        <td>
+                          <WeightStepper
+                            value={Math.round(config.weights[dimension.key] * 100)}
+                            label={`${L.colWeight}: ${L.dim[dimension.key]}`}
+                            onChange={(pct) => onWeight(dimension.key, pct / 100)}
+                            decLabel={L.stepDown}
+                            incLabel={L.stepUp}
+                          />{" %"}
+                        </td>
+                        <td>{dimension.contribution.toFixed(1)}</td>
+                      </>
+                    ) : (
+                      <td colSpan={4} className="is-na">
+                        {L.excluded} ({stateTitleOf(dimension.state)})
                       </td>
-                      <td>{dimension.contribution.toFixed(1)}</td>
-                    </>
-                  ) : (
-                    <td colSpan={4} className="is-na">
-                      {L.excluded} ({stateTitleOf(dimension.state)})
-                    </td>
-                  )}
-                </tr>
-                {open && split && (
-                  <tr className="activity-split-row">
-                    <td colSpan={5}>
-                      <div className="activity-split">
-                        <label htmlFor={`${idBase}-${dimension.key}-commits`}>
-                          <span>{L.commits}</span>
-                          <WeightStepper id={`${idBase}-${dimension.key}-commits`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.commits}`} value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => onSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
-                        </label>
-                        <label htmlFor={`${idBase}-${dimension.key}-merges`}>
-                          <span>{L.merges}</span>
-                          <WeightStepper id={`${idBase}-${dimension.key}-merges`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.merges}`} value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => onSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
-                        </label>
-                      </div>
-                    </td>
+                    )}
                   </tr>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={3}></td>
-            <td>
-              <span className={`activity-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
-                {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
-              </span>
-            </td>
-            <td>
-              {result.overAllocated
-                ? <span title={L.overAllocatedTitle}>?</span>
-                : result.forgeUnsupported
-                  ? <span title={L.scoreUnsupported}>{L.stateDisabled}</span>
-                : result.score100 === null
-                  ? <span title={L.scorePendingTitle}>{L.stateUnknown}</span>
-                  : result.score100.toFixed(1)}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
+                  {open && split && (
+                    <tr className="activity-split-row">
+                      <td colSpan={5}>
+                        <div className="activity-split">
+                          <label htmlFor={`${idBase}-${dimension.key}-commits`}>
+                            <span>{L.commits}</span>
+                            <WeightStepper id={`${idBase}-${dimension.key}-commits`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.commits}`} value={Math.round(config.subWeights[split.c] * 100)} onChange={(pct) => onSplit(split.c, split.m, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
+                          </label>
+                          <label htmlFor={`${idBase}-${dimension.key}-merges`}>
+                            <span>{L.merges}</span>
+                            <WeightStepper id={`${idBase}-${dimension.key}-merges`} label={`${L.colWeight}: ${L.dim[dimension.key]}, ${L.merges}`} value={Math.round(config.subWeights[split.m] * 100)} onChange={(pct) => onSplit(split.m, split.c, pct / 100)} decLabel={L.stepDown} incLabel={L.stepUp} />{" %"}
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan={3}></td>
+              <td>
+                <span className={`activity-free-points${freePool < 0 ? " is-over" : freePool > 0 ? " has-free" : " is-empty"}`}>
+                  {(freePool < 0 ? L.freePointsOver : L.freePoints).replace("{points}", String(Math.abs(freePool)))}
+                </span>
+              </td>
+              <td>
+                {result.overAllocated
+                  ? <span title={L.overAllocatedTitle}>?</span>
+                  : result.forgeUnsupported
+                    ? <span title={L.scoreUnsupported}>{L.stateDisabled}</span>
+                  : result.score100 === null
+                    ? <span title={L.scorePendingTitle}>{L.stateUnknown}</span>
+                    : result.score100.toFixed(1)}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
 
       <div className="activity-config">
         <div className="config-grid">
