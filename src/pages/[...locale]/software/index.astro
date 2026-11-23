@@ -8,6 +8,7 @@ import { t, pickDescription } from '../../../lib/i18n.js';
 import { SoftwareList } from '../../../components/SoftwareList';
 import { resolveLicense } from '../../../lib/license.js';
 import { statsByCatalog as buildStatsByCatalog } from '../../../lib/activity.ts';
+import { codeLabels } from '../../../lib/filterOptions.ts';
 
 export function getStaticPaths() {
   return [
@@ -66,6 +67,9 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     activity: softwareAnalysis.get(s.id) ?? null,
   };
 }));
+const translate = (key) => t(locale, key);
+const statusLabels = codeLabels(new Set(items.map((i) => i.developmentStatus)), 'status_', translate);
+const typeLabels = codeLabels(new Set(items.map((i) => i.softwareType)), 'type_', translate);
 ---
 
 {apiConfigured ? (
@@ -110,6 +114,8 @@ const items = await Promise.all(allSoftware.map(async (s) => {
       colCatalog: t(locale, 'catalog_label'),
       colPage: t(locale, 'page_url'),
       exportCsv: t(locale, 'export_csv'),
+      statuses: statusLabels,
+      types: typeLabels,
     }} />
 </Layout>
 ) : (

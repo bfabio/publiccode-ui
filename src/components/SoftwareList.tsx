@@ -14,6 +14,7 @@ import { ActivityWeightsWidget } from "./ActivityWeightsWidget";
 import { catalogFlag } from "../lib/catalogFlags";
 import { catalogSearchText } from "../lib/catalogSearch";
 import { normalizeQuery } from "../lib/searchQuery";
+import { filterOptions } from "../lib/filterOptions";
 
 function highlight(text: string, query: string) {
   if (!query) return text;
@@ -95,6 +96,8 @@ interface Labels {
   colCatalog?: string;
   colPage?: string;
   exportCsv?: string;
+  statuses?: Record<string, string>;
+  types?: Record<string, string>;
 }
 
 const INITIAL_VISIBLE_ITEMS = 80;
@@ -218,8 +221,8 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
   }, [dataInfoOpen]);
 
   const allCategories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
-  const allStatuses = useMemo(() => [...new Set(items.map((i) => i.developmentStatus).filter(Boolean))].sort(), [items]);
-  const allTypes = useMemo(() => [...new Set(items.map((i) => i.softwareType).filter(Boolean))].sort(), [items]);
+  const allStatuses = useMemo(() => filterOptions([...new Set(items.map((i) => i.developmentStatus).filter(Boolean))], l.statuses, locale), [items, l.statuses, locale]);
+  const allTypes = useMemo(() => filterOptions([...new Set(items.map((i) => i.softwareType).filter(Boolean))], l.types, locale), [items, l.types, locale]);
   const allAudiences = useMemo(() => [...new Set(items.flatMap((i) => i.intendedAudience))].sort(), [items]);
   const incompleteDataCount = useMemo(() => items.filter((item) => {
     if (!item.activity) return true;
@@ -459,11 +462,11 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
         </select>
         <select name="status" aria-label={l.allStatuses} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">{l.allStatuses}</option>
-          {allStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+          {allStatuses.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
         <select name="type" aria-label={l.allTypes} value={softwareType} onChange={(e) => setSoftwareType(e.target.value)}>
           <option value="">{l.allTypes}</option>
-          {allTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+          {allTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
         </select>
         <select name="audience" aria-label={l.allAudiences} value={audience} onChange={(e) => setAudience(e.target.value)}>
           <option value="">{l.allAudiences}</option>
