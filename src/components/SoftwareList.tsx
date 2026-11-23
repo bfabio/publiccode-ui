@@ -90,6 +90,8 @@ interface Labels {
   viewList?: string;
   viewTable?: string;
   colName?: string;
+  colCatalog?: string;
+  colPage?: string;
   exportCsv?: string;
 }
 
@@ -286,13 +288,26 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
     </p>
   );
   const exportTableCsv = () => {
-    const header = [l.colName ?? "Name", l.activityScore ?? "Activity score", ...DIMENSION_ORDER.map((key) => weightLabels.dim[key])];
+    // Names are not unique, so every row carries the page it stands for
+    // and, when the list spans several catalogs, the catalog it comes from.
+    const withCatalog = Boolean(catalogs);
+    const header = [
+      l.colName ?? "Name",
+      ...(withCatalog ? [l.colCatalog ?? "Catalog"] : []),
+      l.colPage ?? "Page",
+      l.activityScore ?? "Activity score",
+      ...DIMENSION_ORDER.map((key) => weightLabels.dim[key]),
+    ];
     const rows = sorted.map((item) => {
       const v = item.activity
         ? computeActivityScore(item.activity, globalStats ?? statsByCatalog[item.catalogId] ?? null, configFor(item.id))
         : null;
+      const customConfig = activityConfigReady && hasOverride(item.id) ? configFor(item.id) : null;
+      const page = new URL(withActivityConfig(`${base}/software/${item.id}`, customConfig), window.location.href).href;
       return [
         item.name,
+        ...(withCatalog ? [item.catalogName] : []),
+        page,
         v && v.score100 !== null ? Math.round(v.score100) : null,
         ...DIMENSION_ORDER.map((key) => {
           const dim = v?.dimensions.find((d) => d.key === key);
