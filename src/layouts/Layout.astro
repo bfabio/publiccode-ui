@@ -283,7 +283,16 @@ const settingsHref = `${localeBase(locale)}/settings`;
   }
   .site-header nav[aria-label="Breadcrumb"] {
     flex: 1;
+    min-width: 0;
     padding: 0;
+  }
+  /* the page title repeats the current crumb in full, so a long name
+     is cut here instead of pushing the header buttons off a phone */
+  .site-header nav[aria-label="Breadcrumb"] li:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .settings-menu {
     margin-left: auto;
@@ -1263,10 +1272,17 @@ const settingsHref = `${localeBase(locale)}/settings`;
     font-size: 0.75rem;
     color: var(--text-secondary, #555);
   }
-  /* the five columns of the weights table are wider than a phone, so
-     they scroll inside the panel instead of widening the page */
+  /* the weights and distribution tables are wider than a phone, so
+     they scroll inside their own box instead of widening the page */
   .activity-debug-scroll {
     overflow-x: auto;
+  }
+  /* software names, descriptions and features can hold a single word
+     or URL wider than a phone, such as Schutzbedarfsfeststellung */
+  .software-detail header h1,
+  .software-description,
+  .software-features li {
+    overflow-wrap: break-word;
   }
   .activity-debug .bar-track {
     display: inline-block;
