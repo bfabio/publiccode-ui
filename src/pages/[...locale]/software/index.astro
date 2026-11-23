@@ -47,7 +47,7 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     shortDescription,
     categories,
     releaseDate,
-    license: license ? { id: license.id, name: license.name, url: license.url } : null,
+    license: license ? { id: license.id, url: license.url } : null,
     logo: logo?.src ?? null,
     logoFallback: logo?.fallback ?? null,
     developmentStatus: pc.developmentStatus ?? '',
@@ -57,8 +57,6 @@ const items = await Promise.all(allSoftware.map(async (s) => {
     catalogName: cat?.name ?? null,
     catalogId: s.catalogId,
     activity: softwareAnalysis.get(s.id) ?? null,
-    nameLower: pc.name.toLowerCase(),
-    searchText: [pc.name, shortDescription, ...categories].join(' ').toLowerCase(),
   };
 }));
 ---
