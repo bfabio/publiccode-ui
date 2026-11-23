@@ -36,6 +36,7 @@ interface SoftwareItem {
   id: string;
   name: string;
   shortDescription: string;
+  lang?: string;
   categories: string[];
   releaseDate: string;
   license: { id: string; url: string | null; parts?: { text: string; url: string | null }[] } | null;
@@ -533,7 +534,7 @@ export const SoftwareList: React.FC<{ items: SoftwareItem[]; base: string; label
             </figure>
             <header>
               <h2><a href={detailHref}>{highlight(item.name, query)}</a></h2>
-              <p>{highlight(item.shortDescription, query)}</p>
+              <p lang={item.lang}>{highlight(item.shortDescription, query)}</p>
             </header>
             <footer>
               <ul className="categories" aria-label="Categories">

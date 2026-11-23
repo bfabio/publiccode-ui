@@ -7,7 +7,7 @@ import { ActivityRadar } from '../../../components/ActivityRadar';
 import { resolveLogoAsset, resolveScreenshotAssets } from '../../../lib/assets.js';
 import { base } from '../../../lib/url.js';
 import { renderMarkdown } from '../../../lib/markdown.ts';
-import { t, localizeDescription } from '../../../lib/i18n.js';
+import { t, pickDescription } from '../../../lib/i18n.js';
 import { catalogFlag } from '../../../lib/catalogFlags.ts';
 import { describePlatform } from '../../../lib/platforms.ts';
 import { formatDate } from '../../../lib/date.js';
@@ -54,7 +54,7 @@ const locale = Astro.currentLocale ?? 'en';
 const { software, catalogName, catalogFlag: flag, multiCatalog, hasActivity, badges, contract } = Astro.props;
 const pc = software.publiccode;
 
-const desc = localizeDescription(pc.description, locale);
+const { description: desc, lang: descLang } = pickDescription(pc.description, locale);
 const logo = resolveLogoAsset(pc);
 const longDescriptionHtml = desc.longDescription ? renderMarkdown(desc.longDescription, { topHeadingLevel: 3 }) : null;
 const screenshots = resolveScreenshotAssets(pc, desc);
@@ -142,7 +142,7 @@ const badgeRadar = makeRadar(
       </figure>
       <div>
         <h1>{pc.name} {pc.softwareVersion && <small>{pc.softwareVersion}</small>}</h1>
-        <p class="short-description">{desc.shortDescription}</p>
+        <p class="short-description" lang={descLang}>{desc.shortDescription}</p>
         {pc.categories?.length > 0 && (
           <ul class="categories" aria-label="Categories">
             {pc.categories.map((c) => <li><a href={`${base}/software?category=${c}`}>{c}</a></li>)}
@@ -251,7 +251,7 @@ const badgeRadar = makeRadar(
     {features.length > 0 && (
       <section class="software-features">
         <h2><Fragment set:html={faIcon('list-check')} /> {t(locale, 'features')}</h2>
-        <ul>
+        <ul lang={descLang}>
           {features.map((f) => <li>{f}</li>)}
         </ul>
       </section>
@@ -282,7 +282,7 @@ const badgeRadar = makeRadar(
     {longDescriptionHtml && (
       <section class="software-description">
         <h2><Fragment set:html={faIcon('align-left')} /> {t(locale, 'description')}</h2>
-        <div set:html={longDescriptionHtml} />
+        <div lang={descLang} set:html={longDescriptionHtml} />
       </section>
     )}
 

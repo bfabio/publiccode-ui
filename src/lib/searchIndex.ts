@@ -2,6 +2,7 @@ export interface SearchIndexEntry {
   id: string;
   name: string;
   shortDescription: string;
+  lang?: string;
   logo: string | null;
   logoFallback: string | null;
 }
