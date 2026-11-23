@@ -439,6 +439,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
 .catalog-results .license {
   color: #828282;
 }
+.catalog-results .license a { color: inherit; }
 .catalog-results time {
   color: #828282;
 }

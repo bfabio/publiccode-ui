@@ -989,6 +989,7 @@ nav[aria-label="Breadcrumb"] li + li::before {
   border-color: var(--text-quaternary);
 }
 .catalog-results .license { color: var(--accent-bright); }
+.catalog-results .license a { color: inherit; }
 .catalog-results .card-date {
   display: inline-flex;
   align-items: center;

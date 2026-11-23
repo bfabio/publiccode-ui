@@ -159,7 +159,7 @@ const badgeRadar = makeRadar(
 
     <dl class="software-meta">
       {multiCatalog && catalogName && <><dt>{t(locale, 'catalog_label')}</dt><dd>{flag && <span class="catalog-flag" aria-hidden="true">{flag}</span>}{catalogName}</dd></>}
-      {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url} target="_blank" rel="noopener noreferrer">{license.name}</a> : license.name}</dd></>}
+      {license && <><dt>{t(locale, 'license')}</dt><dd>{license.url ? <a href={license.url} target="_blank" rel="noopener noreferrer">{license.name}</a> : license.parts.map((p) => p.url ? <a href={p.url} target="_blank" rel="noopener noreferrer">{p.text}</a> : p.text)}</dd></>}
       {release && <><dt>{t(locale, 'release_date')}</dt><dd><time datetime={release.datetime} data-relative>{release.formatted}</time></dd></>}
       {pc.developmentStatus && <><dt>{t(locale, 'status')}</dt><dd>{t(locale, 'status_' + pc.developmentStatus)}</dd></>}
       {pc.softwareType && <><dt>{t(locale, 'software_type')}</dt><dd>{t(locale, 'type_' + pc.softwareType)}</dd></>}
