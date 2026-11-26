@@ -111,6 +111,20 @@ function stubWindow(href = 'https://example.org/') {
 
 afterEach(() => vi.unstubAllGlobals());
 
+describe('list filter on detail pages', () => {
+  it('keeps saved software or global weights when activity=1', () => {
+    stubWindow('https://example.org/software/abc?activity=1');
+    const global = { ...DEFAULT_CONFIG, xmaxMode: 'max' as const };
+    const software = { ...DEFAULT_CONFIG, issueMode: 'open' as const };
+    writeGlobalConfig(global);
+    writeSoftwareConfig('abc', software);
+
+    expect(pickConfig(readUrlConfig(), readSoftwareConfig('abc'), readGlobalConfig())).toEqual(software);
+    clearSoftwareConfig('abc');
+    expect(pickConfig(readUrlConfig(), readSoftwareConfig('abc'), readGlobalConfig())).toEqual(global);
+  });
+});
+
 describe('software configs', () => {
   const custom: ActivityConfig = { ...DEFAULT_CONFIG, issueMode: 'open' };
 
